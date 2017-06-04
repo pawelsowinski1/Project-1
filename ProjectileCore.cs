@@ -1,9 +1,8 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 
-public class ProjectileCore : MonoBehaviour {
-
-
+public class ProjectileCore : MonoBehaviour
+{
 	void Start () 
 	{
 		Destroy(gameObject,1.5f);
@@ -17,9 +16,6 @@ public class ProjectileCore : MonoBehaviour {
 	void OnTriggerEnter2D(Collider2D other) 
 	{
 		if (other.gameObject.tag == "Enemy")
-		{
-			Debug.Log("collision");
-			Destroy(gameObject,0.0f);
-		}
+		Destroy(gameObject,0.0f);
 	}
 }
