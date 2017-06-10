@@ -1,18 +1,19 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 
 public class SlashCore : MonoBehaviour
 {
 	GameObject obj;
-	//public GameObject parent;
+	public GameObject parent;
 
 	Vector3 v;
 	Transform target;
 
+	public bool directionRight = true;
+
 	void Start () 
 	{
-		Destroy(gameObject,9.5f);
-		transform.Rotate(0,0,80f);
+		Destroy(gameObject,0.25f);
 
 		v.Set(0,2f,0);
 
@@ -20,16 +21,24 @@ public class SlashCore : MonoBehaviour
 		target = obj.GetComponent<Transform>();
 
 		transform.position = target.position + v;
+
+		transform.Rotate(0,0,90f);
 	}
 
-	void LateUpdate()
+	void FixedUpdate()
 	{
+		if (directionRight == true)
+		transform.RotateAround(target.position, new Vector3(0,0,1), -10f);
+		else
 		transform.RotateAround(target.position, new Vector3(0,0,1), 10f);
 	}
 
 	void OnTriggerEnter2D(Collider2D other) 
 	{
 		if (other.gameObject.tag == "Enemy")
-		Destroy(gameObject,0.0f);
+		{
+			Destroy(gameObject,0.0f);
+			other.GetComponent<CritterCore>().damageColorIntensity = 1f;
+		}
 	}
 }
