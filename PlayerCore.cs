@@ -3,17 +3,48 @@ using System.Collections;
 
 public class PlayerCore : CritterCore 
 {
+	//==================================================
 
-	void FixedUpdate ()
+	void SetDirection()
+	{
+		if (Camera.main.ScreenToWorldPoint(Input.mousePosition).x > transform.position.x)
+		{
+			directionRight = true;
+		}
+		else
+		{
+			directionRight = false;
+		}
+	}
+
+	//==================================================
+	
+	void Start ()
+	{
+		BodyInitialize();
+	}
+	
+	//__________________________________________________
+	
+	void Update ()
+	{
+		CalculateLand();
+		PlaceOnGround();
+		DamageColorize();
+		SetDirection();
+	}
+	
+	//__________________________________________________
+
+	void FixedUpdate()
 	{	
-
 		if(Input.GetKey(KeyCode.A))
 		MoveLeft();
 		
 		if(Input.GetKey(KeyCode.D))
 		MoveRight();
 		
-		if(Input.GetKey(KeyCode.W))
+		if(Input.GetKey(KeyCode.Space))
 		Jump();
 
 		if(Input.GetMouseButton(0))
@@ -21,7 +52,8 @@ public class PlayerCore : CritterCore
 		
 		if(Input.GetMouseButton(1))
 		Shoot();
-
 	}
+
+	//==================================================
 
 }
