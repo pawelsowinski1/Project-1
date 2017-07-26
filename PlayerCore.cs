@@ -1,3 +1,5 @@
+// 26-07-2017
+
 using UnityEngine;
 using System.Collections;
 
@@ -32,6 +34,7 @@ public class PlayerCore : CritterCore
 		PlaceOnGround();
 		DamageColorize();
 		SetDirection();
+
 	}
 	
 	//__________________________________________________
@@ -52,6 +55,12 @@ public class PlayerCore : CritterCore
 		
 		if(Input.GetMouseButton(1))
 		Shoot();
+
+
+		// works only in standalone
+		if (Input.GetKeyDown(KeyCode.F))
+		Screen.fullScreen = !Screen.fullScreen;
+
 	}
 
 	//==================================================

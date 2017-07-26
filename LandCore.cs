@@ -1,3 +1,5 @@
+// 26-07-2017
+
 using UnityEngine;
 using System.Collections;
 
@@ -10,7 +12,7 @@ public class LandCore : MonoBehaviour
 
 	// ==================================================	
 
-	void Start () 
+	void Awake() 
 	{
 		//------ generate land ------
 
@@ -33,7 +35,7 @@ public class LandCore : MonoBehaviour
 
 	// ==================================================
 
-	void Update ()
+	void Update()
 	{
 		// ------- draw land --------
 
