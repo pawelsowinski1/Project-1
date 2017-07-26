@@ -35,7 +35,6 @@ public class PlayerCore : CritterCore
 		DamageColorize();
 		SetDirection();
 
-
 	}
 	
 	//__________________________________________________
@@ -57,9 +56,11 @@ public class PlayerCore : CritterCore
 		if(Input.GetMouseButton(1))
 		Shoot();
 
+
 		// works only in standalone
 		if (Input.GetKeyDown(KeyCode.F))
 		Screen.fullScreen = !Screen.fullScreen;
+
 	}
 
 	//==================================================
