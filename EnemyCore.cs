@@ -8,6 +8,8 @@ public class EnemyCore : CritterCore
 	GameObject player;
 	float targetX;
 
+    int timerMove = 0;
+
 
 
 	//==================================================
@@ -30,13 +32,25 @@ public class EnemyCore : CritterCore
 
 	void FixedUpdate()
 	{
-		targetX = player.GetComponent<Transform>().position.x;
+        timerMove++;
+        if (timerMove >= 50)
 
-		if (targetX > transform.position.x)
-		MoveRight();
-		else
-		MoveLeft();
-	}
+        {
+            timerMove = 0;
+
+            if (player.GetComponent<Transform>().position.x > transform.position.x)
+            targetX = player.GetComponent<Transform>().position.x - 5f;
+            else
+            targetX = player.GetComponent<Transform>().position.x + 5f;
+
+            targetX += Random.Range(-5f, 5f);
+        }
+
+        if (targetX > transform.position.x)
+        MoveRight();
+        else
+        MoveLeft();
+    }
 	
 	//==================================================
 }
