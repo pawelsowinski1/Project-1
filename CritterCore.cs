@@ -1,20 +1,23 @@
-// 26-07-2017
+﻿// 19-08-2017
 
 using UnityEngine;
 using System.Collections;
 
 public class CritterCore : BodyCore 
 {
-	//==================================================
+    //==================================================
 
+    public int team = -1;
 	public bool directionRight = true;
 	public float damageColorIntensity = 0f;
+    public int hitCooldown = 0;
 
 	public GameObject slashPrefab;
 	GameObject slashClone;
 
 	public GameObject projectilePrefab;
 	GameObject projectileClone;
+
 	
 	//==================================================
 
@@ -54,14 +57,18 @@ public class CritterCore : BodyCore
 		projectileClone.GetComponent<Rigidbody2D>().AddForce((mousePos-transform.position)*200);
 	}
 
-	//__________________________________________________
-	
-	public void Hit()
-	{
-		slashClone = Instantiate(slashPrefab,Vector3.zero,transform.rotation) as GameObject;
-		slashClone.GetComponent<SlashCore>().parent = gameObject;
-		slashClone.transform.parent = gameObject.transform;
-		slashClone.GetComponent<SlashCore>().directionRight = directionRight;
+    //__________________________________________________
+
+    public void Hit()
+    {
+        if (hitCooldown <= 0)
+        {
+            slashClone = Instantiate(slashPrefab, Vector3.zero, transform.rotation) as GameObject;
+            slashClone.GetComponent<SlashCore>().parent = gameObject;
+            slashClone.transform.parent = gameObject.transform; // fixes slash wobbling bug
+
+            hitCooldown = 40;
+        }
 	}
 
 	//__________________________________________________
@@ -84,7 +91,7 @@ public class CritterCore : BodyCore
 	}
 
 	//==================================================
-	
+	/*
 	void Start ()
 	{
 		BodyInitialize();
@@ -98,7 +105,7 @@ public class CritterCore : BodyCore
 		PlaceOnGround();
 		DamageColorize();
 	}
-
+    */
 	//==================================================
 
 }

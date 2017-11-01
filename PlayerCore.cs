@@ -1,10 +1,11 @@
-// 26-07-2017
+﻿// 19-08-2017
 
 using UnityEngine;
 using System.Collections;
 
 public class PlayerCore : CritterCore 
 {
+
 	//==================================================
 
 	void SetDirection()
@@ -24,6 +25,8 @@ public class PlayerCore : CritterCore
 	void Start ()
 	{
 		BodyInitialize();
+        team = 0;
+        
 	}
 	
 	//__________________________________________________
@@ -34,7 +37,6 @@ public class PlayerCore : CritterCore
 		PlaceOnGround();
 		DamageColorize();
 		SetDirection();
-
 	}
 	
 	//__________________________________________________
@@ -56,11 +58,12 @@ public class PlayerCore : CritterCore
 		if(Input.GetMouseButton(1))
 		Shoot();
 
-
 		// works only in standalone
 		if (Input.GetKeyDown(KeyCode.F))
 		Screen.fullScreen = !Screen.fullScreen;
 
+        if (hitCooldown > 0)
+        hitCooldown--;
 	}
 
 	//==================================================

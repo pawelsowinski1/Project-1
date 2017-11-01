@@ -1,4 +1,4 @@
-// 26-07-2017
+﻿// 19-08-2017
 
 using UnityEngine;
 using System.Collections;
@@ -16,7 +16,7 @@ public class LandCore : MonoBehaviour
 	{
 		//------ generate land ------
 
-		landSections = 50;
+		landSections = 100;
 
 		landPointX = new float[landSections];
 		landPointY = new float[landSections];
@@ -25,8 +25,17 @@ public class LandCore : MonoBehaviour
 
 		for (i=0; i<landSections; i++)
 		{
-			landPointX[i] = i * 3 + Random.value;
-			landPointY[i] = Random.value * 5;
+            if (i == 0)
+            landPointX[i] = 0;
+            else
+            landPointX[i] = landPointX[i-1] + Random.Range(1f, 2f);
+
+			
+
+            if (i == 0)
+            landPointY[i] = Random.value * 5;
+            else
+            landPointY[i] = landPointY[i-1] + Random.Range(-1f, 1f);
 		}
 
 		//--------------------------
