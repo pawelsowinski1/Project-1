@@ -32,9 +32,14 @@ public class SlashCore : MonoBehaviour
 	void FixedUpdate()
 	{
 		if (directionRight == true)
-		transform.RotateAround(target.position, new Vector3(0,0,1), -10f);
+        {
+        	transform.RotateAround(target.position, new Vector3(0,0,1), -10f);
+        }
+
 		else
-		transform.RotateAround(target.position, new Vector3(0,0,1), 10f);
+        {
+		    transform.RotateAround(target.position, new Vector3(0,0,1), 10f);
+        }
 	}
 
 	void OnTriggerEnter2D(Collider2D other) 

@@ -1,4 +1,4 @@
-﻿// 19-08-2017
+﻿// 05-11-2017
 
 using UnityEngine;
 using System.Collections;
@@ -13,10 +13,12 @@ public class PlayerCore : CritterCore
 		if (Camera.main.ScreenToWorldPoint(Input.mousePosition).x > transform.position.x)
 		{
 			directionRight = true;
+            gameObject.GetComponent<SpriteRenderer>().flipX = false;
 		}
 		else
 		{
 			directionRight = false;
+            gameObject.GetComponent<SpriteRenderer>().flipX = true;
 		}
 	}
 

@@ -1,4 +1,4 @@
-﻿// 19-08-2017
+﻿// 05-11-2017
 
 using UnityEngine;
 using System.Collections;
@@ -89,23 +89,4 @@ public class CritterCore : BodyCore
 			}
 		}
 	}
-
-	//==================================================
-	/*
-	void Start ()
-	{
-		BodyInitialize();
-	}
-	
-	//__________________________________________________
-	
-	void Update ()
-	{
-		CalculateLand();
-		PlaceOnGround();
-		DamageColorize();
-	}
-    */
-	//==================================================
-
 }

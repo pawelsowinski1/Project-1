@@ -1,4 +1,4 @@
-﻿// 19-08-2017
+﻿// 05-11-2017
 
 using UnityEngine;
 using System.Collections;
@@ -11,7 +11,7 @@ public class EnemyCore : CritterCore
     int timerMove = 0;
     int timerHit = 0;
 
-	//==================================================
+	//__________________________________________________
 	
 	void Start()
 	{
@@ -35,9 +35,16 @@ public class EnemyCore : CritterCore
 	void FixedUpdate()
 	{
         if (player.transform.position.x > transform.position.x)
-        directionRight = true;
+        {
+            directionRight = true;
+            gameObject.GetComponent<SpriteRenderer>().flipX = false;
+        }
+
         else
-        directionRight = false;
+        {
+            directionRight = false;
+            gameObject.GetComponent<SpriteRenderer>().flipX = true;
+        }
 
         timerMove--;
         timerHit--;
