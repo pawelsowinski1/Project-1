@@ -22,7 +22,7 @@ public class BodyCore : MonoBehaviour
 		land = obj.GetComponent<LandCore>();
 		
 		isGrounded = false;
-		gameObject.GetComponent<Rigidbody2D>().gravityScale = 20;
+		gameObject.GetComponent<Rigidbody2D>().gravityScale = 10;
 	}
 
 	//__________________________________________________

@@ -1,7 +1,10 @@
-﻿// 19-08-2017
+﻿// RENAME TO GAME CORE
+
+// 05-11-2017
 
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class LandCore : MonoBehaviour 
 {
@@ -9,6 +12,10 @@ public class LandCore : MonoBehaviour
 	public int landSections;
 	public float[] landPointX;
 	public float[] landPointY;
+
+    public GameObject manPrefab;
+    public GameObject pantsPrefab;
+    GameObject clone;
 
 	// ==================================================	
 
@@ -39,7 +46,42 @@ public class LandCore : MonoBehaviour
 		}
 
 		//--------------------------
-	
+
+        List<GameObject> critters = new List<GameObject>();
+
+        //
+
+        clone = Instantiate (pantsPrefab,transform.position,transform.rotation) as GameObject;
+        clone.GetComponent<PantsCore>().target = GameObject.Find("Player");
+        clone.GetComponent<SpriteRenderer>().color = Color.blue;
+
+        //
+        
+        clone = Instantiate (manPrefab,transform.position,transform.rotation) as GameObject;
+        clone.GetComponent<EnemyCore>().team = 1;
+        clone.GetComponent<EnemyCore>().target = GameObject.Find("Player");
+        critters.Add(clone);
+
+        
+        clone = Instantiate (pantsPrefab,transform.position,transform.rotation) as GameObject;
+        clone.GetComponent<PantsCore>().target = critters[0];
+        clone.GetComponent<SpriteRenderer>().color = Color.red;
+
+        //
+
+        
+        clone = Instantiate (manPrefab,transform.position,transform.rotation) as GameObject;
+        clone.GetComponent<EnemyCore>().team = 0;
+        clone.GetComponent<EnemyCore>().target = critters[0];
+        critters.Add(clone);
+        
+        clone = Instantiate (pantsPrefab,transform.position,transform.rotation) as GameObject;
+        clone.GetComponent<PantsCore>().target = critters[1];
+        clone.GetComponent<SpriteRenderer>().color = Color.blue;	
+
+        //
+
+        critters[0].GetComponent<EnemyCore>().target = critters[1];
 	}
 
 	// ==================================================

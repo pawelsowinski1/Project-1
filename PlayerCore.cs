@@ -5,7 +5,6 @@ using System.Collections;
 
 public class PlayerCore : CritterCore 
 {
-
 	//==================================================
 
 	void SetDirection()
@@ -28,7 +27,10 @@ public class PlayerCore : CritterCore
 	{
 		BodyInitialize();
         team = 0;
-        
+
+        int i = 0;
+        GetComponent<SpriteRenderer>().sortingLayerID = i;
+       
 	}
 	
 	//__________________________________________________
@@ -39,6 +41,7 @@ public class PlayerCore : CritterCore
 		PlaceOnGround();
 		DamageColorize();
 		SetDirection();
+
 	}
 	
 	//__________________________________________________

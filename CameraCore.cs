@@ -1,4 +1,4 @@
-﻿// 19-08-2017
+﻿// 05-11-2017
 
 using UnityEngine;
 using System.Collections;
@@ -14,7 +14,9 @@ public class CameraCore : MonoBehaviour {
 	void Start () 
 	{
 		player = GameObject.Find("Player");
-        //Application.targetFrameRate = -1; // for performance check (remember to turn v-sync off)
+
+        //Application.targetFrameRate = -1; // for performance check (remember to turn v-sync off) //move this to GameCore.cs
+        
 	}
 
 	void LateUpdate () 

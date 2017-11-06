@@ -5,7 +5,7 @@ using System.Collections;
 
 public class EnemyCore : CritterCore
 {
-	GameObject player;
+	public GameObject target;
 	float targetX;
 
     int timerMove = 0;
@@ -16,8 +16,7 @@ public class EnemyCore : CritterCore
 	void Start()
 	{
 		BodyInitialize();
-		player = GameObject.Find("Player");
-        team = 1;
+        //team = 1;
 
         timerMove = 1;
         timerHit = Random.Range(30, 70);
@@ -34,44 +33,47 @@ public class EnemyCore : CritterCore
 
 	void FixedUpdate()
 	{
-        if (player.transform.position.x > transform.position.x)
+        if (target != null)
         {
-            directionRight = true;
-            gameObject.GetComponent<SpriteRenderer>().flipX = false;
-        }
+            if (target.transform.position.x > transform.position.x)
+            {
+                directionRight = true;
+                gameObject.GetComponent<SpriteRenderer>().flipX = false;
+            }
 
-        else
-        {
-            directionRight = false;
-            gameObject.GetComponent<SpriteRenderer>().flipX = true;
-        }
-
-        timerMove--;
-        timerHit--;
-
-        if (timerMove <= 0)
-
-        {
-            timerMove = Random.Range(30, 70);
-
-            if (player.GetComponent<Transform>().position.x > transform.position.x)
-            targetX = player.GetComponent<Transform>().position.x - 3f;
             else
-            targetX = player.GetComponent<Transform>().position.x + 3f;
+            {
+                directionRight = false;
+                gameObject.GetComponent<SpriteRenderer>().flipX = true;
+            }
 
-            targetX += Random.Range(-5f, 5f);
-        }
+            timerMove--;
+            timerHit--;
 
-        if (targetX > transform.position.x)
-        MoveRight();
-        else
-        MoveLeft();
+            if (timerMove <= 0)
 
-        if (timerHit <= 0)
-        {
-            Hit();
-            //timerHit = Random.Range(1, 100);
-            timerHit = 1;
+            {
+                timerMove = Random.Range(30, 70);
+
+                if (target.GetComponent<Transform>().position.x > transform.position.x)
+                targetX = target.GetComponent<Transform>().position.x - 3f;
+                else
+                targetX = target.GetComponent<Transform>().position.x + 3f;
+
+                targetX += Random.Range(-5f, 5f);
+            }
+
+            if (targetX > transform.position.x)
+            MoveRight();
+            else
+            MoveLeft();
+
+            if (timerHit <= 0)
+            {
+                Hit();
+                //timerHit = Random.Range(1, 100);
+                timerHit = 1;
+            }
         }
 
         if (hitCooldown > 0)

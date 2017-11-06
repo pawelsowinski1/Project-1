@@ -1,4 +1,4 @@
-﻿// 05-11-2017
+﻿// 06-11-2017
 
 using UnityEngine;
 using System.Collections;
@@ -40,7 +40,7 @@ public class CritterCore : BodyCore
 		if (isGrounded == true)
 		{
 			isGrounded = false;
-			gameObject.GetComponent<Rigidbody2D>().AddForce(new Vector2(0,2000));
+			gameObject.GetComponent<Rigidbody2D>().AddForce(new Vector2(0,2500));
 			gameObject.GetComponent<Rigidbody2D>().gravityScale = 20;
 		}
 	}
@@ -50,7 +50,8 @@ public class CritterCore : BodyCore
 	public void Shoot()
 	{
 		projectileClone = Instantiate (projectilePrefab,transform.position,transform.rotation) as GameObject;
-		projectileClone.GetComponent<ProjectileCore>().parent = gameObject;
+        projectileClone.GetComponent<ProjectileCore>().parent = gameObject;
+		projectileClone.GetComponent<ProjectileCore>().team = team;
 		
 		Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 		
@@ -66,6 +67,7 @@ public class CritterCore : BodyCore
             slashClone = Instantiate(slashPrefab, Vector3.zero, transform.rotation) as GameObject;
             slashClone.GetComponent<SlashCore>().parent = gameObject;
             slashClone.transform.parent = gameObject.transform; // fixes slash wobbling bug
+            slashClone.GetComponent<SlashCore>().team = team;
 
             hitCooldown = 40;
         }

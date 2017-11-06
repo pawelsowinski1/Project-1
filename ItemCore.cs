@@ -5,15 +5,24 @@ using System.Collections;
 
 public class ItemCore : BodyCore
 {
+
+    
+
 	void Start()
 	{
 		BodyInitialize();
+
+        int i = 2;
+        GetComponent<SpriteRenderer>().sortingLayerID = i;
 	}
 
 	void Update() 
 	{
 		CalculateLand();
 		PlaceOnGround();
+
+        
+    
 	}
 
 }

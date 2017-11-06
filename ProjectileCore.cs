@@ -1,4 +1,4 @@
-﻿// 19-08-2017
+﻿// 05-11-2017
 
 using UnityEngine;
 using System.Collections;
@@ -14,6 +14,8 @@ public class ProjectileCore : MonoBehaviour
         team = parent.GetComponent<PlayerCore>().team;
 
 		Destroy(gameObject,1.5f);
+
+        transform.position += new Vector3(0,0.75f,0);
 	}
 
 	void OnTriggerEnter2D(Collider2D other) 
