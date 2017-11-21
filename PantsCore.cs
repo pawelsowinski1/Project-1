@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class PantsCore : MonoBehaviour {
 
-    public GameObject target;
+    //public GameObject target;
 
 	void Start()
     {
@@ -15,7 +15,7 @@ public class PantsCore : MonoBehaviour {
 	
     void LateUpdate()
     {
-        transform.position = target.transform.position;
-        transform.position += new Vector3(0,0.4f,0);
+        //transform.position = target.transform.position;
+        //transform.position += new Vector3(0,0.4f,0);
 	}
 }

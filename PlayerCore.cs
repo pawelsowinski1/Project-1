@@ -1,11 +1,18 @@
-﻿// 05-11-2017
+﻿// 20-11-2017
 
 using UnityEngine;
 using System.Collections;
 
 public class PlayerCore : CritterCore 
 {
-	//==================================================
+    // =================== PLAYER CORE ==================
+
+    // parent class:  CritterCore
+    // child classes: -
+
+    /// SetDirection()
+
+	//  =================================================
 
 	void SetDirection()
 	{
@@ -22,6 +29,8 @@ public class PlayerCore : CritterCore
 	}
 
 	//==================================================
+
+    ///  ----- START -----
 	
 	void Start ()
 	{
@@ -30,47 +39,49 @@ public class PlayerCore : CritterCore
 
         int i = 0;
         GetComponent<SpriteRenderer>().sortingLayerID = i;
-       
 	}
 	
-	//__________________________________________________
-	
+    /// ----- UPDATE -----
+
 	void Update ()
 	{
 		CalculateLand();
 		PlaceOnGround();
 		DamageColorize();
 		SetDirection();
-
 	}
-	
-	//__________________________________________________
+
+    /// ----- FIXED UPDATE -----
 
 	void FixedUpdate()
 	{	
-		if(Input.GetKey(KeyCode.A))
-		MoveLeft();
+        if (downed == false)
+        {
+		    if(Input.GetKey(KeyCode.A))
+		    MoveLeft();
 		
-		if(Input.GetKey(KeyCode.D))
-		MoveRight();
+		    if(Input.GetKey(KeyCode.D))
+		    MoveRight();
 		
-		if(Input.GetKey(KeyCode.Space))
-		Jump();
+		    if(Input.GetKey(KeyCode.Space))
+		    Jump();
 
-		if(Input.GetMouseButton(0))
-		Hit();
+		    if(Input.GetMouseButton(0))
+		    Hit();
 		
-		if(Input.GetMouseButton(1))
-		Shoot();
+		    if(Input.GetMouseButton(1))
+		    Shoot();
 
-		// works only in standalone
-		if (Input.GetKeyDown(KeyCode.F))
-		Screen.fullScreen = !Screen.fullScreen;
+		    // works only in standalone
+            // -> move to GameCore
+         
+		    if (Input.GetKeyDown(KeyCode.F))
+		    Screen.fullScreen = !Screen.fullScreen;
+        
+            // ---
 
-        if (hitCooldown > 0)
-        hitCooldown--;
+            if (hitCooldown > 0)
+            hitCooldown--;
+        }
 	}
-
-	//==================================================
-
 }

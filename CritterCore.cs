@@ -1,25 +1,37 @@
-﻿// 06-11-2017
+﻿// 20-11-2017
 
 using UnityEngine;
 using System.Collections;
 
 public class CritterCore : BodyCore 
 {
-    //==================================================
+    // ================= CRITTER CORE ==================
 
-    public int team = -1;
-	public bool directionRight = true;
+    // parent class:  BodyCore
+
+    // child classes: PlayerCore
+    //                ManCore
+
+    public int   team = -1;
+	public bool  directionRight = true;
 	public float damageColorIntensity = 0f;
-    public int hitCooldown = 0;
+    public int   hitCooldown = 0;
+    public int   hp = 100;
+    public float hpmax = 100;
+    public bool  downed = false;
 
 	public GameObject slashPrefab;
-	GameObject slashClone;
-
 	public GameObject projectilePrefab;
-	GameObject projectileClone;
+    GameObject clone;
 
-	
-	//==================================================
+    /// MoveLeft()
+    /// MoveRight()
+    /// Jump()
+    /// Shoot()
+    /// Hit()
+    /// DamageColorize()
+
+    //==================================================
 
 	public void MoveLeft()
 	{
@@ -49,13 +61,13 @@ public class CritterCore : BodyCore
 	
 	public void Shoot()
 	{
-		projectileClone = Instantiate (projectilePrefab,transform.position,transform.rotation) as GameObject;
-        projectileClone.GetComponent<ProjectileCore>().parent = gameObject;
-		projectileClone.GetComponent<ProjectileCore>().team = team;
+		clone = Instantiate (projectilePrefab,transform.position,transform.rotation) as GameObject;
+        clone.GetComponent<ProjectileCore>().parent = gameObject;
+		clone.GetComponent<ProjectileCore>().team = team;
 		
 		Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 		
-		projectileClone.GetComponent<Rigidbody2D>().AddForce((mousePos-transform.position)*200);
+		clone.GetComponent<Rigidbody2D>().AddForce((mousePos-transform.position)*200);
 	}
 
     //__________________________________________________
@@ -64,10 +76,10 @@ public class CritterCore : BodyCore
     {
         if (hitCooldown <= 0)
         {
-            slashClone = Instantiate(slashPrefab, Vector3.zero, transform.rotation) as GameObject;
-            slashClone.GetComponent<SlashCore>().parent = gameObject;
-            slashClone.transform.parent = gameObject.transform; // fixes slash wobbling bug
-            slashClone.GetComponent<SlashCore>().team = team;
+            clone = Instantiate(slashPrefab, Vector3.zero, transform.rotation) as GameObject;
+            clone.GetComponent<SlashCore>().parent = gameObject;
+            clone.transform.parent = gameObject.transform; // fixes slash wobbling bug
+            clone.GetComponent<SlashCore>().team = team;
 
             hitCooldown = 40;
         }
@@ -91,4 +103,6 @@ public class CritterCore : BodyCore
 			}
 		}
 	}
+
+    //__________________________________________________
 }

@@ -5,9 +5,14 @@ using System.Collections;
 
 public class ProjectileCore : MonoBehaviour
 {
+    // ============= PROJECTILE CORE ===================
+
+
 	public GameObject parent;
 
     public int team;
+
+    // =================================================
 
 	void Start () 
 	{

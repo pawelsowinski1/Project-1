@@ -1,25 +1,34 @@
-﻿// 26-07-2017
+﻿// 20-11-2017
 
 using UnityEngine;
 using System.Collections;
 
 public class BodyCore : MonoBehaviour 
 {
-	//==================================================
+	//================== BODY CORE =====================
 
-	public int landSection;
+    // parent class:  -
+
+    // child classes: CritterCore
+    //                ItemCore
+
+	public int   landSection;
 	public float landSteepness;
-	public bool isGrounded;
+	public bool  isGrounded;
 	
 	public GameObject obj;
-	public LandCore land;
+	public GameCore gameCore;
+
+    /// BodyInitialize()
+    /// CalculateLand()
+    /// PlaceOnGround()
 
 	//==================================================
 
 	public void BodyInitialize()
 	{
-		obj = GameObject.Find("Land");
-		land = obj.GetComponent<LandCore>();
+		obj = GameObject.Find("Game");
+		gameCore = obj.GetComponent<GameCore>();
 		
 		isGrounded = false;
 		gameObject.GetComponent<Rigidbody2D>().gravityScale = 10;
@@ -33,25 +42,27 @@ public class BodyCore : MonoBehaviour
 		
 		int i;
 		
-		for (i=1; i<land.landSections; i++)
+		for (i=1; i<gameCore.landSections; i++)
 		{
-			if (transform.position.x < land.landPointX[i])
+			if (transform.position.x < gameCore.landPointX[i])
 			{
 				if (i != landSection)
 				{
 					landSection = i;
-					landSteepness = Mathf.Atan2(land.landPointY[i]-land.landPointY[i-1],land.landPointX[i]-land.landPointX[i-1]);
+					landSteepness = Mathf.Atan2(gameCore.landPointY[i]-gameCore.landPointY[i-1],gameCore.landPointX[i]-gameCore.landPointX[i-1]);
 				}
 				break;
 			}
 		}
+
+        // ---
 	}
 
 	//__________________________________________________
 
 	public void PlaceOnGround()
 	{
-		float groundY = land.landPointY[landSection-1] + (transform.position.x-land.landPointX[landSection-1]) * Mathf.Tan(landSteepness);
+		float groundY = gameCore.landPointY[landSection-1] + (transform.position.x-gameCore.landPointX[landSection-1]) * Mathf.Tan(landSteepness);
 		
 		if (isGrounded == true)
 		{
@@ -67,6 +78,6 @@ public class BodyCore : MonoBehaviour
 		}
 	}
 
-	//==================================================
+	//__________________________________________________
 
 }

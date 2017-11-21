@@ -5,8 +5,12 @@ using System.Collections;
 
 public class ItemCore : BodyCore
 {
+    // ================ ITEM CORE ======================
 
-    
+    // parent class:  BodyCore
+    // child classes: -
+
+    // =================================================
 
 	void Start()
 	{
@@ -20,9 +24,5 @@ public class ItemCore : BodyCore
 	{
 		CalculateLand();
 		PlaceOnGround();
-
-        
-    
 	}
-
 }

@@ -1,22 +1,30 @@
-﻿// 05-11-2017
+﻿// 21-11-2017
 
 using UnityEngine;
 using System.Collections;
 
-public class EnemyCore : CritterCore
+public class ManCore : CritterCore
 {
-	public GameObject target;
+    // =================== MAN CORE ====================
+
+    // parent class:  CritterCore
+    // child classes: -
+
+    public GameObject target = null;
+
 	float targetX;
 
     int timerMove = 0;
     int timerHit = 0;
 
+    // =================================================
+
 	//__________________________________________________
 	
 	void Start()
 	{
+
 		BodyInitialize();
-        //team = 1;
 
         timerMove = 1;
         timerHit = Random.Range(30, 70);
@@ -33,7 +41,27 @@ public class EnemyCore : CritterCore
 
 	void FixedUpdate()
 	{
-        if (target != null)
+        // --- searching for target ---
+
+        int i;
+        GameObject a;
+
+        i = gameCore.critters.Count;
+        target = null; 
+
+        for (i=0; i <= gameCore.critters.Count-1; i++)
+        {
+            if ((gameCore.critters[i].GetComponent<CritterCore>().team != team)
+            && (gameCore.critters[i].GetComponent<CritterCore>().downed == false))
+            {
+                target = gameCore.critters[i];
+            }
+        }
+
+        // --- targeting and attacking --- 
+
+        if ((target != null)
+        && (downed == false))
         {
             if (target.transform.position.x > transform.position.x)
             {
@@ -68,6 +96,8 @@ public class EnemyCore : CritterCore
             else
             MoveLeft();
 
+            // attacking
+
             if (timerHit <= 0)
             {
                 Hit();
@@ -75,6 +105,8 @@ public class EnemyCore : CritterCore
                 timerHit = 1;
             }
         }
+
+        // ---------------
 
         if (hitCooldown > 0)
         hitCooldown--;
