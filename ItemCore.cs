@@ -1,4 +1,4 @@
-﻿// 26-07-2017
+﻿// 23-11-2017
 
 using UnityEngine;
 using System.Collections;
@@ -9,6 +9,8 @@ public class ItemCore : BodyCore
 
     // parent class:  BodyCore
     // child classes: -
+
+    public int quantity = 1;
 
     // =================================================
 
@@ -24,5 +26,7 @@ public class ItemCore : BodyCore
 	{
 		CalculateLand();
 		PlaceOnGround();
+
+        label = quantity.ToString();
 	}
 }

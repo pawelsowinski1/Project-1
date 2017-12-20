@@ -10,7 +10,7 @@ public class HpBarCore : MonoBehaviour
 
     public GameObject parent;
 
-    Vector3 v1 = new Vector3(0,1.7f,0); // hpbar position
+    Vector3 v1 = new Vector3(0,-0.5f,0); // hpbar position
 
     // =================================================
 

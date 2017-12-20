@@ -52,8 +52,8 @@ public class CritterCore : BodyCore
 		if (isGrounded == true)
 		{
 			isGrounded = false;
-			gameObject.GetComponent<Rigidbody2D>().AddForce(new Vector2(0,2500));
-			gameObject.GetComponent<Rigidbody2D>().gravityScale = 20;
+			gameObject.GetComponent<Rigidbody2D>().AddForce(new Vector2(0,2000));
+			gameObject.GetComponent<Rigidbody2D>().gravityScale = 10;
 		}
 	}
 

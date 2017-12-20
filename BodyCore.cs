@@ -12,9 +12,10 @@ public class BodyCore : MonoBehaviour
     // child classes: CritterCore
     //                ItemCore
 
-	public int   landSection;
-	public float landSteepness;
-	public bool  isGrounded;
+	public int    landSection;
+	public float  landSteepness;
+	public bool   isGrounded = false;
+    public string label = "label";
 	
 	public GameObject obj;
 	public GameCore gameCore;
@@ -69,13 +70,19 @@ public class BodyCore : MonoBehaviour
 			transform.position = new Vector3 (transform.position.x, groundY);
 		}
 		else
-			
-		if (transform.position.y < groundY)
 		{
-			transform.position = new Vector3 (transform.position.x, groundY);
-			gameObject.GetComponent<Rigidbody2D>().gravityScale = 0;
-			isGrounded = true;
-		}
+		    if (transform.position.y < groundY)
+		    {
+			    transform.position = new Vector3 (transform.position.x, groundY);
+			    gameObject.GetComponent<Rigidbody2D>().gravityScale = 0;
+			    isGrounded = true;
+		    }
+            else
+            {
+                gameObject.GetComponent<Rigidbody2D>().gravityScale = 10;
+            }
+        }
+
 	}
 
 	//__________________________________________________

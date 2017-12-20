@@ -16,14 +16,17 @@ public class CameraCore : MonoBehaviour
 
     // =================================================
 
+    /// ----- START -----
+
 	void Start () 
 	{
         //Application.targetFrameRate = -1; // for performance check (remember to turn v-sync off) //move this to GameCore.cs
         game = GameObject.Find("Game");
         player = game.GetComponent<GameCore>().player;
 	}
+    /// ----- LATE UPDATE -----
 
-	void LateUpdate () 
+    void LateUpdate () 
 	{
         if (player != null)
         {
@@ -32,10 +35,6 @@ public class CameraCore : MonoBehaviour
 		    diff = mousePos - player.transform.position;
 
 		    transform.position = new Vector3(player.transform.position.x+diff.x/2, player.transform.position.y+diff.y/2, -1);
-        }
-        else
-        {
-            //transform.position += new Vector3(0,1,0);
         }
 	}
 

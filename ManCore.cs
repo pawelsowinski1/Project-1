@@ -25,6 +25,7 @@ public class ManCore : CritterCore
 	{
 
 		BodyInitialize();
+        label = "Wojownik";
 
         timerMove = 1;
         timerHit = Random.Range(30, 70);
@@ -44,7 +45,6 @@ public class ManCore : CritterCore
         // --- searching for target ---
 
         int i;
-        GameObject a;
 
         i = gameCore.critters.Count;
         target = null; 
@@ -110,7 +110,6 @@ public class ManCore : CritterCore
 
         if (hitCooldown > 0)
         hitCooldown--;
-
     }
 	
 	//==================================================

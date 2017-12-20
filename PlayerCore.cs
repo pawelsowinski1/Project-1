@@ -36,6 +36,7 @@ public class PlayerCore : CritterCore
 	{
 		BodyInitialize();
         team = 0;
+        label = "Szaman";
 
         int i = 0;
         GetComponent<SpriteRenderer>().sortingLayerID = i;
@@ -72,13 +73,7 @@ public class PlayerCore : CritterCore
 		    if(Input.GetMouseButton(1))
 		    Shoot();
 
-		    // works only in standalone
-            // -> move to GameCore
-         
-		    if (Input.GetKeyDown(KeyCode.F))
-		    Screen.fullScreen = !Screen.fullScreen;
-        
-            // ---
+            //
 
             if (hitCooldown > 0)
             hitCooldown--;
