@@ -1,6 +1,4 @@
-﻿// 27-11-2017
-
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -18,7 +16,6 @@ public class GameCore : MonoBehaviour
 	public int     landSections;
 	public float[] landPointX;
 	public float[] landPointY;
-    public int     lands;
 
     public GameObject playerPrefab;
     public GameObject manPrefab;
@@ -32,23 +29,59 @@ public class GameCore : MonoBehaviour
     GameObject clone;
     GameObject clone2;
 
+    public List<Land> lands          = new List<Land>();
     public List<GameObject> critters = new List<GameObject>();
     public List<GameObject> items    = new List<GameObject>();
 
-    public const float GRAVITY = 10f;
+    public const float GRAVITY = 10f; //todo
 
     Vector3 v1 = new Vector3(75f,0,0);  // man spawn position
     Vector3 v2 = new Vector3(0,0.4f,0); // pants position
 
+    //
+
+    public class Land
+    {
+        public int     landSections;
+        public float[] landPointX;
+	    public float[] landPointY;
+
+        public void GenerateLand()
+        {
+		    landSections = 100;
+
+		    landPointX = new float[landSections];
+		    landPointY = new float[landSections];
+
+		    int i;
+
+		    for (i=0; i<landSections; i++)
+		    {
+                if (i == 0)
+                landPointX[i] = 0;
+                else
+                landPointX[i] = landPointX[i-1] + Random.Range(1f, 2f);
+
+                if (i == 0)
+                landPointY[i] = Random.value * 5;
+                else
+                landPointY[i] = landPointY[i-1] + Random.Range(-1f, 1f);
+		    }
+
+        }
+    }
+
+    //
+
     /// GenerateLand()
+    /// LoadLand()
     /// DrawLand()
+
     /// SpawnPlayer()
     /// SpawnMan(1)
     /// SpawnItem()
 
     // ==================================================
-
-    
 
     void GenerateLand()
     {
@@ -72,6 +105,22 @@ public class GameCore : MonoBehaviour
             landPointY[i] = landPointY[i-1] + Random.Range(-1f, 1f);
 		}
     }
+
+    //_____________________________________________________
+
+    void LoadLand(int land_)
+    {
+        landSections = lands[land_].landSections;
+
+		int i;
+
+		for (i=0; i<landSections; i++)
+		{
+            landPointX[i] = lands[land_].landPointX[i];
+            landPointY[i] = lands[land_].landPointY[i];
+		}        
+    }
+
 
     //_____________________________________________________
 
@@ -171,15 +220,28 @@ public class GameCore : MonoBehaviour
 
 	void Awake()
 	{
-        lands = 2;
+        GenerateLand(); // <- Change this. Random land generation is not needed here, array initialization would be enough. 
 
-        int i;
+        // todo
 
-        for (i=1; i<=lands; i++)
-        {
-            GenerateLand();
-        }
+        Land land;
 
+        land = new Land();
+        lands.Add(land);
+
+        land = new Land();
+        lands.Add(land);
+
+        land = new Land();
+        lands.Add(land);
+
+        lands[0].GenerateLand();
+        lands[1].GenerateLand();
+        lands[2].GenerateLand();
+
+        //
+
+        LoadLand(1);
         SpawnPlayer();
         SpawnItem();
 
@@ -210,6 +272,15 @@ public class GameCore : MonoBehaviour
 	void Update()
 	{
         DrawLand();
+
+        if (Input.GetKeyDown(KeyCode.Alpha0))
+		LoadLand(0);
+
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+		LoadLand(1);
+
+        if (Input.GetKeyDown(KeyCode.Alpha2))
+		LoadLand(2);
 
         if (Input.GetKeyDown(KeyCode.I))
 		SpawnItem();
