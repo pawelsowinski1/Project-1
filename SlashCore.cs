@@ -1,10 +1,10 @@
-﻿using UnityEngine;
+﻿// 19-08-2017
+
+using UnityEngine;
 using System.Collections;
 
 public class SlashCore : MonoBehaviour
 {
-    // ================= SLASH CORE ====================
-
 	public GameObject parent;
     public int team;
 
@@ -14,8 +14,6 @@ public class SlashCore : MonoBehaviour
 	public bool directionRight;
     public bool alive = true; // fixes multiple hit bug
 
-    // =================================================
-
 	void Start () 
 	{
         Destroy(gameObject,0.25f);
@@ -23,7 +21,7 @@ public class SlashCore : MonoBehaviour
         team = parent.GetComponent<CritterCore>().team;
         directionRight = parent.GetComponent<CritterCore>().directionRight;
 
-		v.Set(0,2.2f,0); // slash pivot position
+		v.Set(0,2f,0);
 
 		target = parent.GetComponent<Transform>();
 
@@ -34,13 +32,9 @@ public class SlashCore : MonoBehaviour
 	void FixedUpdate()
 	{
 		if (directionRight == true)
-        {
-        	transform.RotateAround(target.position + new Vector3(0,0.8f,0), new Vector3(0,0,1), -12f); // slash rotation 
-        }
+		transform.RotateAround(target.position, new Vector3(0,0,1), -10f);
 		else
-        {
-		    transform.RotateAround(target.position + new Vector3(0,0.8f,0), new Vector3(0,0,1), 12f); // slash rotation 
-        }
+		transform.RotateAround(target.position, new Vector3(0,0,1), 10f);
 	}
 
 	void OnTriggerEnter2D(Collider2D other) 
@@ -50,14 +44,6 @@ public class SlashCore : MonoBehaviour
 		if (other.gameObject.GetComponent<CritterCore>().team != team)
 		{
 			other.gameObject.GetComponent<CritterCore>().damageColorIntensity = 1f;
-            other.gameObject.GetComponent<CritterCore>().hp -= 9;
-
-             if ((other.gameObject.GetComponent<CritterCore>().hp <= 0)
-             && (other.gameObject.GetComponent<CritterCore>().downed == false))
-             {
-                other.gameObject.GetComponent<CritterCore>().downed = true;
-                other.transform.Rotate(0,0,90f);
-             }
             
             alive = false;
             Destroy(gameObject,0.0f);
