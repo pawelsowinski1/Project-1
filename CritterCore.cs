@@ -1,142 +1,78 @@
-﻿using UnityEngine;
+﻿// 19-08-2017
+
+using UnityEngine;
 using System.Collections;
 
 public class CritterCore : BodyCore 
 {
-    // ================= CRITTER CORE ==================
-
-    // parent class:  BodyCore
-
-    // child classes: PlayerCore
-    //                ManCore
-    //                AnimalCore
-
-    public int   team = -1;
-	public bool  directionRight = true;
-	public float damageColorIntensity = 0f;
-    public int   hitCooldown = 0;
-    public int   hp = 100;
-    public float hpmax = 100;
-    public bool  downed = false;
-    public bool  isCarrying = false;
-    public float targetX;
-
-    public GameObject bodyCarried = null;
-	public GameObject slashPrefab;
-	public GameObject projectilePrefab;
-    public GameObject clone;
-    public GameObject target = null;
-
-    public LayerMask groundLayer;
-
-    /// MoveLeft()
-    /// MoveRight()
-    /// Jump()
-    /// Shoot()
-    /// Hit()
-    /// PickupItem(1)
-    /// DropItem()
-    /// DamageColorize()
-
     //==================================================
+
+    public int team = -1;
+	public bool directionRight = true;
+	public float damageColorIntensity = 0f;
+    public int hitCooldown = 0;
+
+	public GameObject slashPrefab;
+	GameObject slashClone;
+
+	public GameObject projectilePrefab;
+	GameObject projectileClone;
+
+	
+	//==================================================
 
 	public void MoveLeft()
 	{
 		gameObject.GetComponent<Rigidbody2D>().AddForce(new Vector2(-50,0));;
 	}
 
-    //--------------------------------------------------
+	//__________________________________________________
 	
 	public void MoveRight()
 	{
 		gameObject.GetComponent<Rigidbody2D>().AddForce(new Vector2(50,0));
 	}
 
-    //--------------------------------------------------
+	//__________________________________________________
 	
 	public void Jump()
 	{
-        if (isFalling == false)
-        {
-			isFalling = true;
+		if (isGrounded == true)
+		{
+			isGrounded = false;
 			gameObject.GetComponent<Rigidbody2D>().AddForce(new Vector2(0,2000));
-			gameObject.GetComponent<Rigidbody2D>().gravityScale = 10;
-        }
-        else
-        {
-            Vector2 position = transform.position;
-            Vector2 direction = Vector2.down;
-            float distance = 0.16f;
-    
-            RaycastHit2D hit = Physics2D.Raycast(position, direction, distance, groundLayer);
-
-            if (hit.collider != null)
-            {
-			    isFalling = true;
-			    gameObject.GetComponent<Rigidbody2D>().AddForce(new Vector2(0,2000));
-			    gameObject.GetComponent<Rigidbody2D>().gravityScale = 10;
-            }
-        }
+			gameObject.GetComponent<Rigidbody2D>().gravityScale = 20;
+		}
 	}
 
-    //--------------------------------------------------
+	//__________________________________________________
 	
 	public void Shoot()
 	{
-		clone = Instantiate (projectilePrefab,transform.position,transform.rotation) as GameObject;
-        clone.GetComponent<ProjectileCore>().parent = gameObject;
-		clone.GetComponent<ProjectileCore>().team = team;
+		projectileClone = Instantiate (projectilePrefab,transform.position,transform.rotation) as GameObject;
+		projectileClone.GetComponent<ProjectileCore>().parent = gameObject;
 		
 		Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 		
-		clone.GetComponent<Rigidbody2D>().AddForce((mousePos-transform.position)*200);
+		projectileClone.GetComponent<Rigidbody2D>().AddForce((mousePos-transform.position)*200);
 	}
 
-    //--------------------------------------------------
+    //__________________________________________________
 
     public void Hit()
     {
         if (hitCooldown <= 0)
         {
-            clone = Instantiate(slashPrefab, Vector3.zero, transform.rotation) as GameObject;
-            clone.GetComponent<SlashCore>().parent = gameObject;
-            clone.transform.parent = gameObject.transform; // fixes slash wobbling bug
-            clone.GetComponent<SlashCore>().team = team;
+            slashClone = Instantiate(slashPrefab, Vector3.zero, transform.rotation) as GameObject;
+            slashClone.GetComponent<SlashCore>().parent = gameObject;
+            slashClone.transform.parent = gameObject.transform; // fixes slash wobbling bug
 
             hitCooldown = 40;
         }
 	}
 
-    //--------------------------------------------------
-
-    public void PickupBody(GameObject body)
-    {
-        if ((isCarrying == false) && (body != null))
-        {
-            bodyCarried = body;
-            isCarrying = true;
-            body.GetComponent<BodyCore>().isCarried = true;
-            body.GetComponent<BodyCore>().carrier = gameObject;
-        }
-    }
-
-    //--------------------------------------------------
-
-    public void DropItem()
-    {
-        if (isCarrying == true)
-        {
-            bodyCarried.GetComponent<BodyCore>().carrier = null;
-            bodyCarried.GetComponent<BodyCore>().isCarried = false;
-            bodyCarried.GetComponent<BodyCore>().isFalling = true;
-
-            bodyCarried = null;
-            isCarrying = false;
-        }
-    }
-
-    //--------------------------------------------------
-
+	//__________________________________________________
+	
 	public void DamageColorize()
 	{
 		if (damageColorIntensity != 0f)
@@ -154,5 +90,22 @@ public class CritterCore : BodyCore
 		}
 	}
 
-    //--------------------------------------------------
+	//==================================================
+	/*
+	void Start ()
+	{
+		BodyInitialize();
+	}
+	
+	//__________________________________________________
+	
+	void Update ()
+	{
+		CalculateLand();
+		PlaceOnGround();
+		DamageColorize();
+	}
+    */
+	//==================================================
+
 }
