@@ -1,6 +1,4 @@
-﻿// 20-11-2017
-
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
 
 public class CritterCore : BodyCore 
@@ -11,6 +9,7 @@ public class CritterCore : BodyCore
 
     // child classes: PlayerCore
     //                ManCore
+    //                AnimalCore
 
     public int   team = -1;
 	public bool  directionRight = true;
@@ -19,16 +18,24 @@ public class CritterCore : BodyCore
     public int   hp = 100;
     public float hpmax = 100;
     public bool  downed = false;
+    public bool  isCarrying = false;
+    public float targetX;
 
+    public GameObject bodyCarried = null;
 	public GameObject slashPrefab;
 	public GameObject projectilePrefab;
-    GameObject clone;
+    public GameObject clone;
+    public GameObject target = null;
+
+    public LayerMask groundLayer;
 
     /// MoveLeft()
     /// MoveRight()
     /// Jump()
     /// Shoot()
     /// Hit()
+    /// PickupItem(1)
+    /// DropItem()
     /// DamageColorize()
 
     //==================================================
@@ -38,26 +45,41 @@ public class CritterCore : BodyCore
 		gameObject.GetComponent<Rigidbody2D>().AddForce(new Vector2(-50,0));;
 	}
 
-	//__________________________________________________
+    //--------------------------------------------------
 	
 	public void MoveRight()
 	{
 		gameObject.GetComponent<Rigidbody2D>().AddForce(new Vector2(50,0));
 	}
 
-	//__________________________________________________
+    //--------------------------------------------------
 	
 	public void Jump()
 	{
-		if (isGrounded == true)
-		{
-			isGrounded = false;
+        if (isFalling == false)
+        {
+			isFalling = true;
 			gameObject.GetComponent<Rigidbody2D>().AddForce(new Vector2(0,2000));
 			gameObject.GetComponent<Rigidbody2D>().gravityScale = 10;
-		}
+        }
+        else
+        {
+            Vector2 position = transform.position;
+            Vector2 direction = Vector2.down;
+            float distance = 0.16f;
+    
+            RaycastHit2D hit = Physics2D.Raycast(position, direction, distance, groundLayer);
+
+            if (hit.collider != null)
+            {
+			    isFalling = true;
+			    gameObject.GetComponent<Rigidbody2D>().AddForce(new Vector2(0,2000));
+			    gameObject.GetComponent<Rigidbody2D>().gravityScale = 10;
+            }
+        }
 	}
 
-	//__________________________________________________
+    //--------------------------------------------------
 	
 	public void Shoot()
 	{
@@ -70,7 +92,7 @@ public class CritterCore : BodyCore
 		clone.GetComponent<Rigidbody2D>().AddForce((mousePos-transform.position)*200);
 	}
 
-    //__________________________________________________
+    //--------------------------------------------------
 
     public void Hit()
     {
@@ -85,8 +107,36 @@ public class CritterCore : BodyCore
         }
 	}
 
-	//__________________________________________________
-	
+    //--------------------------------------------------
+
+    public void PickupBody(GameObject body)
+    {
+        if ((isCarrying == false) && (body != null))
+        {
+            bodyCarried = body;
+            isCarrying = true;
+            body.GetComponent<BodyCore>().isCarried = true;
+            body.GetComponent<BodyCore>().carrier = gameObject;
+        }
+    }
+
+    //--------------------------------------------------
+
+    public void DropItem()
+    {
+        if (isCarrying == true)
+        {
+            bodyCarried.GetComponent<BodyCore>().carrier = null;
+            bodyCarried.GetComponent<BodyCore>().isCarried = false;
+            bodyCarried.GetComponent<BodyCore>().isFalling = true;
+
+            bodyCarried = null;
+            isCarrying = false;
+        }
+    }
+
+    //--------------------------------------------------
+
 	public void DamageColorize()
 	{
 		if (damageColorIntensity != 0f)
@@ -104,5 +154,5 @@ public class CritterCore : BodyCore
 		}
 	}
 
-    //__________________________________________________
+    //--------------------------------------------------
 }

@@ -1,6 +1,4 @@
-﻿// 20-11-2017
-
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
 
 public class PlayerCore : CritterCore 
@@ -10,9 +8,11 @@ public class PlayerCore : CritterCore
     // parent class:  CritterCore
     // child classes: -
 
+    GameObject pickupTarget;
+
     /// SetDirection()
 
-	//  =================================================
+	// =================================================
 
 	void SetDirection()
 	{
@@ -28,28 +28,20 @@ public class PlayerCore : CritterCore
 		}
 	}
 
-	//==================================================
+	// ==================== MAIN LOOP =======================
 
     ///  ----- START -----
 	
-	void Start ()
+	void Start()
 	{
 		BodyInitialize();
         team = 0;
-        label = "Szaman";
+        pickupTarget = null;
+
+        label = gameObject.name;
 
         int i = 0;
         GetComponent<SpriteRenderer>().sortingLayerID = i;
-	}
-	
-    /// ----- UPDATE -----
-
-	void Update ()
-	{
-		CalculateLand();
-		PlaceOnGround();
-		DamageColorize();
-		SetDirection();
 	}
 
     /// ----- FIXED UPDATE -----
@@ -64,14 +56,29 @@ public class PlayerCore : CritterCore
 		    if(Input.GetKey(KeyCode.D))
 		    MoveRight();
 		
-		    if(Input.GetKey(KeyCode.Space))
+		    if(Input.GetKey(KeyCode.W))
 		    Jump();
+
+            if(Input.GetKeyDown(KeyCode.Space))
+            {
+                if ((isCarrying == false) && (pickupTarget != null))
+                {
+		            PickupBody(pickupTarget);
+                    pickupTarget.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,1f);
+
+                    pickupTarget = null;
+                }
+                else
+                {
+                    DropItem();
+                }
+            }
 
 		    if(Input.GetMouseButton(0))
 		    Hit();
 		
-		    if(Input.GetMouseButton(1))
-		    Shoot();
+		    //if(Input.GetMouseButton(1))
+		    //Shoot();
 
             //
 
@@ -79,4 +86,48 @@ public class PlayerCore : CritterCore
             hitCooldown--;
         }
 	}
+
+
+    /// ----- UPDATE -----
+
+	void Update()
+	{
+		CalculateLand();
+		PlaceOnGround();
+		DamageColorize();
+		SetDirection();
+	}
+
+    
+
+
+    /// ----- ON TRIGGER -----
+
+    void OnTriggerEnter2D(Collider2D other)
+    {   
+        // todo
+        if ((other.gameObject.name == "item(Clone)")
+        || (other.gameObject.name == "herbi(Clone)"))
+        //
+        {
+            if (pickupTarget != null)
+            pickupTarget.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,1f);
+            
+            pickupTarget = other.gameObject;
+            pickupTarget.GetComponent<SpriteRenderer>().color = new Color(0f,0.7f,0.7f,1f);
+        }
+    }
+
+    void OnTriggerExit2D(Collider2D other)
+    {
+        // todo
+        if ((other.gameObject.name == "item(Clone)")
+        || (other.gameObject.name == "herbi(Clone)"))
+        //
+        {
+            other.gameObject.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,1f);
+        }
+    }
+
+
 }

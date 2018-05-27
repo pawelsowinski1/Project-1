@@ -9,8 +9,8 @@ public class PantsCore : MonoBehaviour {
 
 	void Start()
     {
-        int i = 1;
-        GetComponent<SpriteRenderer>().sortingLayerID = i;
+        //int i = 1;
+        //GetComponent<SpriteRenderer>().sortingLayerID = i;
 	}
 	
     void LateUpdate()

@@ -1,6 +1,4 @@
-﻿// 21-11-2017
-
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
 
 public class ManCore : CritterCore
@@ -10,28 +8,29 @@ public class ManCore : CritterCore
     // parent class:  CritterCore
     // child classes: -
 
-    public GameObject target = null;
-
-	float targetX;
-
     int timerMove = 0;
     int timerHit = 0;
 
+    ItemEnum tool = ItemEnum.nothing;
+
+    /// 
+
     // =================================================
 
-	//__________________________________________________
+	//--------------------------------------------------
 	
 	void Start()
 	{
 
 		BodyInitialize();
-        label = "Wojownik";
 
         timerMove = 1;
         timerHit = Random.Range(30, 70);
+
+        label = name;
 	}
 	
-	//__________________________________________________
+	//--------------------------------------------------
 	
 	void Update()
 	{

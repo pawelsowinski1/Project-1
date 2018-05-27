@@ -1,24 +1,32 @@
-﻿// 20-11-2017
-
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
+
+public enum ActionEnum {nothing, eat};
+
 
 public class BodyCore : MonoBehaviour 
 {
 	//================== BODY CORE =====================
+
+    // enables gravity and RMB interaction (RMB interaction should be another class)
 
     // parent class:  -
 
     // child classes: CritterCore
     //                ItemCore
 
+    public int    land = 1;
 	public int    landSection;
 	public float  landSteepness;
-	public bool   isGrounded = false;
-    public string label = "label";
-	
-	public GameObject obj;
+    public bool   isFalling = true;
+    public string label = "label"; // <--- !
+    public bool   isCarried = false;
+
+    public GameObject carrier = null;  
+    
+    // storing reference to game core in every object is inefficient - fix this by making a single global reference (somehow)
 	public GameCore gameCore;
+    //
 
     /// BodyInitialize()
     /// CalculateLand()
@@ -28,14 +36,16 @@ public class BodyCore : MonoBehaviour
 
 	public void BodyInitialize()
 	{
+        GameObject obj;
 		obj = GameObject.Find("Game");
 		gameCore = obj.GetComponent<GameCore>();
-		
-		isGrounded = false;
+
+        land = gameCore.currentLand;
+        isFalling = true;
 		gameObject.GetComponent<Rigidbody2D>().gravityScale = 10;
 	}
 
-	//__________________________________________________
+	//----------------------------------------------
 
 	public void CalculateLand()
 	{
@@ -55,36 +65,55 @@ public class BodyCore : MonoBehaviour
 				break;
 			}
 		}
-
-        // ---
 	}
 
-	//__________________________________________________
+	//----------------------------------------------
 
 	public void PlaceOnGround()
 	{
+        // this shouldn't be calculated every frame
+        // cut and paste as separate CalculateGroundY() method
 		float groundY = gameCore.landPointY[landSection-1] + (transform.position.x-gameCore.landPointX[landSection-1]) * Mathf.Tan(landSteepness);
-		
-		if (isGrounded == true)
+		//
+
+		if (isFalling == false)
 		{
-			transform.position = new Vector3 (transform.position.x, groundY);
+			transform.position = new Vector2 (transform.position.x, groundY);
 		}
 		else
 		{
 		    if (transform.position.y < groundY)
 		    {
-			    transform.position = new Vector3 (transform.position.x, groundY);
+			    transform.position = new Vector2 (transform.position.x, groundY);
 			    gameObject.GetComponent<Rigidbody2D>().gravityScale = 0;
-			    isGrounded = true;
+                isFalling = false;
+                GetComponent<Rigidbody2D>().velocity = new Vector2(0,0);
 		    }
             else
             {
                 gameObject.GetComponent<Rigidbody2D>().gravityScale = 10;
             }
         }
-
 	}
 
-	//__________________________________________________
+    // ================= MAIN LOOP ================= 
 
+    /// ----- START -----
+
+	void Start()
+	{
+		BodyInitialize();
+
+        //int i = 2;
+        //GetComponent<SpriteRenderer>().sortingLayerID = i;
+	}
+
+    /// ----- UPDATE -----
+
+	void Update() 
+	{
+		CalculateLand();
+		PlaceOnGround();
+	}
 }
+

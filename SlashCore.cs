@@ -1,6 +1,4 @@
-﻿// 19-11-2017
-
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
 
 public class SlashCore : MonoBehaviour
@@ -25,7 +23,7 @@ public class SlashCore : MonoBehaviour
         team = parent.GetComponent<CritterCore>().team;
         directionRight = parent.GetComponent<CritterCore>().directionRight;
 
-		v.Set(0,2.2f,0); // slash position
+		v.Set(0,2.2f,0); // slash pivot position
 
 		target = parent.GetComponent<Transform>();
 
@@ -39,7 +37,6 @@ public class SlashCore : MonoBehaviour
         {
         	transform.RotateAround(target.position + new Vector3(0,0.8f,0), new Vector3(0,0,1), -12f); // slash rotation 
         }
-
 		else
         {
 		    transform.RotateAround(target.position + new Vector3(0,0.8f,0), new Vector3(0,0,1), 12f); // slash rotation 
