@@ -1,7 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic; // <--- Lists
 
-public class CritterCore : BodyCore 
+public enum ActionEnum {none, move_right, move_left, move_to_x, pickup, drop, eat, chop};
+
+public class CritterCore : BodyCore
 {
     // ================= CRITTER CORE ==================
 
@@ -9,7 +12,7 @@ public class CritterCore : BodyCore
 
     // child classes: PlayerCore
     //                ManCore
-    //                AnimalCore
+    //                HerbiCore
 
     public int   team = -1;
 	public bool  directionRight = true;
@@ -21,7 +24,11 @@ public class CritterCore : BodyCore
     public bool  isCarrying = false;
     public float targetX;
 
-    public GameObject bodyCarried = null;
+    public ActionEnum action = ActionEnum.none;
+    public ActionEnum command = ActionEnum.none;
+
+    public List<GameObject> carriedBodies = new List<GameObject>();
+
 	public GameObject slashPrefab;
 	public GameObject projectilePrefab;
     public GameObject clone;
@@ -29,20 +36,25 @@ public class CritterCore : BodyCore
 
     public LayerMask groundLayer;
 
+    int i;
+
     /// MoveLeft()
     /// MoveRight()
     /// Jump()
     /// Shoot()
     /// Hit()
-    /// PickupItem(1)
-    /// DropItem()
+    /// PickUp(1)
+    /// DropAll()
+    /// Chop(1)
     /// DamageColorize()
+    /// AI()
 
     //==================================================
 
 	public void MoveLeft()
 	{
-		gameObject.GetComponent<Rigidbody2D>().AddForce(new Vector2(-50,0));;
+		gameObject.GetComponent<Rigidbody2D>().AddForce(new Vector2(-50,0));
+        action = ActionEnum.move_left;
 	}
 
     //--------------------------------------------------
@@ -50,6 +62,7 @@ public class CritterCore : BodyCore
 	public void MoveRight()
 	{
 		gameObject.GetComponent<Rigidbody2D>().AddForce(new Vector2(50,0));
+        action = ActionEnum.move_right;
 	}
 
     //--------------------------------------------------
@@ -109,29 +122,52 @@ public class CritterCore : BodyCore
 
     //--------------------------------------------------
 
-    public void PickupBody(GameObject body)
+    public void PickUp(GameObject body)
     {
-        if ((isCarrying == false) && (body != null))
+        if (body)
         {
-            bodyCarried = body;
-            isCarrying = true;
-            body.GetComponent<BodyCore>().isCarried = true;
-            body.GetComponent<BodyCore>().carrier = gameObject;
+            if (body.GetComponent<BodyCore>().isCarried == false)
+            {
+                carriedBodies.Add(body);
+                isCarrying = true;
+                body.GetComponent<BodyCore>().isCarried = true;
+                body.GetComponent<BodyCore>().carrier = gameObject;
+            }
         }
     }
 
     //--------------------------------------------------
 
-    public void DropItem()
+    public void DropAll()
     {
-        if (isCarrying == true)
+        if (carriedBodies.Count > 0)
         {
-            bodyCarried.GetComponent<BodyCore>().carrier = null;
-            bodyCarried.GetComponent<BodyCore>().isCarried = false;
-            bodyCarried.GetComponent<BodyCore>().isFalling = true;
+            int j = carriedBodies.Count;
 
-            bodyCarried = null;
+            for (i=0; i<j; i++)
+            {
+
+                carriedBodies[i].GetComponent<BodyCore>().carrier = null;
+                carriedBodies[i].GetComponent<BodyCore>().isCarried = false;
+                carriedBodies[i].GetComponent<BodyCore>().isFalling = true;
+            }
+            carriedBodies.Clear();
+
             isCarrying = false;
+        }
+    }
+
+    //--------------------------------------------------
+
+    public void Chop(GameObject obj)
+    {
+        if (obj)
+        {
+            GameObject i;
+            i = GameCore.Core.SpawnItem(ItemEnum.wood);
+            i.transform.position = obj.transform.position;
+
+            Destroy(obj);
         }
     }
 
@@ -155,4 +191,56 @@ public class CritterCore : BodyCore
 	}
 
     //--------------------------------------------------
+
+    public void AI()
+    {
+        if (command != ActionEnum.none)
+        {
+            if (target)
+            targetX = target.transform.position.x;
+
+            float dist = transform.position.x - targetX;
+
+            if (Mathf.Abs(dist) > 0.1)
+            {
+                if (targetX > transform.position.x)
+                {
+                    MoveRight();
+                }
+                else
+                {
+                    MoveLeft();
+                }
+            }
+            else
+            {
+                switch (command)
+                {
+                    case ActionEnum.pickup:
+                    {
+                        PickUp(target);
+                        command = ActionEnum.none;
+                        break;
+                    }
+                    case ActionEnum.eat:
+                    {
+                        break;
+                    }
+                    case ActionEnum.chop:
+                    {
+                        Chop(target);
+                        command = ActionEnum.none;
+                        break;
+                    }
+                    case ActionEnum.drop:
+                    {
+                        DropAll();
+                        command = ActionEnum.none;
+                        break;
+                    }
+                }
+            }
+        }
+
+    }
 }

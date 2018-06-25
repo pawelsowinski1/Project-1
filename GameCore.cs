@@ -1,13 +1,16 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
-using System.Collections.Generic;
+using System.Collections.Generic;  // <--- Lists
+
 
 public class GameCore : MonoBehaviour
 {
     // ============= GAME CORE ================
 
     // ------------- VARIABLES ----------------
+
+    public static GameCore Core;
 
     public int     currentLand;
 	public int     landSections;
@@ -18,12 +21,20 @@ public class GameCore : MonoBehaviour
     public GameObject manPrefab;
     public GameObject herbiPrefab;
     public GameObject itemPrefab;
+    public GameObject plantPrefab;
     public GameObject pantsPrefab;
     public GameObject hpBarPrefab;
-    public GameObject labelPrefab;
-    public GameObject button;
+    public GameObject platformPrefab;
+    public GameObject buttonPrefab;
 
-    static public GameCore Core; // game core
+    public Sprite spr_wood;
+    public Sprite spr_meat;
+    public Sprite spr_berry;
+    public Sprite spr_hammerstone;
+    public Sprite spr_flint;
+    public Sprite spr_flint_blade;
+
+    public Canvas myCanvas;
 
     public GameObject player;
 
@@ -33,6 +44,8 @@ public class GameCore : MonoBehaviour
     public List<Land> lands          = new List<Land>();
     public List<GameObject> critters = new List<GameObject>();
     public List<GameObject> items    = new List<GameObject>();
+    public List<GameObject> buttons  = new List<GameObject>();
+    public List<GameObject> plants   = new List<GameObject>();
 
     public const float GRAVITY = 10f; // todo
 
@@ -40,9 +53,13 @@ public class GameCore : MonoBehaviour
 
     Vector3 v1 = new Vector3(75f,0,0);  // player spawn position
     Vector3 v2 = new Vector3(0,0.4f,0); // pants relative position
-    Vector3 v3 = new Vector3(80f,-20f,0); // button on RMB relative position
+    Vector3 v3 = new Vector3(80f,-20f,0); // RMB button relative position from mouse
+    Vector3 v4 = new Vector3(0f,-0.5f,0); // RMB buttons position increment
 
-    Vector3 RMBclickPos = new Vector3(0f,0f,0f);
+    //Vector3 RMBclickPos = new Vector3(0f,0f,0f);
+    GameObject RMBclickedObj;
+
+    int i;
 
     // ------------ CLASSES ------------------
 
@@ -88,6 +105,9 @@ public class GameCore : MonoBehaviour
     /// SpawnHerbi()
     /// SpawnItem(1)
     /// SpawnTree()
+    
+    /// RMBManager()
+    /// AddButton(1)
 
     //-----------------------------------------------------
 
@@ -153,7 +173,65 @@ public class GameCore : MonoBehaviour
 
     //-----------------------------------------------------
 
-    void SpawnPlayer()
+    void RMBManager()
+    {
+        i = 0;
+
+        if (rhit2D.Length > 0)
+        {
+            if (rhit2D[0].transform.gameObject.GetComponent<InteractiveObjectCore>().kind != KindEnum.none)
+            {
+                RMBclickedObj = rhit2D[0].transform.gameObject;
+
+                if (RMBclickedObj.GetComponent<InteractiveObjectCore>().kind == KindEnum.item)
+                {
+                    AddButton(i,"pickup",ActionEnum.pickup);
+                    i++;
+                }
+
+                if (RMBclickedObj.GetComponent<InteractiveObjectCore>().type == TypeEnum.tree)
+                {
+                    AddButton(i,"chop",ActionEnum.chop);
+                    i++;
+                }
+            }
+        }
+        else
+        {
+            if (player.GetComponent<CritterCore>().carriedBodies.Count > 0)
+            {
+                AddButton(i,"drop all here",ActionEnum.drop);
+                i++;
+            }
+        }
+    }
+
+    //-----------------------------------------------------
+
+    void AddButton(int index, string label, ActionEnum action)
+    {
+        int j;    
+
+        clone = Instantiate(buttonPrefab, transform.position, transform.rotation) as GameObject;
+        buttons.Add(clone);
+        clone.transform.SetParent(myCanvas.transform,false);
+        clone.GetComponent<ButtonCore>().pos = Camera.main.ScreenToWorldPoint(Input.mousePosition + v3);
+        clone.GetComponent<ButtonCore>().obj = RMBclickedObj;
+
+        if (index > 0)
+        {
+            for (j=0; j<index; j++)
+            clone.GetComponent<ButtonCore>().pos += v4;
+        }
+
+        clone.GetComponentInChildren<Text>().text = label;
+        clone.GetComponent<ButtonCore>().action = action;
+    }
+
+
+    //-----------------------------------------------------
+
+    public void SpawnPlayer()
     {
         if (player == null)
         {
@@ -171,20 +249,17 @@ public class GameCore : MonoBehaviour
 
             clone = Instantiate(hpBarPrefab, transform.position, transform.rotation) as GameObject;
             clone.GetComponent<HpBarCore>().parent = player;
-
-            // label
-
-            //clone = Instantiate(labelPrefab, transform.position, transform.rotation) as GameObject;
-            //clone.GetComponent<LabelCore>().parent = player;
-            //clone.GetComponent<TextMesh>().text = player.GetComponent<CritterCore>().label;
         }
     }
 
     //-----------------------------------------------------
 
-    void SpawnMan(int team_)
+    public void SpawnMan(int team_)
     {
-        clone = Instantiate (manPrefab,transform.position + v1,transform.rotation) as GameObject;
+        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+
+        clone = Instantiate (manPrefab, mousePos, transform.rotation) as GameObject;
+        clone.transform.position = new Vector3(clone.transform.position.x,clone.transform.position.y,1f);
         clone.GetComponent<ManCore>().team = team_;
         critters.Add(clone);
 
@@ -203,12 +278,6 @@ public class GameCore : MonoBehaviour
 
         clone2 = Instantiate(hpBarPrefab, transform.position, transform.rotation) as GameObject;
         clone2.GetComponent<HpBarCore>().parent = clone;
-
-        // label
-
-        //clone2 = Instantiate(labelPrefab, transform.position, transform.rotation) as GameObject;
-        //clone2.GetComponent<LabelCore>().parent = clone;
-        //clone2.GetComponent<TextMesh>().text = clone.GetComponent<BodyCore>().label;
     }
     //-----------------------------------------------------
 
@@ -224,18 +293,12 @@ public class GameCore : MonoBehaviour
 
         clone2 = Instantiate(hpBarPrefab, transform.position, transform.rotation) as GameObject;
         clone2.GetComponent<HpBarCore>().parent = clone;
-
-        // label
-
-        //clone2 = Instantiate(labelPrefab, transform.position, transform.rotation) as GameObject;
-        //clone2.GetComponent<LabelCore>().parent = clone;
-        //clone2.GetComponent<TextMesh>().text = clone.GetComponent<BodyCore>().label;
     }
 
     //-----------------------------------------------------
 
 
-    void SpawnItem(ItemEnum e)
+    public GameObject SpawnItem(ItemEnum i)
     {
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
@@ -243,30 +306,32 @@ public class GameCore : MonoBehaviour
         items.Add(clone);
         clone.transform.position = new Vector3(clone.transform.position.x, clone.transform.position.y, 0f);
 
-        clone.GetComponent<ItemCore>().item = e;
+        clone.GetComponent<ItemCore>().item = i;
 
-        // label
-
-        //clone2 = Instantiate(labelPrefab, transform.position, transform.rotation) as GameObject;
-        //clone2.GetComponent<LabelCore>().parent = clone;
-        //clone2.GetComponent<TextMesh>().text = clone.GetComponent<ItemCore>().label;
+        return clone;
     }
 
     //-----------------------------------------------------
 
-    void SpawnTree() // -> SpawnPlant
+    public void SpawnTree()
     {
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
-        clone = Instantiate (itemPrefab, mousePos, transform.rotation) as GameObject;
+        clone = Instantiate (plantPrefab, mousePos, transform.rotation) as GameObject;
+        plants.Add(clone);
+        clone.transform.position = new Vector3(clone.transform.position.x, clone.transform.position.y, 0f);
+    }
+
+    //-----------------------------------------------------
+
+    public void SpawnPlatform()
+    {
+        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+
+        clone = Instantiate (platformPrefab, mousePos, transform.rotation) as GameObject;
         items.Add(clone);
         clone.transform.position = new Vector3(clone.transform.position.x, clone.transform.position.y, 0f);
-
-        // label
-
-        //clone2 = Instantiate(labelPrefab, transform.position, transform.rotation) as GameObject;
-        //clone2.GetComponent<LabelCore>().parent = clone;
-        //clone2.GetComponent<TextMesh>().text = clone.GetComponent<ItemCore>().label;        
+       
     }
 
     // ==================== MAIN LOOP =======================
@@ -275,6 +340,8 @@ public class GameCore : MonoBehaviour
 
 	void Awake()
 	{
+        Core = gameObject.GetComponent<GameCore>();
+
         GenerateLand(); // <- Change this. Random land generation is not needed here, array initialization would be enough. 
 
         // todo
@@ -308,9 +375,6 @@ public class GameCore : MonoBehaviour
 	void Start () 
 	{
         //Application.targetFrameRate = -1; // for performance check (remember to turn v-sync off)
-
-        button = GameObject.Find("Button");
-        button.SetActive(false);
 	}
 
     /// ----- UPDATE -----
@@ -318,29 +382,6 @@ public class GameCore : MonoBehaviour
 	void Update()
 	{
         DrawLand();
-
-        //
-
-        if(Input.GetMouseButtonDown(1))
-        {
-            if (button.activeSelf == false)
-            {
-                button.SetActive(true);
-                RMBclickPos = Camera.main.ScreenToWorldPoint(Input.mousePosition + v3);
-                button.transform.position = Camera.main.WorldToScreenPoint(RMBclickPos);
-            }
-            else
-            button.SetActive(false);
-        }
-
-        if (button.activeSelf == true)
-        {
-            button.transform.position = Camera.main.WorldToScreenPoint(RMBclickPos);
-        }
-
-        print (button.transform.position);
-
-        //
 
         if (Input.GetKeyDown(KeyCode.Alpha0))
 		LoadLand(0);
@@ -352,7 +393,7 @@ public class GameCore : MonoBehaviour
 		LoadLand(2);
 
         if (Input.GetKeyDown(KeyCode.I))
-		SpawnItem(ItemEnum.flint_blade);
+		SpawnItem(ItemEnum.flint);
 
         if (Input.GetKeyDown(KeyCode.M))
         SpawnMan(1);
@@ -366,14 +407,18 @@ public class GameCore : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.H))
         SpawnHerbi();
 
+        if (Input.GetKeyDown(KeyCode.T))
+        SpawnTree();
+
+        if (Input.GetKeyDown(KeyCode.P))
+        SpawnPlatform();
+
         // works only in standalone
 		if (Input.GetKeyDown(KeyCode.F))
 		Screen.fullScreen = !Screen.fullScreen;
         //
 
-        // ---- HIGHLITING OBJECTS UNDER MOUSE ----
-
-        int i;
+        // ---- HIGHLIGHTING OBJECTS UNDER MOUSE ----
 
         // 1. make previous objects white
 
@@ -383,6 +428,7 @@ public class GameCore : MonoBehaviour
             {
                 // BUG HERE !
                 // NullReferenceException: Object reference not set to an instance of an object.
+                if (rhit2D[i])
                 rhit2D[i].transform.gameObject.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,1f);
             }
         }
@@ -394,22 +440,37 @@ public class GameCore : MonoBehaviour
 
         if (rhit2D.Length > 0)
         {
-            //objectUnderCursor = rhit2D[0].transform.gameObject;
-
             for (i=0; i < rhit2D.Length; i++)
             {
                 rhit2D[i].transform.gameObject.GetComponent<SpriteRenderer>().color = new Color(0.7f,0f,0f,1f);
             }
         }
-        else
-        {
-            //if (objectUnderCursor != null)
-            //objectUnderCursor.GetComponent<SpriteRenderer>().color = new Color(0.7f,0f,0f,1f);
-
-            //objectUnderCursor = null;
-        }
 
         // -------------------
+
+
+        // ----- RIGHT MOUSE BUTTON ------
+
+        if(Input.GetMouseButtonDown(1))
+        {
+            // clear existing buttons
+
+            for (i=0; i<=buttons.Count-1; i++)
+            {
+                Destroy(buttons[i]);
+            }
+
+            buttons.Clear();
+            RMBclickedObj = null;
+
+            // check for new objects under mouse
+
+            RMBManager();
+
+        }
+
+        // ----------------------------
+
 	}
 
     /// ----- FIXED UPDATE -----

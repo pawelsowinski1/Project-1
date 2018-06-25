@@ -3,7 +3,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class ProjectileCore : MonoBehaviour
+public class ProjectileCore : InteractiveObjectCore
 {
     // ============= PROJECTILE CORE ===================
 

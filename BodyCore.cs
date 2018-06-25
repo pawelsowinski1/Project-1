@@ -1,16 +1,13 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public enum ActionEnum {nothing, eat};
-
-
-public class BodyCore : MonoBehaviour 
+public class BodyCore : InteractiveObjectCore 
 {
 	//================== BODY CORE =====================
 
-    // enables gravity and RMB interaction (RMB interaction should be another class)
+    // enables gravity
 
-    // parent class:  -
+    // parent class:  InteractiveObjectCore
 
     // child classes: CritterCore
     //                ItemCore
@@ -19,15 +16,10 @@ public class BodyCore : MonoBehaviour
 	public int    landSection;
 	public float  landSteepness;
     public bool   isFalling = true;
-    public string label = "label"; // <--- !
     public bool   isCarried = false;
 
     public GameObject carrier = null;  
     
-    // storing reference to game core in every object is inefficient - fix this by making a single global reference (somehow)
-	public GameCore gameCore;
-    //
-
     /// BodyInitialize()
     /// CalculateLand()
     /// PlaceOnGround()
@@ -36,11 +28,11 @@ public class BodyCore : MonoBehaviour
 
 	public void BodyInitialize()
 	{
-        GameObject obj;
-		obj = GameObject.Find("Game");
-		gameCore = obj.GetComponent<GameCore>();
+        //GameObject obj;
+		//obj = GameObject.Find("Game");
+		//gameCore = obj.GetComponent<GameCore>();
 
-        land = gameCore.currentLand;
+        land = GameCore.Core.currentLand;
         isFalling = true;
 		gameObject.GetComponent<Rigidbody2D>().gravityScale = 10;
 	}
@@ -53,14 +45,14 @@ public class BodyCore : MonoBehaviour
 		
 		int i;
 		
-		for (i=1; i<gameCore.landSections; i++)
+		for (i=1; i<GameCore.Core.landSections; i++)
 		{
-			if (transform.position.x < gameCore.landPointX[i])
+			if (transform.position.x < GameCore.Core.landPointX[i])
 			{
 				if (i != landSection)
 				{
 					landSection = i;
-					landSteepness = Mathf.Atan2(gameCore.landPointY[i]-gameCore.landPointY[i-1],gameCore.landPointX[i]-gameCore.landPointX[i-1]);
+					landSteepness = Mathf.Atan2(GameCore.Core.landPointY[i]-GameCore.Core.landPointY[i-1],GameCore.Core.landPointX[i]-GameCore.Core.landPointX[i-1]);
 				}
 				break;
 			}
@@ -73,7 +65,7 @@ public class BodyCore : MonoBehaviour
 	{
         // this shouldn't be calculated every frame
         // cut and paste as separate CalculateGroundY() method
-		float groundY = gameCore.landPointY[landSection-1] + (transform.position.x-gameCore.landPointX[landSection-1]) * Mathf.Tan(landSteepness);
+		float groundY = GameCore.Core.landPointY[landSection-1] + (transform.position.x-GameCore.Core.landPointX[landSection-1]) * Mathf.Tan(landSteepness);
 		//
 
 		if (isFalling == false)
@@ -103,9 +95,6 @@ public class BodyCore : MonoBehaviour
 	void Start()
 	{
 		BodyInitialize();
-
-        //int i = 2;
-        //GetComponent<SpriteRenderer>().sortingLayerID = i;
 	}
 
     /// ----- UPDATE -----

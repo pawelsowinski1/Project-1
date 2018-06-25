@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class SlashCore : MonoBehaviour
+public class SlashCore : InteractiveObjectCore
 {
     // ================= SLASH CORE ====================
 

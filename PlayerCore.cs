@@ -1,12 +1,13 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class PlayerCore : CritterCore 
+public class PlayerCore : ManCore 
 {
     // =================== PLAYER CORE ==================
 
-    // parent class:  CritterCore
+    // parent class:  ManCore
     // child classes: -
+
 
     GameObject pickupTarget;
 
@@ -38,10 +39,7 @@ public class PlayerCore : CritterCore
         team = 0;
         pickupTarget = null;
 
-        label = gameObject.name;
-
-        int i = 0;
-        GetComponent<SpriteRenderer>().sortingLayerID = i;
+        GetComponent<SpriteRenderer>().sortingOrder = 1;
 	}
 
     /// ----- FIXED UPDATE -----
@@ -50,35 +48,52 @@ public class PlayerCore : CritterCore
 	{	
         if (downed == false)
         {
+            action = ActionEnum.none;
+
 		    if(Input.GetKey(KeyCode.A))
-		    MoveLeft();
+            {
+		        command = ActionEnum.none;
+                MoveLeft();
+            }
 		
 		    if(Input.GetKey(KeyCode.D))
-		    MoveRight();
+            {
+                command = ActionEnum.none;
+		        MoveRight();
+            }
 		
 		    if(Input.GetKey(KeyCode.W))
-		    Jump();
+            {
+                command = ActionEnum.none;
+		        Jump();
+            }
 
             if(Input.GetKeyDown(KeyCode.Space))
             {
-                if ((isCarrying == false) && (pickupTarget != null))
+                command = ActionEnum.none;
+
+                if (pickupTarget)
                 {
-		            PickupBody(pickupTarget);
+		            PickUp(pickupTarget);
                     pickupTarget.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,1f);
 
                     pickupTarget = null;
                 }
                 else
-                {
-                    DropItem();
-                }
+                DropAll();
             }
 
 		    if(Input.GetMouseButton(0))
-		    Hit();
+            {
+                command = ActionEnum.none;
+		        Hit();
+            }
 		
 		    //if(Input.GetMouseButton(1))
+            //{
+            //command = ActionEnum.none;
 		    //Shoot();
+            //}
 
             //
 
@@ -96,6 +111,7 @@ public class PlayerCore : CritterCore
 		PlaceOnGround();
 		DamageColorize();
 		SetDirection();
+        AI();
 	}
 
     

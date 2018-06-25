@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public enum ItemEnum {nothing, wood, meat, berry, hammerstone, flint, flint_blade};
+public enum ItemEnum {none, wood, meat, berry, hammerstone, flint, flint_blade};
 
 public class ItemCore : BodyCore
 {
@@ -12,16 +12,9 @@ public class ItemCore : BodyCore
 
     public ItemEnum item;
 
-    public Sprite spr_wood;
-    public Sprite spr_meat;
-    public Sprite spr_berry;
-    public Sprite spr_hammerstone;
-    public Sprite spr_flint;
-    public Sprite spr_flint_blade;
-
     public int  quantity = 1;
     public bool isTool = false;
-    public int  maxStack = 1;
+    public int  maxStack = 1; // <---- !
 
     // ------------ METHODS ---------------
 
@@ -36,25 +29,25 @@ public class ItemCore : BodyCore
         {
             case ItemEnum.wood:
             {
-                GetComponent<SpriteRenderer>().sprite = spr_wood;
+                GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_wood;
                 maxStack = 5;
                 break;
             }
             case ItemEnum.meat:
             {
-                GetComponent<SpriteRenderer>().sprite = spr_meat;
+                GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_meat;
                 maxStack = 5;
                 break;
             }      
             case ItemEnum.berry:
             {
-                GetComponent<SpriteRenderer>().sprite = spr_berry;
+                GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_berry;
                 maxStack = 10;
                 break;
             }
             case ItemEnum.hammerstone:
             {
-                GetComponent<SpriteRenderer>().sprite = spr_hammerstone;
+                GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_hammerstone;
                 transform.localScale = new Vector3(0.75f,0.75f,0.75f);
                 maxStack = 5;
                 isTool = true;
@@ -62,13 +55,14 @@ public class ItemCore : BodyCore
             }
             case ItemEnum.flint:
             {
-                GetComponent<SpriteRenderer>().sprite = spr_flint;
+                GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_flint;
+                transform.localScale = new Vector3(0.75f,0.75f,0.75f);
                 maxStack = 5;
                 break;
             }
             case ItemEnum.flint_blade:
             {
-                GetComponent<SpriteRenderer>().sprite = spr_flint_blade;
+                GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_flint_blade;
                 transform.localScale = new Vector3(0.75f,0.75f,0.75f);
                 maxStack = 5;
                 isTool = true;
@@ -138,7 +132,5 @@ public class ItemCore : BodyCore
 		CalculateLand();
 		PlaceOnGround();
         FollowIfCarried();
-
-        label = "\n\n\n"+"name: "+gameObject.name+"\nquantity: "+quantity.ToString()+"/"+maxStack.ToString()+"\nitem: "+item.ToString();
 	}
 }

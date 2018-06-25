@@ -14,8 +14,6 @@ public class HerbiCore : CritterCore
 	void Start () 
     {
     	BodyInitialize();
-
-        label = name;
 	}
 	
 	void Update ()

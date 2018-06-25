@@ -6,14 +6,13 @@ public class ManCore : CritterCore
     // =================== MAN CORE ====================
 
     // parent class:  CritterCore
-    // child classes: -
+    // child classes: PlayerCore
 
     int timerMove = 0;
     int timerHit = 0;
 
-    ItemEnum tool = ItemEnum.nothing;
+    ItemEnum tool = ItemEnum.none;
 
-    /// 
 
     // =================================================
 
@@ -26,18 +25,17 @@ public class ManCore : CritterCore
 
         timerMove = 1;
         timerHit = Random.Range(30, 70);
-
-        label = name;
 	}
 	
 	//--------------------------------------------------
 	
 	void Update()
 	{
-		CalculateLand();
+        CalculateLand();
 		PlaceOnGround();
 		DamageColorize();
-	}
+    }
+    
 
 	void FixedUpdate()
 	{
@@ -45,15 +43,15 @@ public class ManCore : CritterCore
 
         int i;
 
-        i = gameCore.critters.Count;
+        i = GameCore.Core.critters.Count;
         target = null; 
 
-        for (i=0; i <= gameCore.critters.Count-1; i++)
+        for (i=0; i <= GameCore.Core.critters.Count-1; i++)
         {
-            if ((gameCore.critters[i].GetComponent<CritterCore>().team != team)
-            && (gameCore.critters[i].GetComponent<CritterCore>().downed == false))
+            if ((GameCore.Core.critters[i].GetComponent<CritterCore>().team != team)
+            && (GameCore.Core.critters[i].GetComponent<CritterCore>().downed == false))
             {
-                target = gameCore.critters[i];
+                target = GameCore.Core.critters[i];
             }
         }
 
