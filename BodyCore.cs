@@ -5,14 +5,14 @@ public class BodyCore : InteractiveObjectCore
 {
 	//================== BODY CORE =====================
 
-    // enables gravity
+    // Enables gravity, collision with ground, and allows object to be picked up by a critter.
 
     // parent class:  InteractiveObjectCore
 
     // child classes: CritterCore
     //                ItemCore
 
-    public int    land = 1;
+    public int    land;
 	public int    landSection;
 	public float  landSteepness;
     public bool   isFalling = true;
@@ -28,13 +28,9 @@ public class BodyCore : InteractiveObjectCore
 
 	public void BodyInitialize()
 	{
-        //GameObject obj;
-		//obj = GameObject.Find("Game");
-		//gameCore = obj.GetComponent<GameCore>();
-
         land = GameCore.Core.currentLand;
         isFalling = true;
-		gameObject.GetComponent<Rigidbody2D>().gravityScale = 10;
+		gameObject.GetComponent<Rigidbody2D>().gravityScale = GameCore.GRAVITY;
 	}
 
 	//----------------------------------------------
@@ -45,7 +41,7 @@ public class BodyCore : InteractiveObjectCore
 		
 		int i;
 		
-		for (i=1; i<GameCore.Core.landSections; i++)
+		for (i=1; i<GameCore.Core.landSections; i++) // BUG HERE ! NullReferenceException: Object reference not set to an instance of an object
 		{
 			if (transform.position.x < GameCore.Core.landPointX[i])
 			{
@@ -61,7 +57,7 @@ public class BodyCore : InteractiveObjectCore
 
 	//----------------------------------------------
 
-	public void PlaceOnGround()
+	public void PlaceOnGround() // name of the method is misleading, should be f.e. "Gravity"
 	{
         // this shouldn't be calculated every frame
         // cut and paste as separate CalculateGroundY() method
@@ -79,13 +75,36 @@ public class BodyCore : InteractiveObjectCore
 			    transform.position = new Vector2 (transform.position.x, groundY);
 			    gameObject.GetComponent<Rigidbody2D>().gravityScale = 0;
                 isFalling = false;
-                GetComponent<Rigidbody2D>().velocity = new Vector2(0,0);
+                GetComponent<Rigidbody2D>().velocity = new Vector2(GetComponent<Rigidbody2D>().velocity.x,0);
+
+                // if this body is a projectile, then free carried item and destroy itself 
+
+                if (kind == KindEnum.projectile)
+                {
+                    //NullReferenceException: Object reference not set to an instance of an object
+                    //BodyCore.PlaceOnGround () (at Assets/BodyCore.cs:88)
+                    //PlantCore.Update () (at Assets/PlantCore.cs:16)
+
+                    gameObject.GetComponent<ProjectileCore>().carriedItem.GetComponent<BodyCore>().isCarried = false;
+                    gameObject.GetComponent<ProjectileCore>().carriedItem.GetComponent<BodyCore>().carrier = null;
+                    gameObject.GetComponent<ProjectileCore>().carriedItem.GetComponent<BodyCore>().isFalling = true;
+
+                    Destroy(gameObject);
+                }
+                //
+
 		    }
             else
             {
-                gameObject.GetComponent<Rigidbody2D>().gravityScale = 10;
+                gameObject.GetComponent<Rigidbody2D>().gravityScale = GameCore.GRAVITY;
             }
         }
+
+        // linear drag in x axis for moving critters
+
+        if (GetComponent<InteractiveObjectCore>().kind == KindEnum.critter)
+        GetComponent<Rigidbody2D>().AddForce(new Vector2(-4f * GetComponent<Rigidbody2D>().velocity.x,0));
+
 	}
 
     // ================= MAIN LOOP ================= 

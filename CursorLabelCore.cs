@@ -1,29 +1,35 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.UI;
 using UnityEngine;
 
 public class CursorLabelCore : MonoBehaviour 
 {
     Vector3 v1;
 
+    public Text text;
+
 
 	void Start()
     {
-		v1 = new Vector3(2f,-0.5f,1f); // offset
+		v1 = new Vector3(200f,-200f,1f); // offset
 	}
 	
 	void Update()
     {
-        transform.position = Camera.main.ScreenToWorldPoint(Input.mousePosition) + v1;
+        transform.position = Input.mousePosition + v1;
         
         // --- CHECK OBJECT UNDER MOUSE ===
 
-        if (GameCore.Core.rhit2D.Length == 0)
+        if (GameCore.Core.rhit2D.Length == 0) // <--- BUG HERE !!
+
+            //NullReferenceException: Object reference not set to an instance of an object
+            //CursorLabelCore.Update () (at Assets/CursorLabelCore.cs:24
+
         {
             // if nothing
 
-            gameObject.GetComponent<TextMesh>().text = Camera.main.ScreenToWorldPoint(Input.mousePosition).ToString()+
-            "\nplayer carriedBodies.count = "+GameCore.Core.player.GetComponent<CritterCore>().carriedBodies.Count.ToString();
+            text.text = Camera.main.ScreenToWorldPoint(Input.mousePosition).ToString();
 
         }
         else if (GameCore.Core.rhit2D.Length == 1)
@@ -32,7 +38,7 @@ public class CursorLabelCore : MonoBehaviour
             {
                 // if any interactive object        
 
-                gameObject.GetComponent<TextMesh>().text = GameCore.Core.rhit2D[0].transform.gameObject.name+
+                text.text = GameCore.Core.rhit2D[0].transform.gameObject.name+
                 "\nsortingOrder = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<SpriteRenderer>().sortingOrder.ToString()+
                 "\nkind = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<InteractiveObjectCore>().kind.ToString()+
                 "\ntype = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<InteractiveObjectCore>().type.ToString();
@@ -41,7 +47,7 @@ public class CursorLabelCore : MonoBehaviour
 
                 if (GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<InteractiveObjectCore>().kind == KindEnum.critter)
                 {
-                    gameObject.GetComponent<TextMesh>().text = GameCore.Core.rhit2D[0].transform.gameObject.name+
+                    text.text = GameCore.Core.rhit2D[0].transform.gameObject.name+
                     "\nsortingOrder = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<SpriteRenderer>().sortingOrder.ToString()+
                     "\nkind = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<InteractiveObjectCore>().kind.ToString()+
                     "\ntype = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<InteractiveObjectCore>().type.ToString()+
@@ -56,7 +62,7 @@ public class CursorLabelCore : MonoBehaviour
 
         else
         {
-            gameObject.GetComponent<TextMesh>().text = "objects: "+GameCore.Core.rhit2D.Length.ToString();
+            text.text = "objects: "+GameCore.Core.rhit2D.Length.ToString();
         }
 
         // -------

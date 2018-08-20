@@ -8,12 +8,11 @@ public class PlayerCore : ManCore
     // parent class:  ManCore
     // child classes: -
 
-
     GameObject pickupTarget;
 
     /// SetDirection()
 
-	// =================================================
+	// ====================================================
 
 	void SetDirection()
 	{
@@ -45,7 +44,9 @@ public class PlayerCore : ManCore
     /// ----- FIXED UPDATE -----
 
 	void FixedUpdate()
-	{	
+	{
+        AI();
+
         if (downed == false)
         {
             action = ActionEnum.none;
@@ -60,12 +61,6 @@ public class PlayerCore : ManCore
             {
                 command = ActionEnum.none;
 		        MoveRight();
-            }
-		
-		    if(Input.GetKey(KeyCode.W))
-            {
-                command = ActionEnum.none;
-		        Jump();
             }
 
             if(Input.GetKeyDown(KeyCode.Space))
@@ -83,39 +78,45 @@ public class PlayerCore : ManCore
                 DropAll();
             }
 
-		    if(Input.GetMouseButton(0))
+            if (GameCore.Core.combatMode == true)
             {
-                command = ActionEnum.none;
-		        Hit();
-            }
+		        if(Input.GetMouseButton(0))
+                {
+                    command = ActionEnum.none;
+		            Hit();
+                }
 		
-		    //if(Input.GetMouseButton(1))
-            //{
-            //command = ActionEnum.none;
-		    //Shoot();
-            //}
-
-            //
-
-            if (hitCooldown > 0)
-            hitCooldown--;
+		        if(Input.GetMouseButton(1))
+                {
+                    command = ActionEnum.none;
+		            Throw();
+                }
+            }
         }
 	}
-
 
     /// ----- UPDATE -----
 
 	void Update()
 	{
-		CalculateLand();
-		PlaceOnGround();
+        if (downed == false)
+        {
+		    if(Input.GetKeyDown(KeyCode.W))
+            {
+                command = ActionEnum.none;
+                PlaceOnGround();
+		        Jump();
+            }
+        }
+
+        CalculateLand();
+        PlaceOnGround();
 		DamageColorize();
 		SetDirection();
-        AI();
+
+        if (hitCooldown > 0)
+        hitCooldown--;
 	}
-
-    
-
 
     /// ----- ON TRIGGER -----
 
