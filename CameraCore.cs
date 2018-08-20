@@ -14,6 +14,8 @@ public class CameraCore : MonoBehaviour
 
     GameObject game;
 
+    public Material imageEffectMaterial;
+
     // =================================================
 
     /// ----- START -----
@@ -75,4 +77,9 @@ public class CameraCore : MonoBehaviour
 		    transform.position += new Vector3(1,0,0);
         }
 	}
+
+    void OnRenderImage(RenderTexture src, RenderTexture dest)
+    {
+        Graphics.Blit(src, dest, imageEffectMaterial);
+    }
 }

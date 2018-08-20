@@ -1,44 +1,32 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+
+
 public class ManCore : CritterCore
 {
     // =================== MAN CORE ====================
 
+    // Human or humanoidal creature. Can pick up, equip and throw items. Can gather and craft.
+
     // parent class:  CritterCore
     // child classes: PlayerCore
 
-    int timerMove = 0;
     int timerHit = 0;
 
-    ItemEnum tool = ItemEnum.none;
-
+    /// Throw()
+    /// PickUp(1)
+    /// DropAll()
+    /// Equip(1)
+    /// Unequip(1)
+    /// Chop(1)
+    /// AI()
+    /// 
 
     // =================================================
 
-	//--------------------------------------------------
-	
-	void Start()
-	{
-
-		BodyInitialize();
-
-        timerMove = 1;
-        timerHit = Random.Range(30, 70);
-	}
-	
-	//--------------------------------------------------
-	
-	void Update()
-	{
-        CalculateLand();
-		PlaceOnGround();
-		DamageColorize();
-    }
-    
-
-	void FixedUpdate()
-	{
+    void SearchForTarget()
+    {
         // --- searching for target ---
 
         int i;
@@ -54,7 +42,10 @@ public class ManCore : CritterCore
                 target = GameCore.Core.critters[i];
             }
         }
+    }
 
+    void AttackTarget()
+    {
         // --- targeting and attacking --- 
 
         if ((target != null)
@@ -65,7 +56,6 @@ public class ManCore : CritterCore
                 directionRight = true;
                 gameObject.GetComponent<SpriteRenderer>().flipX = false;
             }
-
             else
             {
                 directionRight = false;
@@ -76,7 +66,6 @@ public class ManCore : CritterCore
             timerHit--;
 
             if (timerMove <= 0)
-
             {
                 timerMove = Random.Range(30, 70);
 
@@ -107,6 +96,35 @@ public class ManCore : CritterCore
 
         if (hitCooldown > 0)
         hitCooldown--;
+    }
+
+	// =========================================== MAIN LOOP ===========================================
+	
+	void Start()
+	{
+
+		BodyInitialize();
+
+        timerMove = 1;
+        timerHit = Random.Range(30, 70);
+	}
+	
+	//--------------------------------------------------
+	
+	void Update()
+	{
+        CalculateLand();
+		PlaceOnGround();
+		DamageColorize();
+    }
+    
+
+	void FixedUpdate()
+	{
+        //SearchForTarget();
+        //AttackTarget();
+
+        AI();
     }
 	
 	//==================================================

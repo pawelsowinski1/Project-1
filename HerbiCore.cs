@@ -6,14 +6,15 @@ public class HerbiCore : CritterCore
 {
     // ========= HERBI CORE ===========
 
+    // A herbivore.
+
     // parent class:  CritterCore
     // child classes: -
-
-    int timerMove = 0;
 
 	void Start () 
     {
     	BodyInitialize();
+        timerMove = 1;
 	}
 	
 	void Update ()
@@ -30,4 +31,10 @@ public class HerbiCore : CritterCore
             }
         }
 	}
+
+    void FixedUpdate()
+    {
+        AI();
+    }
+
 }
