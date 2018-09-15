@@ -8,7 +8,7 @@ public class PlayerCore : ManCore
     // parent class:  ManCore
     // child classes: -
 
-    GameObject pickupTarget;
+    public GameObject pickupTarget;
 
     /// SetDirection()
 
@@ -34,61 +34,48 @@ public class PlayerCore : ManCore
 	
 	void Start()
 	{
+        name = "Player";
+
 		BodyInitialize();
-        team = 0;
+        team = 1;
         pickupTarget = null;
 
-        GetComponent<SpriteRenderer>().sortingOrder = 1;
+        
 	}
 
     /// ----- FIXED UPDATE -----
 
 	void FixedUpdate()
 	{
-        AI();
+        AI_Man();
 
         if (downed == false)
         {
-            action = ActionEnum.none;
+            action = EAction.none;
 
 		    if(Input.GetKey(KeyCode.A))
             {
-		        command = ActionEnum.none;
+		        command = EAction.none;
                 MoveLeft();
             }
 		
 		    if(Input.GetKey(KeyCode.D))
             {
-                command = ActionEnum.none;
+                command = EAction.none;
 		        MoveRight();
-            }
-
-            if(Input.GetKeyDown(KeyCode.Space))
-            {
-                command = ActionEnum.none;
-
-                if (pickupTarget)
-                {
-		            PickUp(pickupTarget);
-                    pickupTarget.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,1f);
-
-                    pickupTarget = null;
-                }
-                else
-                DropAll();
             }
 
             if (GameCore.Core.combatMode == true)
             {
 		        if(Input.GetMouseButton(0))
                 {
-                    command = ActionEnum.none;
+                    command = EAction.none;
 		            Hit();
                 }
 		
 		        if(Input.GetMouseButton(1))
                 {
-                    command = ActionEnum.none;
+                    command = EAction.none;
 		            Throw();
                 }
             }
@@ -101,18 +88,39 @@ public class PlayerCore : ManCore
 	{
         if (downed == false)
         {
+            SetDirection();
+
 		    if(Input.GetKeyDown(KeyCode.W))
             {
-                command = ActionEnum.none;
+                command = EAction.none;
                 PlaceOnGround();
 		        Jump();
             }
+
+            if(Input.GetKeyDown(KeyCode.Space))
+            {
+                command = EAction.none;
+
+                if (pickupTarget)
+                {
+		            PickUp(pickupTarget);
+                    pickupTarget.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,1f);
+
+                    pickupTarget = null;
+                }
+                else
+                DropAll();
+            }
+
+            
+
         }
+
 
         CalculateLand();
         PlaceOnGround();
 		DamageColorize();
-		SetDirection();
+		
 
         if (hitCooldown > 0)
         hitCooldown--;
@@ -123,7 +131,7 @@ public class PlayerCore : ManCore
     void OnTriggerEnter2D(Collider2D other)
     {   
         // todo
-        if ((other.gameObject.name == "item(Clone)")
+        if ((other.gameObject.GetComponent<InteractiveObjectCore>().kind == EKind.item)
         || (other.gameObject.name == "herbi(Clone)"))
         //
         {
@@ -138,7 +146,7 @@ public class PlayerCore : ManCore
     void OnTriggerExit2D(Collider2D other)
     {
         // todo
-        if ((other.gameObject.name == "item(Clone)")
+        if ((other.gameObject.GetComponent<InteractiveObjectCore>().kind == EKind.item)
         || (other.gameObject.name == "herbi(Clone)"))
         //
         {

@@ -28,12 +28,12 @@ public class ButtonICore : MonoBehaviour
     {
         if (type == 0) // item in inventory
         {
-            GameCore.Core.player.GetComponent<CritterCore>().Equip(GameCore.Core.player.GetComponent<CritterCore>().carriedBodies[index]);
+            GameCore.Core.player.GetComponent<ManCore>().Equip(GameCore.Core.player.GetComponent<ManCore>().carriedBodies[index]);
         }
         else
         if (type == 1) // tool in tool slot
         {
-            GameCore.Core.player.GetComponent<CritterCore>().Unequip(GameCore.Core.player.GetComponent<CritterCore>().tool);
+            GameCore.Core.player.GetComponent<ManCore>().Unequip(GameCore.Core.player.GetComponent<ManCore>().tool);
         }
     }
 }

@@ -11,7 +11,7 @@ public class ButtonACore : MonoBehaviour
     public Vector3 pos;
     public GameObject obj;
 
-    public ActionEnum action = ActionEnum.none;
+    public EAction action = EAction.none;
 
 	void Start ()
     {
@@ -28,10 +28,10 @@ public class ButtonACore : MonoBehaviour
         GameCore.Core.player.GetComponent<CritterCore>().command = action;
         GameCore.Core.player.GetComponent<CritterCore>().target = obj;
 
-        if (action == ActionEnum.move)
+        if (action == EAction.move)
         GameCore.Core.player.GetComponent<CritterCore>().targetX = pos.x;
 
-        if (action == ActionEnum.drop_all)
+        if (action == EAction.drop_all)
         GameCore.Core.player.GetComponent<CritterCore>().targetX = pos.x;
 
         Destroy(gameObject);

@@ -13,6 +13,10 @@ public class HerbiCore : CritterCore
 
 	void Start () 
     {
+        name = "Herbi";
+        type = EType.herbi;
+        team = 0;
+    
     	BodyInitialize();
         timerMove = 1;
 	}
@@ -34,7 +38,7 @@ public class HerbiCore : CritterCore
 
     void FixedUpdate()
     {
-        AI();
+        AI_Critter();
     }
 
 }

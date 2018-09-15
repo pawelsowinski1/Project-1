@@ -6,18 +6,60 @@ public class ProjectileCore : BodyCore // <-- doesn't need to be a full BodyCore
     // ============= PROJECTILE CORE ===================
 
 	public GameObject parent;
-    public GameObject carriedItem;
 
     public int team;
+
+    Vector3 prevPos = new Vector3(0,0,0);
 
     // =================================================
 
 	void Start ()
 	{
-        team = parent.GetComponent<PlayerCore>().team;
+        if (parent)
+        team = parent.GetComponent<ManCore>().team;
 
-        transform.position += new Vector3(0,0.75f,0);
+        transform.position += new Vector3(0,0.4f,0);
+
+        GetComponent<SpriteRenderer>().sortingOrder = 20;
+
+        
+
+        
 	}
+
+
+	void Update() 
+	{
+		CalculateLand();
+		PlaceOnGround();
+
+        float f1 = GetComponent<Rigidbody2D>().velocity.x;
+
+        
+
+        // if this is a spear. then face the direction of movement
+
+        if (GetComponent<ItemCore>().item == EItem.stoneSpear)
+        {
+            Vector3 moveDirection = gameObject.transform.position - prevPos; 
+            if (moveDirection != Vector3.zero) 
+            {
+                float angle = Mathf.Atan2(moveDirection.y, moveDirection.x) * Mathf.Rad2Deg;
+                transform.rotation = Quaternion.AngleAxis(angle+270f, Vector3.forward);
+             
+            }
+        
+            prevPos = gameObject.transform.position;
+        }
+
+        // else, rotate around (rotation speed based of velocity.x)
+
+        else
+        transform.RotateAround(transform.position, new Vector3(0,0,1), -f1);
+        //
+        
+	}
+
 
 	void OnTriggerEnter2D(Collider2D other) 
 	{
@@ -25,21 +67,26 @@ public class ProjectileCore : BodyCore // <-- doesn't need to be a full BodyCore
 		if (other.gameObject.GetComponent<CritterCore>().team != team)
 		{
 			other.gameObject.GetComponent<CritterCore>().damageColorIntensity = 1f;
-			Destroy(gameObject,0.0f);
 
-            // free carried item and destroy itself 
+            // apply damage
 
-            //NullReferenceException: Object reference not set to an instance of an object
-            //BodyCore.PlaceOnGround () (at Assets/BodyCore.cs:88)
-            //PlantCore.Update () (at Assets/PlantCore.cs:16)
+            other.gameObject.GetComponent<CritterCore>().hp -= GetComponent<Rigidbody2D>().velocity.magnitude;
 
-            carriedItem.GetComponent<BodyCore>().isCarried = false;
-            carriedItem.GetComponent<BodyCore>().carrier = null;
-            carriedItem.GetComponent<BodyCore>().isFalling = true;
+             if ((other.gameObject.GetComponent<CritterCore>().hp <= 0)
+             && (other.gameObject.GetComponent<CritterCore>().downed == false))
+             {
+                other.gameObject.GetComponent<CritterCore>().downed = true;
+                other.transform.Rotate(0,0,90f);
+             }
 
-            Destroy(gameObject);
+             //
 
-            //
+             Destroy(gameObject.GetComponent<ProjectileCore>());
+             gameObject.GetComponent<ItemCore>().enabled = true;
+             gameObject.GetComponent<Rigidbody2D>().velocity = Vector3.zero;
+             gameObject.GetComponent<Rigidbody2D>().gravityScale = 0f;
 		}
 	}
+
+
 }

@@ -25,6 +25,9 @@ public class CameraCore : MonoBehaviour
         //Application.targetFrameRate = -1; // for performance check (remember to turn v-sync off) //move this to GameCore.cs
         game = GameObject.Find("Game");
         player = game.GetComponent<GameCore>().player;
+
+        //Camera.main.backgroundColor = new Color(5f,20f,255f,255f);
+        //Camera.main.backgroundColor = new Color(145,205,255,255);
 	}
     /// ----- LATE UPDATE -----
 

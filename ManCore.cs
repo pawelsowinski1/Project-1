@@ -12,92 +12,303 @@ public class ManCore : CritterCore
     // parent class:  CritterCore
     // child classes: PlayerCore
 
-    int timerHit = 0;
+    public GameObject tool = null;
 
+    /// PickUp(1) -> override from CritterCore
+    /// Hit() -> test override without virtual function
     /// Throw()
-    /// PickUp(1)
     /// DropAll()
     /// Equip(1)
     /// Unequip(1)
     /// Chop(1)
-    /// AI()
-    /// 
 
     // =================================================
 
-    void SearchForTarget()
+    public override void PickUp(GameObject body) // overrides PickUp() from CritterCore
     {
-        // --- searching for target ---
-
-        int i;
-
-        i = GameCore.Core.critters.Count;
-        target = null; 
-
-        for (i=0; i <= GameCore.Core.critters.Count-1; i++)
+        if (body)
         {
-            if ((GameCore.Core.critters[i].GetComponent<CritterCore>().team != team)
-            && (GameCore.Core.critters[i].GetComponent<CritterCore>().downed == false))
+            if (body.GetComponent<BodyCore>().isCarried == false)
             {
-                target = GameCore.Core.critters[i];
+                if (Mathf.Abs(transform.position.x - body.transform.position.x) < 1f)
+                {
+                    if (body.GetComponent<InteractiveObjectCore>().kind == EKind.item)
+                    {
+                        if (body.GetComponent<ItemCore>().isTool == true)
+                        {
+                            Equip(body);
+                        }
+                        else
+                        {
+                            // pick up
+
+                            carriedBodies.Add(body);
+
+                            isCarrying = true;
+                            body.GetComponent<BodyCore>().isCarried = true;
+                            body.GetComponent<BodyCore>().carrier = gameObject;
+
+                            //
+                        }
+                    }
+                    else
+                    {
+                        // pick up
+
+                        carriedBodies.Add(body);
+
+                        isCarrying = true;
+                        body.GetComponent<BodyCore>().isCarried = true;
+                        body.GetComponent<BodyCore>().carrier = gameObject;
+
+                        //
+                    }
+                }
+
+                if (GameCore.Core.player == gameObject)
+                GameCore.Core.InventoryManager();
             }
         }
     }
 
-    void AttackTarget()
-    {
-        // --- targeting and attacking --- 
+    //--------------------------------------------------
 
-        if ((target != null)
+    new public void Hit()
+    {
+        if (hitCooldown <= 0)
+        {
+            clone = Instantiate(slashPrefab, Vector3.zero, transform.rotation) as GameObject;
+            clone.GetComponent<SlashCore>().parent = gameObject;
+            clone.transform.parent = gameObject.transform; // fixes slash wobbling bug
+            clone.GetComponent<SlashCore>().team = team;
+
+            hitCooldown = 25;
+
+        }
+	}
+    //--------------------------------------------------
+
+
+    public void Throw()
+	{
+        if (tool != null)
+        {
+            /*
+		    clone = Instantiate (projectilePrefab,transform.position,transform.rotation) as GameObject;
+            clone.GetComponent<InteractiveObjectCore>().kind = EKind.projectile;
+            clone.GetComponent<ProjectileCore>().parent = gameObject;
+		    clone.GetComponent<ProjectileCore>().team = team;
+		    */
+
+            tool.AddComponent<ProjectileCore>();
+            tool.GetComponent<ProjectileCore>().kind = EKind.projectile;
+            tool.GetComponent<ProjectileCore>().parent = gameObject;
+            tool.GetComponent<ProjectileCore>().team = team;
+            tool.GetComponent<ItemCore>().enabled = false;
+
+		    Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+		    
+            tool.GetComponent<BodyCore>().isCarried = false;
+            tool.GetComponent<BodyCore>().carrier = null;
+
+            // if player
+            Vector3 v1 = mousePos-transform.position;
+            v1.Normalize();
+            v1 *= 30f;
+            //
+
+            tool.GetComponent<Rigidbody2D>().AddForce(v1, ForceMode2D.Impulse);
+            
+
+            tool = null;
+
+            if (GameCore.Core.player == gameObject)
+            {
+                GameCore.Core.InventoryManager();
+            }
+        }
+	}
+
+    //--------------------------------------------------
+
+    public void Equip(GameObject body)
+    {
+        if (body)
+        {
+            if (body.GetComponent<InteractiveObjectCore>().kind == EKind.item)
+            {
+                if (body.GetComponent<ItemCore>().isTool == true)
+                {
+                    if (tool != null)
+                    {
+                        Unequip(tool);
+                    }
+                    
+                    tool = body;
+
+                    isCarrying = true;
+                    body.GetComponent<BodyCore>().isCarried = true;
+                    body.GetComponent<BodyCore>().carrier = gameObject;
+                    
+
+                    if (GameCore.Core.player == gameObject) // if player
+                    {
+                        for (i=0; i<carriedBodies.Count; i++)
+                        {
+                            // check if the target body is in player's inventory
+                            if (GetComponent<CritterCore>().carriedBodies[i] == body)
+                            {
+                                // if yes, remove it from player's inventory
+                               GetComponent<CritterCore>().carriedBodies.RemoveAt(i);
+                            }
+
+                        }
+            
+                        GameCore.Core.InventoryManager();
+                    }
+                }
+            }
+        }
+    } //-> ManCore
+
+    //--------------------------------------------------
+
+    public void Unequip(GameObject item)
+    {
+        if (tool == item) // if item is in tool slot
+        {
+            carriedBodies.Add(item);
+            tool = null;
+        }
+
+        if (GameCore.Core.player == gameObject)
+        GameCore.Core.InventoryManager();
+    } //-> ManCore
+
+    //--------------------------------------------------
+
+    public void Chop(GameObject obj)
+    {
+        if (obj)
+        {
+            GameObject i;
+            i = GameCore.Core.SpawnItem(EItem.wood);
+            i.transform.position = obj.transform.position;
+            
+            //GameCore.Core.plants.Remove(obj); <- not necessary
+            Destroy(obj);
+
+            target = null;
+
+        }
+    }
+
+    //--------------------------------------------------
+
+    public void AI_Man()
+    {
+        // if there is any command
+
+        if ((command != EAction.none)
         && (downed == false))
         {
-            if (target.transform.position.x > transform.position.x)
+            // if idle, walk around
+
+            if (command == EAction.idle)
             {
-                directionRight = true;
-                gameObject.GetComponent<SpriteRenderer>().flipX = false;
+                timerMove--;
+
+                if (timerMove <= 0)
+                {
+                    targetX = transform.position.x + Random.Range(-10f,10f);
+                    action = EAction.move;
+                    timerMove = 300;
+                }
             }
             else
+
+            // if not idle, then set targetX, calculate distance and move towards target
+
+            if ((target)
+            && (command != EAction.attack))
             {
-                directionRight = false;
-                gameObject.GetComponent<SpriteRenderer>().flipX = true;
+                if (command == EAction.follow) // if command is "follow", then walk around the target
+                {
+                    if (timerMove <= 0)
+                    {
+                        targetX = target.transform.position.x + Random.Range(-10f,10f);
+                        timerMove = 150;
+                    }
+
+                    timerMove--;
+                }
+                else // if command is not "follow", then walk directly to target
+                targetX = target.transform.position.x;
             }
 
-            timerMove--;
-            timerHit--;
 
-            if (timerMove <= 0)
+            // ========== move  ===========
+
+            float dist = transform.position.x - targetX;
+
+            if (Mathf.Abs(dist) > 0.1)
             {
-                timerMove = Random.Range(30, 70);
-
-                if (target.GetComponent<Transform>().position.x > transform.position.x)
-                targetX = target.GetComponent<Transform>().position.x - 3f;
+                if (targetX > transform.position.x)
+                {
+                    MoveRight();
+                }
                 else
-                targetX = target.GetComponent<Transform>().position.x + 3f;
-
-                targetX += Random.Range(-5f, 5f);
+                {
+                    MoveLeft();
+                }
             }
-
-            if (targetX > transform.position.x)
-            MoveRight();
-            else
-            MoveLeft();
-
-            // attacking
-
-            if (timerHit <= 0)
+            else // if distance to the target is very small, then execute the command
             {
-                Hit();
-                //timerHit = Random.Range(1, 100);
-                timerHit = 1;
+                switch (command)
+                {
+                    case EAction.move:
+                    {
+                        command = EAction.none;
+                        break;
+                    }
+
+                    case EAction.follow:
+                    {
+                        break;
+                    }
+
+                    case EAction.pickup:
+                    {
+                        PickUp(target);
+                        command = EAction.none;
+                        break;
+                    }
+
+                    case EAction.eat:
+                    {
+                        break;
+                    }
+                    case EAction.chop:
+                    {
+                        Chop(target);
+                        command = EAction.none;
+                        break;
+                    }
+                    case EAction.drop_all:
+                    {
+                        DropAll();
+                        command = EAction.none;
+                        break;
+                    }
+                }
+            
+
+                // ====================
             }
         }
-
-        // ---------------
-
-        if (hitCooldown > 0)
-        hitCooldown--;
     }
-
+    
+    
 	// =========================================== MAIN LOOP ===========================================
 	
 	void Start()
@@ -121,10 +332,10 @@ public class ManCore : CritterCore
 
 	void FixedUpdate()
 	{
-        //SearchForTarget();
-        //AttackTarget();
+        SearchForTarget();
+        AttackTarget();
 
-        AI();
+        AI_Man();
     }
 	
 	//==================================================

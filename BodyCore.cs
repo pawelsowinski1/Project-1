@@ -77,22 +77,17 @@ public class BodyCore : InteractiveObjectCore
                 isFalling = false;
                 GetComponent<Rigidbody2D>().velocity = new Vector2(GetComponent<Rigidbody2D>().velocity.x,0);
 
-                // if this body is a projectile, then free carried item and destroy itself 
+                // if this body is a projectile, then change itself to item
 
-                if (kind == KindEnum.projectile)
+                if (kind == EKind.projectile)
                 {
-                    //NullReferenceException: Object reference not set to an instance of an object
-                    //BodyCore.PlaceOnGround () (at Assets/BodyCore.cs:88)
-                    //PlantCore.Update () (at Assets/PlantCore.cs:16)
-
-                    gameObject.GetComponent<ProjectileCore>().carriedItem.GetComponent<BodyCore>().isCarried = false;
-                    gameObject.GetComponent<ProjectileCore>().carriedItem.GetComponent<BodyCore>().carrier = null;
-                    gameObject.GetComponent<ProjectileCore>().carriedItem.GetComponent<BodyCore>().isFalling = true;
-
-                    Destroy(gameObject);
+                    Destroy(GetComponent<ProjectileCore>());
+                    GetComponent<ItemCore>().enabled = true;
+                    GetComponent<Rigidbody2D>().velocity = Vector3.zero;
+                    GetComponent<Rigidbody2D>().gravityScale = 0f;
                 }
                 //
-
+            
 		    }
             else
             {
@@ -102,7 +97,7 @@ public class BodyCore : InteractiveObjectCore
 
         // linear drag in x axis for moving critters
 
-        if (GetComponent<InteractiveObjectCore>().kind == KindEnum.critter)
+        if (GetComponent<InteractiveObjectCore>().kind == EKind.critter)
         GetComponent<Rigidbody2D>().AddForce(new Vector2(-4f * GetComponent<Rigidbody2D>().velocity.x,0));
 
 	}
