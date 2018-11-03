@@ -1,17 +1,21 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
-using System.Collections.Generic;  // <--- Lists
+using System.Collections.Generic;  // <--- enables lists
 
 
 public class GameCore : MonoBehaviour
 {
     string consoleOutput = 
-
-    "\n Prototype"+
-    "\n " +
-    "\n version 0.0.0" +
-    "\n release date: 15-09-2018"+
+    /*
+    "\n Focus:"+
+    "\n - sky color"+
+    "\n - improve land generation"+
+    "\n - carni group moving between lands";
+    */
+    
+    "\n version 0.0.1" +
+    "\n release date: 03-11-2018"+
     "\n " +
     "\n --------- Game controls ---------" +
     "\n " +
@@ -26,8 +30,10 @@ public class GameCore : MonoBehaviour
     "\n F - fullscreen on / off" +
     "\n C - combat mode on / off" +
     "\n O - world map on / off" +
+    "\n " +
     "\n M - spawn enemy" +
     "\n N - spawn ally" +
+    "\n R - restore health" +
     "\n " +
     "\n Zoom in and out with a mouse wheel." +
     "\n " +
@@ -36,7 +42,7 @@ public class GameCore : MonoBehaviour
     "\n " +
     "\n "
     ;
-
+    
 
 
     // =================================================== GAME CORE ========================================================
@@ -56,6 +62,7 @@ public class GameCore : MonoBehaviour
     public GameObject playerPrefab;
     public GameObject manPrefab;
     public GameObject herbiPrefab;
+    public GameObject carniPrefab;
     public GameObject itemPrefab;
     public GameObject plantPrefab;
     public GameObject pantsPrefab;
@@ -64,6 +71,7 @@ public class GameCore : MonoBehaviour
     public GameObject buttonAPrefab;
     public GameObject buttonIPrefab;
     public GameObject imagePrefab;
+    public GameObject projectPrefab;
 
     // runtime (ingame) prefabs required for 2d polygon collider optimisation
     GameObject sprucePrefab;
@@ -86,14 +94,17 @@ public class GameCore : MonoBehaviour
     public Sprite spr_meat;
     public Sprite spr_berry;
     public Sprite spr_flint;
-    public Sprite spr_handaxe;
+    public Sprite spr_handAxe;
     public Sprite spr_stoneSpear;
+    public Sprite spr_fibers;
+    public Sprite spr_smallLog;
     
     public Canvas myCanvas;
     public Mesh mesh;
     
     public Text consoleText;
     public new Text guiText;
+    public Text combatModeText;
 
     public GameObject player;
     public GameObject worldMap;
@@ -114,14 +125,14 @@ public class GameCore : MonoBehaviour
     public List<GameObject> buttonsA = new List<GameObject>();
     public List<GameObject> buttonsI = new List<GameObject>();
 
-    public const int   LAND_SECTIONS = 150;
+    public const int   LAND_SECTIONS = 300;
     public const float GRAVITY = 5f;
-    public const float JUMP_FORCE = 12;
-    public const float MOVE_FORCE = 30;
+    public const float JUMP_FORCE = 12f;
+    public const float MOVE_FORCE = 35f;
 
     public RaycastHit2D[] rhit2D;
 
-    Vector3 v1 = new Vector3(75f,0,0);    // player spawn position
+    Vector3 v1 = new Vector3(110f,0,0);   // player spawn position
     Vector3 v2 = new Vector3(0,0.4f,0);   // pants relative position
     Vector3 v3 = new Vector3(80f,-20f,0); // RMB button (type A) relative position from mouse
     Vector3 v4 = new Vector3(0f,-0.5f,0); // RMB buttons (type A) position increment
@@ -137,8 +148,9 @@ public class GameCore : MonoBehaviour
 
     int i;
 
-    // ------------ CLASSES ------------------
+    int fpsRefreshTimer = 10;
 
+    // ------------ CLASSES ------------------
 
     public class Land
     {
@@ -155,6 +167,10 @@ public class GameCore : MonoBehaviour
         public List<GameObject> items    = new List<GameObject>();
         public List<GameObject> plants   = new List<GameObject>();
 
+        int i;
+
+        // generate land
+
         public void GenerateLand()
         {
 		    landSections = LAND_SECTIONS;
@@ -162,8 +178,10 @@ public class GameCore : MonoBehaviour
 		    landPointX = new float[landSections];
 		    landPointY = new float[landSections];
 
-            // generate ground
+            int i;
 
+            // generate ground (rocky)
+            /*
 		    int i;
 
 		    for (i=0; i<landSections; i++)
@@ -178,16 +196,57 @@ public class GameCore : MonoBehaviour
                 else
                 landPointY[i] = landPointY[i-1] + Random.Range(-1f, 1f);
 		    }
+            */
+
+            // generate ground (hills)
+
+            float r1;
+            r1 = Random.Range(-1f, 1f) *0.5f;
+
+            int j = 0;
+
+		    for (i=0; i<landSections; i++)
+		    {
+                if (i == 0)
+                landPointX[i] = 0;
+                else
+                landPointX[i] = landPointX[i-1] + 1f;// + Random.Range(1f, 2f);
+
+                if (i == 0)
+                landPointY[i] = Random.value * 0;
+                else
+                {
+                    landPointY[i] = landPointY[i-1] + r1 + Random.Range(-1f, 1f) *0.2f;
+                    j++;
+
+                    if (j == 10)
+                    {
+                        r1 += Random.Range(-1f, 1f) /3;
+                    }
+                    if (j == 20)
+                    {
+                        r1 += Random.Range(-1f, 1f) /3;
+                    }
+                    if (j == 30)
+                    {
+                        r1 = Random.Range(-1f, 1f) /3;
+                        j = 0;
+                    }
+
+                }
+		    }
+
+            //
 
             // generate plants
 
             int r;
             
-            r = Random.Range(5,10);
+            r = Random.Range(5,100);
             for (i=0; i<r; i++)
             SpawnPlant(EPlant.spruce, new Vector3(Random.Range(0f,landPointX[landSections-2]),-100f,0f));
             
-            r = Random.Range(5,10);
+            r = Random.Range(5,30);
             for (i=0; i<r; i++)
             SpawnPlant(EPlant.birch, new Vector3(Random.Range(0f,landPointX[landSections-2]),-100f,0f));
 
@@ -201,27 +260,41 @@ public class GameCore : MonoBehaviour
             
             // generate items
 
-            r = Random.Range(0,10);
+            r = Random.Range(2,5);
             for (i=0; i<r; i++)
             SpawnItem(EItem.flint, new Vector3(Random.Range(0f,landPointX[landSections-2]),-100f,0f));
 
-            r = Random.Range(0,10);
+            r = Random.Range(2,5);
             for (i=0; i<r; i++)
             SpawnItem(EItem.rock, new Vector3(Random.Range(0f,landPointX[landSections-2]),-100f,0f));
 
-            r = Random.Range(0,10);
+            r = Random.Range(2,5);
             for (i=0; i<r; i++)
             SpawnItem(EItem.sharpRock, new Vector3(Random.Range(0f,landPointX[landSections-2]),-100f,0f));
 
-            r = Random.Range(0,10);
+            r = Random.Range(2,5);
             for (i=0; i<r; i++)
             SpawnItem(EItem.roundRock, new Vector3(Random.Range(0f,landPointX[landSections-2]),-100f,0f));
 
-            //
+            r = Random.Range(2,5);
+            for (i=0; i<r; i++)
+            SpawnItem(EItem.flatRock, new Vector3(Random.Range(0f,landPointX[landSections-2]),-100f,0f));
 
+            // generate critters
+            
+            r = Random.Range(2,5);
+            for (i=0; i<r; i++)
+            SpawnHerbi(new Vector3(Random.Range(0f,landPointX[landSections-2]),-100f,0f));
+
+            //SpawnCarniPack(new Vector3(Random.Range(0f,landPointX[landSections-2]),-100f,0f));
+            
+            r = Random.Range(2,5);
+            for (i=0; i<r; i++)
+            SpawnMan(new Vector3(Random.Range(0f,landPointX[landSections-2]),-100f,0f), 0);
+            
         }
 
-        // spawn plant method
+        // spawn plant
 
         public GameObject SpawnPlant(EPlant _plant, Vector3 _position)
         {
@@ -289,6 +362,102 @@ public class GameCore : MonoBehaviour
 
             return Core.clone;
         }
+
+        // spawn herbi
+
+        public GameObject SpawnHerbi(Vector3 _position)
+        {
+            Core.clone = Instantiate (Core.herbiPrefab, _position, Core.transform.rotation) as GameObject;
+
+            if (index == Core.currentLand)
+            {
+                Core.critters.Add(Core.clone);
+            }
+            else
+            {
+                critters.Add(Core.clone);
+                Core.clone.SetActive(false);
+            }
+            
+            Core.clone.transform.position = new Vector3(Core.clone.transform.position.x, Core.clone.transform.position.y, 0f);
+            
+            Core.teams[0].members.Add(Core.clone);
+            Core.clone.GetComponent<HerbiCore>().action = EAction.idle;
+            
+            return Core.clone;
+        }
+
+        // spawn carni pack
+
+        public void SpawnCarniPack(Vector3 _position)
+        {
+            Core.teams.Add(new Team());
+
+            for (i=0; i<=4; i++)
+            {
+                Core.clone = Instantiate (Core.carniPrefab, _position, Core.transform.rotation) as GameObject;
+
+                if (index == Core.currentLand)
+                {
+                    Core.critters.Add(Core.clone);
+                }
+                else
+                {
+                    critters.Add(Core.clone);
+                    Core.clone.SetActive(false);
+                }
+                
+                Core.teams[Core.teams.Count-1].members.Add(Core.clone);
+                Core.clone.GetComponent<CritterCore>().team = Core.teams.Count-1;
+
+                Core.clone.transform.position = new Vector3(Core.clone.transform.position.x, Core.clone.transform.position.y, 0f);
+
+                Core.clone.GetComponent<CritterCore>().command = ECommand.guard;
+                Core.clone.GetComponent<CritterCore>().commandTarget = Core.teams[Core.teams.Count-1].members[0];
+            }
+
+            Core.teams[Core.teams.Count-1].members[0].GetComponent<CritterCore>().command = ECommand.none;
+        }
+
+        // spawn man
+
+        public GameObject SpawnMan(Vector3 _position, int _team)
+        {
+            Core.clone = Instantiate (Core.manPrefab, _position, Core.transform.rotation) as GameObject;
+
+            if (index == Core.currentLand)
+            {
+                Core.critters.Add(Core.clone);
+            }
+            else
+            {
+                critters.Add(Core.clone);
+                Core.clone.SetActive(false);
+            }
+            
+            Core.clone.transform.position = new Vector3(Core.clone.transform.position.x, Core.clone.transform.position.y, 0f);
+            
+            Core.teams[_team].members.Add(Core.clone);
+            Core.clone.GetComponent<ManCore>().team = _team;
+            Core.clone.GetComponent<ManCore>().action = EAction.idle;
+
+            // pants
+        
+            Core.clone2 = Instantiate (Core.pantsPrefab,Core.transform.position, Core.transform.rotation) as GameObject;
+            Core.clone2.transform.parent = Core.clone.transform;
+            Core.clone2.transform.position = Core.clone.transform.position + Core.v2;
+            Core.clone2.GetComponent<PantsCore>().team  = _team;
+
+
+            // hp bar
+
+            Core.clone2 = Instantiate(Core.hpBarPrefab, Core.transform.position, Core.transform.rotation) as GameObject;
+            Core.clone2.GetComponent<HpBarCore>().parent = Core.clone;
+            
+            return Core.clone;
+        }
+
+
     }
 
     // ---------------------------------------
@@ -320,12 +489,13 @@ public class GameCore : MonoBehaviour
 
     //  ---------------- METHODS ------------------
 
-    /// InitializeIngamePrefabs()
     /// SetupFirstLand()
+    /// InitializeIngamePrefabs()
     /// LoadLand()
     /// DrawLand()
     /// RedrawLand()
-    /// ExploreNode(2)
+    /// ExploreNodeR(2)
+    /// ExploreNodeL(2)
 
     /// SpawnPlayer()
     /// SpawnMan(1)
@@ -412,9 +582,11 @@ public class GameCore : MonoBehaviour
 
     //-----------------------------------------------------
 
-    public void LoadLand(int index)
+    public void LoadLand(int _index)
     {
         // save objects and deacivate them
+
+        // save plants
 
         lands[currentLand].plants.Clear();
         
@@ -425,6 +597,8 @@ public class GameCore : MonoBehaviour
         }
         
         plants.Clear();
+
+        // save items
 
         lands[currentLand].items.Clear();
 
@@ -438,10 +612,10 @@ public class GameCore : MonoBehaviour
                 items[i].SetActive(false);
             }
         }
-
         
         items.Clear();
 
+        // save critters
         
         lands[currentLand].critters.Clear();
         
@@ -449,6 +623,7 @@ public class GameCore : MonoBehaviour
         {
             lands[currentLand].critters.Add(critters[i]);
             critters[i].SetActive(false);
+            
         }
         
         critters.Clear();
@@ -457,17 +632,17 @@ public class GameCore : MonoBehaviour
         
         // load a new land
 
-        currentLand = index;
+        currentLand = _index;
 
         if (player)
         player.SetActive(true);
 
-        landSections = lands[index].landSections;
+        landSections = lands[_index].landSections;
 
 		for (i=0; i<landSections; i++)
 		{
-            landPointX[i] = lands[index].landPointX[i];
-            landPointY[i] = lands[index].landPointY[i];
+            landPointX[i] = lands[_index].landPointX[i];
+            landPointY[i] = lands[_index].landPointY[i];
 		}
 
         // load objects and activate them
@@ -488,7 +663,27 @@ public class GameCore : MonoBehaviour
         {
             critters.Add(lands[currentLand].critters[i]);
             lands[currentLand].critters[i].SetActive(true);
-        }  
+        }
+
+        // teleport all men guarding player to the new land
+
+        for (i=0; i<teams[1].members.Count; i++)
+        {
+            if ((teams[1].members[i].GetComponent<CritterCore>().command == ECommand.guard)
+            && (teams[1].members[i].GetComponent<CritterCore>().target == player)
+            && (teams[1].members[i].GetComponent<CritterCore>().downed == false))
+            {
+                lands[teams[1].members[i].GetComponent<BodyCore>().land].critters.Remove(teams[1].members[i]);
+                critters.Add(teams[1].members[i]);
+
+                teams[1].members[i].GetComponent<BodyCore>().land = _index;
+                teams[1].members[i].transform.position = player.transform.position;
+                teams[1].members[i].SetActive(true);
+            }
+        }
+
+        // teleport player
+        critters.Add(player);
 
         // not much optimized :/
         DrawLand();
@@ -564,6 +759,9 @@ public class GameCore : MonoBehaviour
         //mesh.SetUVs(0,uvs);
 
         mesh.RecalculateBounds();
+
+        // THIS IS NOT REDRAW
+        
     }
 
     //-----------------------------------------------------
@@ -653,6 +851,18 @@ public class GameCore : MonoBehaviour
         //mesh.SetUVs(0,uvs);
 
         mesh.RecalculateBounds();
+        
+        // color
+        
+        Vector3[] vertices = mesh.vertices;
+        Color[] colors = new Color[vertices.Length];
+
+        for (int i = 0; i < vertices.Length; i++)
+        colors[i] = new Color(0.5f,0.5f,0.5f,1f);
+
+        // assign the array of colors to the Mesh.
+        mesh.colors = colors;
+        
     }
 
     //-----------------------------------------------------
@@ -798,39 +1008,61 @@ public class GameCore : MonoBehaviour
             {
                 RMBclickedObj = rhit2D[0].transform.gameObject;
 
+                // item
+
                 if (RMBclickedObj.GetComponent<InteractiveObjectCore>().kind == EKind.item)
                 {
-                    AddButtonA(i,"pickup",EAction.pickup);
+                    AddButtonA(i,"pick up",EAction.pickUp);
                     i++;
 
                     if (RMBclickedObj.GetComponent<ItemCore>().item == EItem.flint)
                     {
-                        AddButtonA(i,"craft handaxe",EAction.craftHandaxe);
-                        i++;
-
-                    }
-
-                }
-
-                if (RMBclickedObj.GetComponent<InteractiveObjectCore>().kind == EKind.plant)
-                {
-                    if (RMBclickedObj.GetComponent<PlantCore>().plant == EPlant.spruce)
-                    {
-                        AddButtonA(i,"chop",EAction.chop);
-                        i++;
-
-                        AddButtonA(i,"gather firewood",EAction.gather_wood);
-                        i++;
-
-                        AddButtonA(i,"gather plant material",EAction.gather_plant_material);
+                        AddButtonA(i,"craft hand axe",EAction.craftHandAxe);
                         i++;
                     }
                     else
+                    if (RMBclickedObj.GetComponent<ItemCore>().item == EItem.flatRock)
                     {
-                        AddButtonA(i,"cut down",EAction.cut_down);
+                        AddButtonA(i,"process hemp",EAction.processHemp);
                         i++;
                     }
+                }
 
+                // plant
+
+                else
+                if (RMBclickedObj.GetComponent<InteractiveObjectCore>().kind == EKind.plant)
+                {
+                    if (RMBclickedObj.GetComponent<PlantCore>().rooted == true)
+                    {
+                        AddButtonA(i,"cut down",EAction.cutDown);
+                        i++;
+                    }
+                }
+
+                // critter
+
+                else
+                if (RMBclickedObj.GetComponent<InteractiveObjectCore>().kind == EKind.critter)
+                {
+                    if (RMBclickedObj.GetComponent<InteractiveObjectCore>().type == EType.herbi)
+                    {
+                        if ((RMBclickedObj.GetComponent<CritterCore>().alive == false))
+                        {
+                            AddButtonA(i,"obtain meat",EAction.obtainMeat);
+                            i++;
+                        }
+                    }
+                    else
+                    if (RMBclickedObj.GetComponent<InteractiveObjectCore>().type == EType.man)
+                    {
+                        if ((RMBclickedObj.GetComponent<CritterCore>().alive == true)
+                        && (RMBclickedObj != player))
+                        {
+                            AddButtonA(i,"convert",EAction.convert);
+                            i++;
+                        }
+                    }
                 }
             }
         }
@@ -838,7 +1070,7 @@ public class GameCore : MonoBehaviour
         {
             if (player.GetComponent<CritterCore>().carriedBodies.Count > 0)
             {
-                AddButtonA(i,"drop all here",EAction.drop_all);
+                AddButtonA(i,"drop all here",EAction.dropAll);
                 i++;
             }
         }
@@ -937,7 +1169,7 @@ public class GameCore : MonoBehaviour
             clone = Instantiate (pantsPrefab,transform.position,transform.rotation) as GameObject;
             clone.transform.parent = player.transform;
             clone.transform.position = clone.transform.parent.position + v2;
-            clone.GetComponent<SpriteRenderer>().color = Color.blue;
+            clone.GetComponent<PantsCore>().team = 1;
 
             // hp bar
 
@@ -959,13 +1191,8 @@ public class GameCore : MonoBehaviour
 
         if (_team == 1)
         {
-            clone.GetComponent<ManCore>().command = EAction.follow;
-            clone.GetComponent<ManCore>().target = player;
-        }
-        else
-        if (_team == 2)
-        {
-            clone.GetComponent<ManCore>().command = EAction.idle;
+            clone.GetComponent<CritterCore>().commandTarget = player;
+            clone.GetComponent<CritterCore>().command = ECommand.guard;
         }
 
         // pants
@@ -973,6 +1200,7 @@ public class GameCore : MonoBehaviour
         clone2 = Instantiate (pantsPrefab,transform.position, transform.rotation) as GameObject;
         clone2.transform.parent = clone.transform;
         clone2.transform.position = clone.transform.position + v2;
+        clone2.GetComponent<PantsCore>().team = _team;
 
         if (_team == 1)
         clone2.GetComponent<SpriteRenderer>().color = Color.blue;
@@ -992,8 +1220,8 @@ public class GameCore : MonoBehaviour
         clone = Instantiate (herbiPrefab, mousePos, transform.rotation) as GameObject;
         critters.Add(clone);
         clone.transform.position = new Vector3(clone.transform.position.x, clone.transform.position.y, 0f);
-        teams[1].members.Add(clone);
-        clone.GetComponent<HerbiCore>().command = EAction.idle;
+        teams[0].members.Add(clone);
+        clone.GetComponent<HerbiCore>().action = EAction.idle;
 
         // hp bar
 
@@ -1022,6 +1250,7 @@ public class GameCore : MonoBehaviour
 
         clone = Instantiate (platformPrefab, mousePos, transform.rotation) as GameObject;
         clone.transform.position = new Vector3(clone.transform.position.x, clone.transform.position.y, 0f);
+        clone.GetComponent<InteractiveObjectCore>().kind = EKind.structure;
        
     }
 
@@ -1036,14 +1265,10 @@ public class GameCore : MonoBehaviour
 	{
         Core = gameObject.GetComponent<GameCore>();
 
-        InitializeIngamePrefabs();
-        SetupFirstLand();
-
-        // raycast initialization
+        // raycast
         rhit2D = Physics2D.RaycastAll(new Vector2(Camera.main.ScreenToWorldPoint(Input.mousePosition).x,Camera.main.ScreenToWorldPoint(Input.mousePosition).y), new Vector2(0f,0f));
-        //
 
-        teams.Add(new Team()); // Team 0 -> Pacifistic Team: Permanently peaceful animals and humans
+        teams.Add(new Team()); // Team 0 -> Peaceful animals and wildmen
         teams[0].index = 0;
 
         teams.Add(new Team()); // Team 1 -> Player Team
@@ -1052,9 +1277,12 @@ public class GameCore : MonoBehaviour
         teams.Add(new Team()); // Team 2 -> Bad Guys Team
         teams[2].index = 2;
 
-        LoadLand(0);
+        InitializeIngamePrefabs();
+        SetupFirstLand();
 
         SpawnPlayer();
+        LoadLand(0);
+        
         teams[1].members.Add(player);
 
         consoleText.text = consoleOutput;
@@ -1074,15 +1302,23 @@ public class GameCore : MonoBehaviour
         mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
         // input
-        /*
-        if (Input.GetKeyDown(KeyCode.I))
-		lands[currentLand].SpawnItem(EItem.sharpRock, mousePos);
 
+        /*
         if (Input.GetKeyDown(KeyCode.S))
 		SpawnItem(EItem.stoneSpear);
 
         if (Input.GetKeyDown(KeyCode.F))
-		SpawnItem(EItem.handaxe);
+		SpawnItem(EItem.handAxe);
+
+        if (Input.GetKeyDown(KeyCode.I))
+		SpawnItem(EItem.roundRock);
+
+        if (Input.GetKeyDown(KeyCode.H))
+        SpawnHerbi();
+
+        if (Input.GetKeyDown(KeyCode.P))
+        SpawnPlatform();
+
         */
         if (Input.GetKeyDown(KeyCode.M))
         SpawnMan(2);
@@ -1094,15 +1330,14 @@ public class GameCore : MonoBehaviour
         {
             worldMap.SetActive(!worldMap.activeSelf);
         }
-        /*
-        if (Input.GetKeyDown(KeyCode.H))
-        SpawnHerbi();
-
-        if (Input.GetKeyDown(KeyCode.T))
-        lands[currentLand].SpawnPlant(EPlant.spruce, mousePos);
-
-        if (Input.GetKeyDown(KeyCode.P))
-        SpawnPlatform();
+        
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            player.GetComponent<CritterCore>().hp = player.GetComponent<CritterCore>().hpMax;
+            player.GetComponent<CritterCore>().downed = false;
+            player.GetComponent<CritterCore>().alive = true;
+            player.transform.rotation = Quaternion.identity;
+        }
 
         
         if (Input.GetKeyDown(KeyCode.C))
@@ -1121,13 +1356,11 @@ public class GameCore : MonoBehaviour
 
             //
         }
-        */
 
         // switch to fullscreen (works only in standalone)
 		if (Input.GetKeyDown(KeyCode.F))
 		Screen.fullScreen = !Screen.fullScreen;
         //
-
 
         HighlightObjectUnderMouse();
 
@@ -1155,13 +1388,12 @@ public class GameCore : MonoBehaviour
             {
                 // move player
                 
-                player.GetComponent<CritterCore>().command = EAction.move;
-                player.GetComponent<CritterCore>().target = null;
-                
                 Vector3 v1;
                 v1 =  Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
                 player.GetComponent<CritterCore>().targetX = v1.x;
+                player.GetComponent<CritterCore>().action = EAction.move;
+                player.GetComponent<CritterCore>().target = null;
             }
         }
 
@@ -1189,21 +1421,40 @@ public class GameCore : MonoBehaviour
 
         // ----------------------------
 
-        // combat mode text
+        // gui text
 
         if (guiText)
         {
+            fpsRefreshTimer--;
+
+            if (fpsRefreshTimer <= 0)
+            {
+
+                guiText.text = " FPS: "+(1.0f / Time.deltaTime).ToString()+
+                               "\n Lands count: " + lands.Count.ToString()+
+                               "\n Plants count: " + plants.Count.ToString()+
+                               "\n Critters count: " + critters.Count.ToString()+
+                               "\n Items count: " + items.Count.ToString();
+
+                fpsRefreshTimer = 10;
+            }
+        }
+
+        // combat mode text
+
+        if (combatModeText)
+        {
             if (combatMode == false)
-            guiText.text = " FPS: "+(1.0f / Time.deltaTime).ToString();//+"\n\n Combat mode OFF";
+            combatModeText.text = "Combat mode OFF";
             else
-            guiText.text = " FPS: "+(1.0f / Time.deltaTime).ToString();//+"\n\n Combat mode ON";
+            combatModeText.text = "Combat mode ON";
         }
     }
 
     /// ----- LATE UPDATE -----
 
     // ---------------------------------------------- WORLD TRAVEL ------------------------------------------------
-    /*
+    
     void LateUpdate()
     {
 
@@ -1286,5 +1537,5 @@ public class GameCore : MonoBehaviour
 	}
 
     // ------------------------------------------------------------------------------------------------------------
-    */
+    
 }

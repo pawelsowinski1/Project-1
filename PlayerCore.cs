@@ -47,21 +47,21 @@ public class PlayerCore : ManCore
 
 	void FixedUpdate()
 	{
-        AI_Man();
+        AI();
 
         if (downed == false)
         {
-            action = EAction.none;
+            //action = EAction.none;
 
 		    if(Input.GetKey(KeyCode.A))
             {
-		        command = EAction.none;
+		        action = EAction.none;
                 MoveLeft();
             }
 		
 		    if(Input.GetKey(KeyCode.D))
             {
-                command = EAction.none;
+                action = EAction.none;
 		        MoveRight();
             }
 
@@ -69,13 +69,13 @@ public class PlayerCore : ManCore
             {
 		        if(Input.GetMouseButton(0))
                 {
-                    command = EAction.none;
+                    action = EAction.none;
 		            Hit();
                 }
 		
 		        if(Input.GetMouseButton(1))
                 {
-                    command = EAction.none;
+                    action = EAction.none;
 		            Throw();
                 }
             }
@@ -92,14 +92,14 @@ public class PlayerCore : ManCore
 
 		    if(Input.GetKeyDown(KeyCode.W))
             {
-                command = EAction.none;
+                action = EAction.none;
                 PlaceOnGround();
 		        Jump();
             }
 
             if(Input.GetKeyDown(KeyCode.Space))
             {
-                command = EAction.none;
+                action = EAction.none;
 
                 if (pickupTarget)
                 {
@@ -111,9 +111,6 @@ public class PlayerCore : ManCore
                 else
                 DropAll();
             }
-
-            
-
         }
 
 
@@ -127,32 +124,30 @@ public class PlayerCore : ManCore
 	}
 
     /// ----- ON TRIGGER -----
+    
+    // detecting an object to pick up
 
     void OnTriggerEnter2D(Collider2D other)
     {   
-        // todo
-        if ((other.gameObject.GetComponent<InteractiveObjectCore>().kind == EKind.item)
-        || (other.gameObject.name == "herbi(Clone)"))
-        //
+        bool b = false;
+        
+
+        if (other.gameObject.GetComponent<InteractiveObjectCore>().kind == EKind.item)
+        b = true;
+
+        if (other.gameObject.GetComponent<InteractiveObjectCore>().type == EType.herbi)
+        b = true;
+
+        if (other.gameObject.GetComponent<InteractiveObjectCore>().kind == EKind.plant)
         {
-            if (pickupTarget != null)
-            pickupTarget.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,1f);
-            
+            if (other.gameObject.GetComponent<PlantCore>().rooted == false) 
+            b = true;
+        }
+
+        if (b == true)
+        {
             pickupTarget = other.gameObject;
-            pickupTarget.GetComponent<SpriteRenderer>().color = new Color(0f,0.7f,0.7f,1f);
         }
     }
-
-    void OnTriggerExit2D(Collider2D other)
-    {
-        // todo
-        if ((other.gameObject.GetComponent<InteractiveObjectCore>().kind == EKind.item)
-        || (other.gameObject.name == "herbi(Clone)"))
-        //
-        {
-            other.gameObject.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,1f);
-        }
-    }
-
 
 }
