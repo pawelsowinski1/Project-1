@@ -6,6 +6,7 @@ public class ProjectileCore : BodyCore // <-- doesn't need to be a full BodyCore
     // ============= PROJECTILE CORE ===================
 
 	public GameObject parent;
+
     public int team;
 
     Vector3 prevPos = new Vector3(0,0,0);
@@ -14,14 +15,16 @@ public class ProjectileCore : BodyCore // <-- doesn't need to be a full BodyCore
 
 	void Start ()
 	{
-        kind = EKind.projectile;
-
         if (parent)
         team = parent.GetComponent<ManCore>().team;
 
         transform.position += new Vector3(0,0.4f,0);
 
         GetComponent<SpriteRenderer>().sortingOrder = 20;
+
+        
+
+        
 	}
 
 
@@ -32,7 +35,9 @@ public class ProjectileCore : BodyCore // <-- doesn't need to be a full BodyCore
 
         float f1 = GetComponent<Rigidbody2D>().velocity.x;
 
-        // if this is a spear, then face the direction of movement
+        
+
+        // if this is a spear. then face the direction of movement
 
         if (GetComponent<ItemCore>().item == EItem.stoneSpear)
         {
@@ -50,7 +55,7 @@ public class ProjectileCore : BodyCore // <-- doesn't need to be a full BodyCore
         // else, rotate around (rotation speed based of velocity.x)
 
         else
-        transform.RotateAround(transform.position, new Vector3(0,0,1), -f1*0.35f);
+        transform.RotateAround(transform.position, new Vector3(0,0,1), -f1);
         //
         
 	}
@@ -60,7 +65,6 @@ public class ProjectileCore : BodyCore // <-- doesn't need to be a full BodyCore
 	{
         if (other.gameObject.GetComponent<CritterCore>()) // fixes null reference exception bug
 		if (other.gameObject.GetComponent<CritterCore>().team != team)
-        if (other.gameObject.GetComponent<CritterCore>().alive == true)
 		{
 			other.gameObject.GetComponent<CritterCore>().damageColorIntensity = 1f;
 
@@ -75,10 +79,6 @@ public class ProjectileCore : BodyCore // <-- doesn't need to be a full BodyCore
                 other.transform.Rotate(0,0,90f);
              }
 
-             if (other.gameObject.GetComponent<CritterCore>().hp <= -other.gameObject.GetComponent<CritterCore>().hpMax)
-             {
-                other.gameObject.GetComponent<CritterCore>().alive = false;
-             }
              //
 
              Destroy(gameObject.GetComponent<ProjectileCore>());

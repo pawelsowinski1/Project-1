@@ -16,7 +16,6 @@ public class HerbiCore : CritterCore
         name = "Herbi";
         type = EType.herbi;
         team = 0;
-        hp = 30f;
     
     	BodyInitialize();
         timerMove = 1;
@@ -28,7 +27,6 @@ public class HerbiCore : CritterCore
 		PlaceOnGround();
 		DamageColorize();
 
-        // enable being carried
         if (isCarried == true)
         {
             if (carrier != null)
@@ -36,12 +34,11 @@ public class HerbiCore : CritterCore
                 transform.position = carrier.transform.position + new Vector3(0,0.6f,0);
             }
         }
-        //
 	}
 
     void FixedUpdate()
     {
-        AI();
+        AI_Critter();
     }
 
 }
