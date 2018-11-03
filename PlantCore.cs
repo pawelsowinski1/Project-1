@@ -11,6 +11,7 @@ public class PlantCore : BodyCore
 
     public float stock;
     public float age;
+    public bool rooted = true;
 
     Collider2D colli;
     PolygonColliderOptimizer opti;
@@ -48,7 +49,7 @@ public class PlantCore : BodyCore
             {
                 name = "Spruce";
                 GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_spruce;
-                transform.localScale = new Vector3(age*0.02f,age*0.02f,age*0.02f);
+                transform.localScale = new Vector3(age*0.015f,age*0.015f,age*0.015f);
                 type = EType.tree;
                 
 
@@ -77,7 +78,7 @@ public class PlantCore : BodyCore
             {
                 name = "Berry bush";
                 GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_berry_bush;
-                transform.localScale = new Vector3(0.8f,0.8f,0.8f);
+                transform.localScale = new Vector3(1f,1f,1f);
                 break;
             }
         }
@@ -95,10 +96,18 @@ public class PlantCore : BodyCore
 
     }
 
+    public void Uproot()
+    {
+        rooted = false;
+        transform.Rotate(0,0,45f);
+    }
+
     // =============================================== MAIN LOOP ===================================================
 
 	void Start ()
     {
+        kind = EKind.plant;
+
 		BodyInitialize();
         PlantInitialize();
     }
@@ -107,11 +116,22 @@ public class PlantCore : BodyCore
     {
 		CalculateLand();
 		PlaceOnGround();
+
+        // enable being carried
+
+        if (isCarried == true)
+        {
+            if (carrier != null)
+            {
+                transform.position = carrier.transform.position + new Vector3(0,0.6f,0);
+            }
+        }
+
+        //
 	}
 
     void OnDestroy()
     {
-        GameCore.Core.plants.Remove(gameObject); // possible bug here //<-- nope.
-
+        GameCore.Core.plants.Remove(gameObject); 
     }
 }

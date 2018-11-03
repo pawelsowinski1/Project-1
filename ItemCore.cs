@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public enum EItem {none, rock, roundRock, sharpRock, largeRock, flatRock, flint, handaxe, birchBark, firewood, plantMaterial,
+public enum EItem {none, rock, roundRock, sharpRock, largeRock, flatRock, flint, handAxe, birchBark, firewood, plantMaterial,
                     meat, berries, fibers, smallLog, bigLog, wood, stoneSpear};
 
 public class ItemCore : BodyCore
@@ -16,6 +16,7 @@ public class ItemCore : BodyCore
     public EItem item;
 
     public bool isTool = false;
+    
 
     // ------------ METHODS ---------------
 
@@ -26,6 +27,8 @@ public class ItemCore : BodyCore
 
     void ItemInitialize()
     {
+        kind = EKind.item;
+
         switch (item)
         {
             case EItem.rock:
@@ -52,6 +55,14 @@ public class ItemCore : BodyCore
                 isTool = true;
                 break;
             }
+            case EItem.flatRock:
+            {
+                name = "Flat rock";
+                GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_flatRock;
+                transform.localScale = new Vector3(0.5f,0.5f,0.5f);
+                isTool = false;
+                break;
+            }
             case EItem.wood:
             {
                 name = "Wood";
@@ -76,13 +87,13 @@ public class ItemCore : BodyCore
             {
                 name = "Flint";
                 GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_flint;
-                transform.localScale = new Vector3(0.45f,0.45f,0.45f);
+                transform.localScale = new Vector3(0.4f,0.4f,0.4f);
                 break;
             }
-            case EItem.handaxe:
+            case EItem.handAxe:
             {
                 name = "Hand axe";
-                GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_handaxe;
+                GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_handAxe;
                 transform.localScale = new Vector3(0.4f,0.4f,0.4f);
                 isTool = true;
                 break;
@@ -92,6 +103,22 @@ public class ItemCore : BodyCore
                 name = "Stone spear";
                 GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_stoneSpear;
                 transform.localScale = new Vector3(0.8f,0.8f,0.8f);
+                isTool = true;
+                break;
+            }  
+            case EItem.fibers:
+            {
+                name = "Fibers";
+                GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_fibers;
+                transform.localScale = new Vector3(0.4f,0.4f,0.4f);
+                isTool = false;
+                break;
+            }  
+            case EItem.smallLog:
+            {
+                name = "Small log";
+                GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_smallLog;
+                transform.localScale = new Vector3(0.6f,0.6f,0.6f);
                 isTool = true;
                 break;
             }  
@@ -169,9 +196,6 @@ public class ItemCore : BodyCore
 	{
 		BodyInitialize();
         ItemInitialize();
-
-        GetComponent<SpriteRenderer>().sortingOrder = 10;
-        
 	}
 
     /// ----- UPDATE -----
@@ -182,4 +206,9 @@ public class ItemCore : BodyCore
 		PlaceOnGround();
         FollowIfCarried();
 	}
+
+    void OnDestroy()
+    {
+        GameCore.Core.items.Remove(gameObject); 
+    }
 }

@@ -18,6 +18,8 @@ public class SlashCore : InteractiveObjectCore
 
 	void Start () 
 	{
+        kind = EKind.slash;
+
         GetComponent<SpriteRenderer>().sortingOrder = 30;
 
         team = parent.GetComponent<CritterCore>().team;
@@ -25,15 +27,16 @@ public class SlashCore : InteractiveObjectCore
 
         // set position vector and life time
 
-        if (parent.GetComponent<ManCore>().tool == null)
+        if ((parent.GetComponent<InteractiveObjectCore>().type == EType.man)
+        && (parent.GetComponent<ManCore>().tool == null))
         {
 		    v.Set(0,0.85f,0); 
-            Destroy(gameObject,0.06f);
+            Destroy(gameObject,0.08f);
         }
         else
         {
             v.Set(0,1.5f,0);
-            Destroy(gameObject,0.15f);
+            Destroy(gameObject,0.18f);
         }
 
 		target = parent.GetComponent<Transform>();
@@ -41,7 +44,8 @@ public class SlashCore : InteractiveObjectCore
 		transform.position = target.position + v;
 		//transform.Rotate(0,0,90f);
 
-        if (parent.GetComponent<ManCore>().tool == null)
+        if ((parent.GetComponent<InteractiveObjectCore>().type == EType.man)
+        && (parent.GetComponent<ManCore>().tool == null))
         {
             if (parent == GameCore.Core.player) // aim at mouse position
             {
@@ -86,7 +90,9 @@ public class SlashCore : InteractiveObjectCore
 
 	void FixedUpdate()
 	{
-        if (parent.GetComponent<ManCore>().tool == null)
+        
+        if ((parent.GetComponent<InteractiveObjectCore>().type == EType.man)
+        && (parent.GetComponent<ManCore>().tool == null))
         {
             transform.Translate(Vector3.right*0.3f);
         }
@@ -107,18 +113,21 @@ public class SlashCore : InteractiveObjectCore
 
 	void OnTriggerEnter2D(Collider2D other) 
 	{
+        // if hit critter
+
         if (other.gameObject.GetComponent<CritterCore>() != null) // fixes null reference exception bug
         if (alive == true)
+        if (other.gameObject.GetComponent<CritterCore>().alive == true)
 		if (other.gameObject.GetComponent<CritterCore>().team != team)
 		{
 			other.gameObject.GetComponent<CritterCore>().damageColorIntensity = 1f;
-            other.gameObject.GetComponent<CritterCore>().hp -= 9;
+            other.gameObject.GetComponent<CritterCore>().hp -= 9f;
 
-             if ((other.gameObject.GetComponent<CritterCore>().hp <= 0)
-             && (other.gameObject.GetComponent<CritterCore>().downed == false))
-             {
-                other.gameObject.GetComponent<CritterCore>().downed = true;
-                other.transform.Rotate(0,0,90f);
+            if ((other.gameObject.GetComponent<CritterCore>().hp <= 0f)
+            && (other.gameObject.GetComponent<CritterCore>().downed == false))
+            {
+            other.gameObject.GetComponent<CritterCore>().downed = true;
+            other.transform.Rotate(0,0,90f);
 
                 if (other.gameObject == GameCore.Core.player)
                 {
@@ -128,10 +137,109 @@ public class SlashCore : InteractiveObjectCore
                         GameCore.Core.player.GetComponent<ManCore>().tool.GetComponent<ItemCore>().carrier = null;
                     }
                 }
-             }
+            }
+
+            if (other.gameObject.GetComponent<CritterCore>().hp <= -other.gameObject.GetComponent<CritterCore>().hpMax)
+            {
+            other.gameObject.GetComponent<CritterCore>().alive = false;
+            }
             
             alive = false;
             Destroy(gameObject,0.0f);
 		}
+
+        // if hit project
+
+        if (other.gameObject.GetComponent<InteractiveObjectCore>().kind == EKind.project)
+        {
+            bool b = false;
+
+            // check conditions
+
+            if (other.gameObject.GetComponent<ProjectCore>().action == EAction.cutDown)
+            {
+                if (parent.GetComponent<ManCore>().tool)
+                {
+                    if ((parent.GetComponent<ManCore>().tool.GetComponent<ItemCore>().item == EItem.sharpRock)
+                    || (parent.GetComponent<ManCore>().tool.GetComponent<ItemCore>().item == EItem.handAxe))
+                    {
+                        b = true;
+                    }
+                }
+            }
+            else
+            if (other.gameObject.GetComponent<ProjectCore>().action == EAction.obtainMeat)
+            {
+                if (parent.GetComponent<ManCore>().tool)
+                {
+                    if ((parent.GetComponent<ManCore>().tool.GetComponent<ItemCore>().item == EItem.sharpRock)
+                    || (parent.GetComponent<ManCore>().tool.GetComponent<ItemCore>().item == EItem.handAxe))
+                    {
+                        b = true;
+                    }
+                }
+            }
+            else
+            if (other.gameObject.GetComponent<ProjectCore>().action == EAction.craftHandAxe)
+            {
+                if (parent.GetComponent<ManCore>().tool)
+                {
+                    if (parent.GetComponent<ManCore>().tool.GetComponent<ItemCore>().item == EItem.roundRock)
+                    {
+                        b = true;
+                    }
+                }
+            }
+            else
+            if (other.gameObject.GetComponent<ProjectCore>().action == EAction.processHemp)
+            {
+                if (parent.GetComponent<ManCore>().tool)
+                {
+                    if (parent.GetComponent<ManCore>().tool.GetComponent<ItemCore>().item == EItem.roundRock)
+                    {
+                        b = true;
+                    }
+                }
+            }
+
+
+            // execute a hit
+
+            if (b == true)
+            {
+                if (other.GetComponent<ProjectCore>().ready == true)
+                {
+                    other.gameObject.GetComponent<ProjectCore>().colorIntensity = 1f;
+                    other.gameObject.GetComponent<ProjectCore>().progress += 1f;
+
+                    if (other.gameObject.GetComponent<ProjectCore>().progress >= other.gameObject.GetComponent<ProjectCore>().maxProgress)
+                    {   
+                        if (other.gameObject.GetComponent<ProjectCore>().action == EAction.cutDown)
+                        parent.GetComponent<ManCore>().CutDown(other.gameObject.GetComponent<ProjectCore>().target);
+                        else
+                        if (other.gameObject.GetComponent<ProjectCore>().action == EAction.obtainMeat)
+                        parent.GetComponent<ManCore>().ObtainMeat(other.gameObject.GetComponent<ProjectCore>().target);
+                        else
+                        if (other.gameObject.GetComponent<ProjectCore>().action == EAction.craftHandAxe)
+                        parent.GetComponent<ManCore>().CraftHandAxe(other.gameObject.GetComponent<ProjectCore>().target);
+                        else
+                        if (other.gameObject.GetComponent<ProjectCore>().action == EAction.processHemp)
+                        parent.GetComponent<ManCore>().ProcessHemp(other.gameObject.GetComponent<ProjectCore>().target, other.gameObject.GetComponent<ProjectCore>().obj);
+                        else
+                        if (other.gameObject.GetComponent<ProjectCore>().action == EAction.craftStoneSpear)
+                        parent.GetComponent<ManCore>().CraftStoneSpear(other.gameObject.GetComponent<ProjectCore>().target, other.gameObject.GetComponent<ProjectCore>().objectsToConsume);
+
+
+                        other.gameObject.GetComponent<ProjectCore>().target.GetComponent<InteractiveObjectCore>().hasProject = false;
+                        Destroy(other.gameObject);
+                    }
+
+                    alive = false;
+                    Destroy(gameObject);
+                }
+            }
+
+            //
+        }
 	}
 }
