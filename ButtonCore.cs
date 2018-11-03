@@ -2,16 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// Button type A: action button
-//
-// Button created by clicking RMB, allows player to make actions.
-
-public class ButtonACore : MonoBehaviour
+public class ButtonCore : MonoBehaviour
 {
     public Vector3 pos;
     public GameObject obj;
 
-    public EAction action = EAction.none;
+    public ActionEnum action = ActionEnum.none;
 
 	void Start ()
     {
@@ -28,10 +24,7 @@ public class ButtonACore : MonoBehaviour
         GameCore.Core.player.GetComponent<CritterCore>().command = action;
         GameCore.Core.player.GetComponent<CritterCore>().target = obj;
 
-        if (action == EAction.move)
-        GameCore.Core.player.GetComponent<CritterCore>().targetX = pos.x;
-
-        if (action == EAction.drop_all)
+        if (action == ActionEnum.drop)
         GameCore.Core.player.GetComponent<CritterCore>().targetX = pos.x;
 
         Destroy(gameObject);

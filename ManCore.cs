@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
-using System.Collections.Generic;  // <--- enables lists
+
 
 
 public class ManCore : CritterCore
@@ -14,6 +14,8 @@ public class ManCore : CritterCore
 
     public GameObject tool = null;
 
+    /// PickUp(1) -> override from CritterCore
+    /// Hit() -> test override without virtual function
     /// Throw()
     /// DropAll()
     /// Equip(1)
@@ -22,7 +24,70 @@ public class ManCore : CritterCore
 
     // =================================================
 
+    public override void PickUp(GameObject body) // overrides PickUp() from CritterCore
+    {
+        if (body)
+        {
+            if (body.GetComponent<BodyCore>().isCarried == false)
+            {
+                if (Mathf.Abs(transform.position.x - body.transform.position.x) < 1f)
+                {
+                    if (body.GetComponent<InteractiveObjectCore>().kind == EKind.item)
+                    {
+                        if (body.GetComponent<ItemCore>().isTool == true)
+                        {
+                            Equip(body);
+                        }
+                        else
+                        {
+                            // pick up
+
+                            carriedBodies.Add(body);
+
+                            isCarrying = true;
+                            body.GetComponent<BodyCore>().isCarried = true;
+                            body.GetComponent<BodyCore>().carrier = gameObject;
+
+                            //
+                        }
+                    }
+                    else
+                    {
+                        // pick up
+
+                        carriedBodies.Add(body);
+
+                        isCarrying = true;
+                        body.GetComponent<BodyCore>().isCarried = true;
+                        body.GetComponent<BodyCore>().carrier = gameObject;
+
+                        //
+                    }
+                }
+
+                if (GameCore.Core.player == gameObject)
+                GameCore.Core.InventoryManager();
+            }
+        }
+    }
+
     //--------------------------------------------------
+
+    new public void Hit()
+    {
+        if (hitCooldown <= 0)
+        {
+            clone = Instantiate(slashPrefab, Vector3.zero, transform.rotation) as GameObject;
+            clone.GetComponent<SlashCore>().parent = gameObject;
+            clone.transform.parent = gameObject.transform; // fixes slash wobbling bug
+            clone.GetComponent<SlashCore>().team = team;
+
+            hitCooldown = 25;
+
+        }
+	}
+    //--------------------------------------------------
+
 
     public void Throw()
 	{
@@ -104,7 +169,7 @@ public class ManCore : CritterCore
                 }
             }
         }
-    }
+    } //-> ManCore
 
     //--------------------------------------------------
 
@@ -118,7 +183,7 @@ public class ManCore : CritterCore
 
         if (GameCore.Core.player == gameObject)
         GameCore.Core.InventoryManager();
-    } 
+    } //-> ManCore
 
     //--------------------------------------------------
 
@@ -126,9 +191,9 @@ public class ManCore : CritterCore
     {
         if (obj)
         {
-            GameObject clone;
-            clone = GameCore.Core.SpawnItem(EItem.wood);
-            clone.transform.position = obj.transform.position;
+            GameObject i;
+            i = GameCore.Core.SpawnItem(EItem.wood);
+            i.transform.position = obj.transform.position;
             
             //GameCore.Core.plants.Remove(obj); <- not necessary
             Destroy(obj);
@@ -140,114 +205,115 @@ public class ManCore : CritterCore
 
     //--------------------------------------------------
 
-    public void CutDown(GameObject obj)
+    public void AI_Man()
     {
-        if (obj)
+        // if there is any command
+
+        if ((command != EAction.none)
+        && (downed == false))
         {
-            obj.GetComponent<PlantCore>().rooted = false;
-            obj.transform.Rotate(0,0,90f);
+            // if idle, walk around
+
+            if (command == EAction.idle)
+            {
+                timerMove--;
+
+                if (timerMove <= 0)
+                {
+                    targetX = transform.position.x + Random.Range(-10f,10f);
+                    action = EAction.move;
+                    timerMove = 300;
+                }
+            }
+            else
+
+            // if not idle, then set targetX, calculate distance and move towards target
+
+            if ((target)
+            && (command != EAction.attack))
+            {
+                if (command == EAction.follow) // if command is "follow", then walk around the target
+                {
+                    if (timerMove <= 0)
+                    {
+                        targetX = target.transform.position.x + Random.Range(-10f,10f);
+                        timerMove = 150;
+                    }
+
+                    timerMove--;
+                }
+                else // if command is not "follow", then walk directly to target
+                targetX = target.transform.position.x;
+            }
+
+
+            // ========== move  ===========
+
+            float dist = transform.position.x - targetX;
+
+            if (Mathf.Abs(dist) > 0.1)
+            {
+                if (targetX > transform.position.x)
+                {
+                    MoveRight();
+                }
+                else
+                {
+                    MoveLeft();
+                }
+            }
+            else // if distance to the target is very small, then execute the command
+            {
+                switch (command)
+                {
+                    case EAction.move:
+                    {
+                        command = EAction.none;
+                        break;
+                    }
+
+                    case EAction.follow:
+                    {
+                        break;
+                    }
+
+                    case EAction.pickup:
+                    {
+                        PickUp(target);
+                        command = EAction.none;
+                        break;
+                    }
+
+                    case EAction.eat:
+                    {
+                        break;
+                    }
+                    case EAction.chop:
+                    {
+                        Chop(target);
+                        command = EAction.none;
+                        break;
+                    }
+                    case EAction.drop_all:
+                    {
+                        DropAll();
+                        command = EAction.none;
+                        break;
+                    }
+                }
+            
+
+                // ====================
+            }
         }
     }
-
-    //--------------------------------------------------
-
-    public void ObtainMeat(GameObject obj)
-    {
-        if (obj)
-        {
-            GameObject clone;
-            clone = GameCore.Core.SpawnItem(EItem.meat);
-            clone.transform.position = obj.transform.position;
-
-            Destroy(obj);
-        }
-    }
-
-    //--------------------------------------------------
     
-    public void CraftHandAxe(GameObject obj)
-    {
-        if (obj)
-        {
-            GameObject clone;
-            clone = GameCore.Core.SpawnItem(EItem.handAxe);
-            clone.transform.position = obj.transform.position;
-
-            Destroy(obj);
-        }
-    }
-
-    //--------------------------------------------------
-
-    public void Convert(GameObject obj)
-    {
-        if (obj)
-        {
-            obj.GetComponent<CritterCore>().team = team;
-
-            PantsCore p = obj.GetComponentInChildren<PantsCore>();
-            p.team = team;
-            p.RefreshColor();
-        }
-    }
-
-    //--------------------------------------------------
-
-    public void ProcessHemp(GameObject obj, GameObject _hemp )
-    {
-        if (obj)
-        {
-            GameObject clone;
-            clone = GameCore.Core.SpawnItem(EItem.fibers);
-            clone.transform.position = obj.transform.position;
-
-            Destroy(_hemp);
-            GameCore.Core.InventoryManager();
-        }
-    }
-
-    //--------------------------------------------------
-
-    public void CraftStoneSpear(GameObject _objBase, List<GameObject> _objToConsume)
-    {
-        if (_objBase)
-        {
-            GameObject clone;
-            clone = GameCore.Core.SpawnItem(EItem.stoneSpear);
-            clone.transform.position = _objBase.transform.position;
-
-            for (i=0; i < _objToConsume.Count; i++)
-            {
-                Destroy(_objToConsume[i]);
-            }
-
-        }
-    }
-
-    //--------------------------------------------------
-
-    public override void ExecuteAction()
-    {
-        base.ExecuteAction();
-
-        switch (action)
-        {
-            case EAction.convert:
-            {
-                Convert(target);
-                action = EAction.none;
-                break;
-            }
-        }
-
-    }
-
-    //--------------------------------------------------
     
 	// =========================================== MAIN LOOP ===========================================
 	
 	void Start()
 	{
+
 		BodyInitialize();
 
         timerMove = 1;
@@ -262,10 +328,14 @@ public class ManCore : CritterCore
 		PlaceOnGround();
 		DamageColorize();
     }
+    
 
 	void FixedUpdate()
 	{
-        AI();
+        SearchForTarget();
+        AttackTarget();
+
+        AI_Man();
     }
 	
 	//==================================================

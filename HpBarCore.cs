@@ -16,41 +16,30 @@ public class HpBarCore : MonoBehaviour
 
 	void Start () 
     {
-		if (parent)
-        {
-            transform.parent = parent.transform;
-        }
-       
+		
 	}
 	
 	void LateUpdate () 
     {
-        if (parent)
+        float a;
+
+        a = parent.GetComponent<CritterCore>().hp / parent.GetComponent<CritterCore>().hpmax;
+
+        transform.localScale = new Vector3(2.5f * a, 0.2f, 1f);
+
+        if (parent.GetComponent<CritterCore>().hp <= 0)
         {
+            GetComponent<SpriteRenderer>().color = Color.red;
 
-            float a;
-
-            a = parent.GetComponent<CritterCore>().hp / parent.GetComponent<CritterCore>().hpMax;
-
-            transform.localScale = new Vector3(2.5f * a, 0.2f, 1f);
-
-            if (parent.GetComponent<CritterCore>().hp <= 0)
-            {
-                GetComponent<SpriteRenderer>().color = Color.red;
-
-                // if parent hp < -100 then hide
-                if (parent.GetComponent<CritterCore>().hp <= -100)
-                transform.localScale = new Vector3(0f, 0f, 0f);
-            }
-            else
-            {
-                GetComponent<SpriteRenderer>().color = Color.white;
-            }
-
-            transform.position = parent.transform.position + v1;
+            if (parent.GetComponent<CritterCore>().hp <= -100)
+            transform.localScale = new Vector3(0f, 0f, 0f);
         }
         else
-        Destroy(gameObject);
+        {
+            GetComponent<SpriteRenderer>().color = Color.white;
+        }
+
+        transform.position = parent.transform.position + v1;
 
 	}
 }

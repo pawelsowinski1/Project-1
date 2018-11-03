@@ -3,29 +3,19 @@
 using System.Collections;
 using UnityEngine;
 
-public class PantsCore : MonoBehaviour
-{
-    public int team;
+public class PantsCore : MonoBehaviour {
 
-    public void RefreshColor()
-    {
-        if (team == 0)
-        GetComponent<SpriteRenderer>().color = Color.gray;
-        else
-        if (team == 1)
-        GetComponent<SpriteRenderer>().color = Color.blue;
-        else
-        if (team == 2)
-        GetComponent<SpriteRenderer>().color = Color.red;
+    //public GameObject target;
 
-    }
-    
 	void Start()
     {
-        RefreshColor();
-
         //int i = 1;
         //GetComponent<SpriteRenderer>().sortingLayerID = i;
 	}
-}
 	
+    void LateUpdate()
+    {
+        //transform.position = target.transform.position;
+        //transform.position += new Vector3(0,0.4f,0);
+	}
+}
