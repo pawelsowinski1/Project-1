@@ -2,18 +2,21 @@
 using System.Collections;
 using System.Collections.Generic; // <--- Lists
 
-public enum EAction {none, idle, move_right, move_left, move, follow, attack, pickup, drop_all, eat, chop, gather_wood,
-                        gather_plant_material, cut_down, craftHandaxe};
+public enum EAction {none, idle, moveRight, moveLeft, move, follow, attack, pickUp, dropAll, eat, chop,cutDown, craftHandAxe, obtainMeat,
+                     convert, processHemp, craftStoneSpear, runAway, setOnFire, processTree, collectBark, addFuel, deleteProject };
+
+public enum ECommand {none, guard}
 
 public class CritterCore : BodyCore
 {
     // ================= CRITTER CORE ==================
 
-    // A creature. Can move, hit and receive damage. 
+    // A creature. Can move and pick up objects. Can hit, receive damage and be killed. 
 
     // parent class:  BodyCore
 
     // child classes: HerbiCore
+    //                CarniCore
     //                ManCore
 
     public int   team = -1;
@@ -21,15 +24,17 @@ public class CritterCore : BodyCore
 	public float damageColorIntensity = 0f;
     public int   hitCooldown = 0;
     public float hp = 100f;
-    public float hpmax = 100f;
+    public float hpMax = 100f;
     public bool  downed = false;
+    public bool  alive = true;
     public bool  isCarrying = false;
     public float targetX;
-    public int   timerMove = 1;
+    public bool  preciseMovement = false; // used for automated executing tasks - cutting down trees etc.
 
     public GameObject target = null;
+    public GameObject commandTarget = null;
     public EAction action = EAction.none;
-    public EAction command = EAction.none;
+    public ECommand command = ECommand.none;
     public List<GameObject> carriedBodies = new List<GameObject>();
 
 	public GameObject slashPrefab;
@@ -39,27 +44,34 @@ public class CritterCore : BodyCore
 
     public GameObject clone;
 
-    public int i;
+    public int timerMove = 1;
     public int timerHit = 0;
+    public int timerAI = 1;
+
+    public float targetXDistance;
+    public float commandTargetDistance;
 
     /// MoveLeft()
     /// MoveRight()
+    /// Stop()
     /// Jump()
     /// Follow(1)
     /// Hit()
-    /// PickUp()
+    /// PickUp(1)
+    /// DropItem(1)
     /// DropAll()
+    /// ExecuteAction() -> virtual
     /// DamageColorize()
     /// SearchForTarget()
     /// AttackTarget()
-    /// AI_Critter()
+    /// AI()
 
     //--------------------------------------------------
 
 	public void MoveLeft()
 	{
 		GetComponent<Rigidbody2D>().AddForce(new Vector2(-GameCore.MOVE_FORCE,0));
-        action = EAction.move_left;
+
 	}
 
     //--------------------------------------------------
@@ -67,11 +79,18 @@ public class CritterCore : BodyCore
 	public void MoveRight()
 	{
 		GetComponent<Rigidbody2D>().AddForce(new Vector2(GameCore.MOVE_FORCE,0));
-        action = EAction.move_right;
 	}
 
     //--------------------------------------------------
 	
+	public void Stop()
+	{
+		action = EAction.none;
+        preciseMovement = false;
+	}
+
+    //--------------------------------------------------
+
 	public void Jump()
 	{
         if (isFalling == false)
@@ -109,26 +128,30 @@ public class CritterCore : BodyCore
             clone.transform.parent = gameObject.transform; // fixes slash wobbling bug
             clone.GetComponent<SlashCore>().team = team;
 
-            hitCooldown = 25;
-
+            hitCooldown = 30;
         }
 	}
     
     //--------------------------------------------------
 
-    public virtual void PickUp(GameObject body) // virtual, so it can be overriden in ManCore / not sure if this is needed, though
+    public void PickUp(GameObject body)
     {
         if (body)
         {
             if (body.GetComponent<BodyCore>().isCarried == false)
             {
-                if (Mathf.Abs(transform.position.x - body.transform.position.x) < 1f)
-                {
+                //if (Mathf.Abs(transform.position.x - body.transform.position.x) < 1f)
+                //{
                     if (body.GetComponent<InteractiveObjectCore>().kind == EKind.item)
                     {
                         if (body.GetComponent<ItemCore>().isTool == true)
                         {
-                            //Equip(body);
+                            // equip
+
+                            if (GetComponent<ManCore>())
+                            {
+                                GetComponent<ManCore>().Equip(body);
+                            }
                         }
                         else
                         {
@@ -158,15 +181,34 @@ public class CritterCore : BodyCore
 
                     if (GameCore.Core.player == gameObject)
                     GameCore.Core.InventoryManager();
-                }
+                //}
             }
         }
     }
 
     //--------------------------------------------------
 
+    public void DropItem(int _index)
+    {
+        carriedBodies[_index].GetComponent<BodyCore>().carrier = null;
+        carriedBodies[_index].GetComponent<BodyCore>().isCarried = false;
+        carriedBodies[_index].GetComponent<BodyCore>().isFalling = true;
+
+        carriedBodies.RemoveAt(_index);
+
+        if (carriedBodies.Count == 0)
+        isCarrying = false;
+
+        if (GameCore.Core.player == gameObject)
+        GameCore.Core.InventoryManager();
+    }
+
+    //--------------------------------------------------
+
     public void DropAll()
     {
+        int i;
+
         if (carriedBodies.Count > 0)
         {
             int j = carriedBodies.Count;
@@ -185,6 +227,47 @@ public class CritterCore : BodyCore
 
         if (GameCore.Core.player == gameObject)
         GameCore.Core.InventoryManager();
+    }
+
+    //--------------------------------------------------
+
+    public virtual void ExecuteAction()
+    {
+        switch (action)
+        {
+            case EAction.move:
+            {
+                break;
+            }
+
+            case EAction.idle:
+            {
+                break;
+            }
+
+            case EAction.follow:
+            {
+                break;
+            }
+
+            case EAction.pickUp:
+            {
+                PickUp(target);
+                Stop();
+                break;
+            }
+
+            case EAction.eat:
+            {
+                break;
+            }
+            case EAction.dropAll:
+            {
+                DropAll();
+                Stop();
+                break;
+            }
+        }
     }
 
     //--------------------------------------------------
@@ -210,17 +293,25 @@ public class CritterCore : BodyCore
 
     public void SearchForTarget()
     {
+        int i;
+
         i = GameCore.Core.critters.Count;
         target = null;
 
         for (i=0; i <= GameCore.Core.critters.Count-1; i++)
         {
-            if ((GameCore.Core.critters[i].GetComponent<CritterCore>().team != team)
-            && (GameCore.Core.critters[i].GetComponent<CritterCore>().downed == false)
-            && (GameCore.Core.critters[i].GetComponent<CritterCore>().team != 0)) // do not attack neutral critters
+            if (GameCore.Core.critters[i])
             {
-                target = GameCore.Core.critters[i];
-                command = EAction.attack;
+                if ((GameCore.Core.critters[i].GetComponent<CritterCore>().team != team)
+                && (GameCore.Core.critters[i].GetComponent<CritterCore>().downed == false)
+                && (GameCore.Core.critters[i].GetComponent<CritterCore>().team != 0)) // do not attack neutral critters
+                {
+                    target = GameCore.Core.critters[i];
+                    action = EAction.attack;
+                    
+                    if (targetX == 0f) // fixes strange 'enemy men walking to the scene origin' bug
+                    targetX = transform.position.x;
+                }
             }
         }
 
@@ -228,11 +319,11 @@ public class CritterCore : BodyCore
         {
             if (team == 1)
             {
-                command = EAction.follow;
+                action = EAction.follow;
                 target = GameCore.Core.player;
             }
             else
-            command = EAction.idle;
+            action = EAction.idle;
         }
     }
 
@@ -240,11 +331,12 @@ public class CritterCore : BodyCore
 
     public void AttackTarget()
     {
-        if (command == EAction.attack)
+        if (target)
         {
-            if ((target != null)
-            && (downed == false))
+            if (downed == false)
             {
+                // turning
+
                 if (target.transform.position.x > transform.position.x)
                 {
                     directionRight = true;
@@ -256,33 +348,31 @@ public class CritterCore : BodyCore
                     gameObject.GetComponent<SpriteRenderer>().flipX = true;
                 }
 
-                timerMove--;
-                timerHit--;
+                // random movement around target
 
                 if (timerMove <= 0)
                 {
                     timerMove = Random.Range(30, 70);
 
                     if (target.GetComponent<Transform>().position.x > transform.position.x)
-                    targetX = target.GetComponent<Transform>().position.x - 3f;
+                    targetX = target.GetComponent<Transform>().position.x - 2f;
                     else
-                    targetX = target.GetComponent<Transform>().position.x + 3f;
+                    targetX = target.GetComponent<Transform>().position.x + 2f;
 
-                    targetX += Random.Range(-5f, 5f);
+                    targetX += Random.Range(-3f, 3f);
                 }
 
                 // attacking
 
-                if (timerHit <= 0)
+                if (timerHit <= 0) 
                 {
                     Hit();
-                    //timerHit = Random.Range(1, 100);
-                    timerHit = 1;
+                    timerHit = 1; // todo
                 }
+
+                //
             }
         }
-
-        // ---------------
 
         if (hitCooldown > 0)
         hitCooldown--;
@@ -290,102 +380,225 @@ public class CritterCore : BodyCore
     
     //--------------------------------------------------
 
-    public void AI_Critter()
+    public void AI()
     {
-        // if there is any command
-
-        if ((command != EAction.none)
-        && (downed == false))
+        if (downed == false)
         {
-            // if idle, walk around
+            // ------------- AI TIMER ---------------
 
-            if (command == EAction.idle)
+            timerAI--;
+            timerMove--;
+            timerHit--;
+
+            targetXDistance = Mathf.Abs(transform.position.x - targetX);
+
+            if (timerAI <= 0)
             {
-                timerMove--;
+                
+                timerAI = Random.Range(100,200);
 
-                if (timerMove <= 0)
+                if (commandTarget)
+                commandTargetDistance = Mathf.Abs(transform.position.x - commandTarget.transform.position.x);
+
+                // ---------- 1. commands -----------
+
+                // if there is a command
+
+                if (command != ECommand.none)
                 {
-                    targetX = transform.position.x + Random.Range(-10f,10f);
-                    action = EAction.move;
-                    timerMove = 300;
-                }
-            }
-            else
-
-            // if not idle, then set targetX, calculate distance and move towards target
-
-            if ((target)
-            && (command != EAction.attack))
-            {
-                if (command == EAction.follow) // if command is "follow", then walk around the target
-                {
-                    if (timerMove <= 0)
+                    if (command == ECommand.guard)
                     {
-                        targetX = target.transform.position.x + Random.Range(-10f,10f);
-                        timerMove = 150;
+                        if (commandTargetDistance > 30f)
+                        {
+                            action = EAction.follow;
+                            target = commandTarget;
+                        }
+                        else
+                        {
+                            SearchForTarget();
+                        }
+                    }
+                }
+                else // if command is none
+                {
+                    if (type == EType.man)
+                    {
+                        if (gameObject != GameCore.Core.player)
+                        {
+                            if (team != 0)
+                            {
+                                SearchForTarget();
+                            }
+                        }
+                    }
+                }
+
+                // ------------ 2. running away -------------
+
+                if (type == EType.herbi)
+                {
+                    GameObject o = null;
+                    float f = 0f;
+                    float dist;
+
+                    int i;
+
+                    // check for men and carni
+
+                    for (i=0; i<GameCore.Core.critters.Count; i++)
+                    {
+                        if ((GameCore.Core.critters[i].GetComponent<InteractiveObjectCore>().type == EType.man)
+                        || (GameCore.Core.critters[i].GetComponent<InteractiveObjectCore>().type == EType.carni))
+                        {
+                            if (GameCore.Core.critters[i].GetComponent<CritterCore>().downed == false)
+                            {
+                                dist = Mathf.Abs(transform.position.x - GameCore.Core.critters[i].transform.position.x);
+
+                                if (dist < 10f)
+                                {
+                                    if (o == null)
+                                    {
+                                        o = GameCore.Core.critters[i];
+                                        f = dist;
+                                    }
+                                    else
+                                    if (dist < f)
+                                    {
+                                        o = GameCore.Core.critters[i];
+                                        f = dist;
+                                    }
+                                }                                                                                   
+                            }
+                        }
                     }
 
-                    timerMove--;
+                    if (o)
+                    {
+                        target = o;
+                        action = EAction.runAway;
+                    }
+                    else
+                    {
+                        if (action == EAction.runAway)
+                        action = EAction.idle;
+                    }
+
+                    //
                 }
-                else // if command is not "follow", then walk directly to target
-                targetX = target.transform.position.x;
-            }
 
+                // ------------ 3. actions -------------
 
-            // ========== move  ===========
+                // if there is any action
 
-            float dist = transform.position.x - targetX;
-
-            if (Mathf.Abs(dist) > 0.1)
-            {
-                if (targetX > transform.position.x)
+                if (action != EAction.none)
                 {
-                    MoveRight();
+                    // if running away
+
+                    if (action == EAction.runAway)
+                    {
+                        if (target.transform.position.x > transform.position.x)
+                        targetX = 0f;
+                        else
+                        targetX = GameCore.Core.landPointX[GameCore.Core.landSections-1];
+                    }
+
+                    // if idle, set some random targetX
+
+                    else
+                    if (action == EAction.idle)
+                    {
+                        if (timerMove <= 0)
+                        {
+                            targetX = transform.position.x + Random.Range(-10f,10f);
+                            timerMove = 100 + Random.Range(0,200);
+                        }
+                    }
+
+                    // if action is "follow", then walk around the target
+
+                    else
+                    if (action == EAction.follow) 
+                    {
+                        if (target)
+                        {
+                            if (timerMove <= 0)
+                            {
+                                targetX = target.transform.position.x + Random.Range(-10f,10f);
+                                timerMove = 150;
+                            }
+                        }
+                    }
+
+                    // if action is none of the above, then walk directly to the target to execute action
+
+                    else 
+                    if (target)
+                    targetX = target.transform.position.x;
                 }
+
+                // if action is none, then set it to idle
+
                 else
-                {
-                    MoveLeft();
-                }
+                if (gameObject != GameCore.Core.player)
+                action = EAction.idle;
             }
-            else // if distance to the target is very small, then execute the command
+
+            // ---------------------- END OF AI TIMER ---------------------- 
+
+            // if attacking, set targetX and hit
+
+            if (action == EAction.attack)
             {
-                switch (command)
-                {
-                    case EAction.move:
-                    {
-                        command = EAction.none;
-                        break;
-                    }
-
-                    case EAction.follow:
-                    {
-                        break;
-                    }
-
-                    case EAction.pickup:
-                    {
-                        PickUp(target);
-                        command = EAction.none;
-                        break;
-                    }
-
-                    case EAction.eat:
-                    {
-                        break;
-                    }
-                    case EAction.drop_all:
-                    {
-                        DropAll();
-                        command = EAction.none;
-                        break;
-                    }
-                }
-            
-
-                // ====================
+                if (targetXDistance < 5f)
+                AttackTarget();
             }
+
+            // if doing any action, move towards the target to execute the action
+
+            if (action != EAction.none)
+            {
+                float f1;
+
+                if (preciseMovement == true)
+                f1 = 0.1f;
+                else
+                f1 = 1f;
+
+                bool b1 = false;
+
+
+
+                if (targetXDistance > f1)
+                {
+                    if (targetX > transform.position.x)
+                    {
+                        MoveRight();
+                        directionRight = true;
+                        GetComponent<SpriteRenderer>().flipX = false;
+                    }
+                    else
+                    {
+                        MoveLeft();
+                        directionRight = false;
+                        GetComponent<SpriteRenderer>().flipX = true;
+                    }
+
+                }
+                else // if distance to the target is very small, then execute the action
+                {
+                    ExecuteAction();
+                }
+            }
+
+            //
+
         }
     }
 
     //--------------------------------------------------
+
+    void OnDestroy()
+    {
+        GameCore.Core.critters.Remove(gameObject); 
+    }
 }

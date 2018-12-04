@@ -53,16 +53,16 @@ public class CameraCore : MonoBehaviour
          {
              // scroll up
 
-             Camera.main.orthographicSize -= 1f;
+             Camera.main.orthographicSize -= 1.5f;
 
-             if (Camera.main.orthographicSize <= 1f)
-             Camera.main.orthographicSize = 1f;
+             if (Camera.main.orthographicSize <= 2f)
+             Camera.main.orthographicSize = 2f;
          }
          else if (d < 0f)
          {
              // scroll down
 
-             Camera.main.orthographicSize += 1f;
+             Camera.main.orthographicSize += 1.5f;
          }
 
         if (player == null)

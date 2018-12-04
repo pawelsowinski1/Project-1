@@ -9,6 +9,7 @@ public class PlayerCore : ManCore
     // child classes: -
 
     public GameObject pickupTarget;
+    public GameObject chosenObject; // object chosen by clicking highlighted button type I
 
     /// SetDirection()
 
@@ -39,43 +40,50 @@ public class PlayerCore : ManCore
 		BodyInitialize();
         team = 1;
         pickupTarget = null;
-
-        
 	}
 
     /// ----- FIXED UPDATE -----
 
 	void FixedUpdate()
 	{
-        AI_Man();
+        AI();
 
         if (downed == false)
         {
-            action = EAction.none;
+            //action = EAction.none;
 
 		    if(Input.GetKey(KeyCode.A))
             {
-		        command = EAction.none;
+		        Stop();
                 MoveLeft();
+                GetComponent<SpriteRenderer>().flipX = true;
+
+                if (GameCore.Core.combatMode == false)
+                directionRight = false;
             }
 		
 		    if(Input.GetKey(KeyCode.D))
             {
-                command = EAction.none;
+                Stop();
 		        MoveRight();
+                GetComponent<SpriteRenderer>().flipX = false;
+
+                if (GameCore.Core.combatMode == false)
+                directionRight = true;
             }
 
-            if (GameCore.Core.combatMode == true)
+            if ((GameCore.Core.combatMode == true)
+            && (GameCore.Core.mouseOverGUI == false))
             {
 		        if(Input.GetMouseButton(0))
                 {
-                    command = EAction.none;
+                    Stop();
 		            Hit();
                 }
 		
 		        if(Input.GetMouseButton(1))
                 {
-                    command = EAction.none;
+                    Stop();
 		            Throw();
                 }
             }
@@ -88,18 +96,19 @@ public class PlayerCore : ManCore
 	{
         if (downed == false)
         {
+            if (GameCore.Core.combatMode == true)
             SetDirection();
 
 		    if(Input.GetKeyDown(KeyCode.W))
             {
-                command = EAction.none;
+                action = EAction.none;
                 PlaceOnGround();
 		        Jump();
             }
 
             if(Input.GetKeyDown(KeyCode.Space))
             {
-                command = EAction.none;
+                action = EAction.none;
 
                 if (pickupTarget)
                 {
@@ -111,9 +120,6 @@ public class PlayerCore : ManCore
                 else
                 DropAll();
             }
-
-            
-
         }
 
 
@@ -124,35 +130,50 @@ public class PlayerCore : ManCore
 
         if (hitCooldown > 0)
         hitCooldown--;
+
+
+        if (pickupTarget)
+        {
+            if (Mathf.Abs(pickupTarget.transform.position.x - transform.position.x) > 1.5f)
+            {
+                pickupTarget.GetComponent<SpriteRenderer>().color = Color.white;
+                pickupTarget = null;
+            }
+        }
+
+
 	}
 
     /// ----- ON TRIGGER -----
+    
+    // detecting an object to pick up
 
     void OnTriggerEnter2D(Collider2D other)
     {   
-        // todo
-        if ((other.gameObject.GetComponent<InteractiveObjectCore>().kind == EKind.item)
-        || (other.gameObject.name == "herbi(Clone)"))
-        //
+        bool b = false;
+
+        if (other.gameObject.GetComponent<InteractiveObjectCore>().kind == EKind.item)
+        b = true;
+
+        if (other.gameObject.GetComponent<InteractiveObjectCore>().type == EType.herbi)
+        b = true;
+
+        if (other.gameObject.GetComponent<InteractiveObjectCore>().kind == EKind.plant)
         {
-            if (pickupTarget != null)
-            pickupTarget.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,1f);
-            
-            pickupTarget = other.gameObject;
-            pickupTarget.GetComponent<SpriteRenderer>().color = new Color(0f,0.7f,0.7f,1f);
+            if (other.gameObject.GetComponent<PlantCore>().rooted == false) 
+            b = true;
+        }
+
+        if (b == true)
+        {
+            if (other.gameObject.GetComponent<BodyCore>().isCarried == false)
+            {
+                if (pickupTarget)
+                pickupTarget.GetComponent<SpriteRenderer>().color = Color.white;
+
+                pickupTarget = other.gameObject;
+                pickupTarget.GetComponent<SpriteRenderer>().color = Color.gray;
+            }
         }
     }
-
-    void OnTriggerExit2D(Collider2D other)
-    {
-        // todo
-        if ((other.gameObject.GetComponent<InteractiveObjectCore>().kind == EKind.item)
-        || (other.gameObject.name == "herbi(Clone)"))
-        //
-        {
-            other.gameObject.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,1f);
-        }
-    }
-
-
 }

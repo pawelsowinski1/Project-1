@@ -1,93 +1,34 @@
 ﻿using UnityEngine;
 using System.Collections;
-
+using System.Collections.Generic;  // <--- enables lists
 
 
 public class ManCore : CritterCore
 {
     // =================== MAN CORE ====================
 
-    // Human or humanoidal creature. Can pick up, equip and throw items. Can gather and craft.
+    // Human or humanoidal creature. Can use tools and throw items.
 
     // parent class:  CritterCore
     // child classes: PlayerCore
 
     public GameObject tool = null;
 
-    /// PickUp(1) -> override from CritterCore
-    /// Hit() -> test override without virtual function
     /// Throw()
-    /// DropAll()
     /// Equip(1)
     /// Unequip(1)
+    /// DropTool()
     /// Chop(1)
+    /// CutDown(1)
+    /// ObtainMeat(1)
+    /// CraftHandAxe(1)
+    /// Convert(1)
+    /// ProcessHemp(1)
+    /// SetOnFire(1)
 
     // =================================================
 
-    public override void PickUp(GameObject body) // overrides PickUp() from CritterCore
-    {
-        if (body)
-        {
-            if (body.GetComponent<BodyCore>().isCarried == false)
-            {
-                if (Mathf.Abs(transform.position.x - body.transform.position.x) < 1f)
-                {
-                    if (body.GetComponent<InteractiveObjectCore>().kind == EKind.item)
-                    {
-                        if (body.GetComponent<ItemCore>().isTool == true)
-                        {
-                            Equip(body);
-                        }
-                        else
-                        {
-                            // pick up
-
-                            carriedBodies.Add(body);
-
-                            isCarrying = true;
-                            body.GetComponent<BodyCore>().isCarried = true;
-                            body.GetComponent<BodyCore>().carrier = gameObject;
-
-                            //
-                        }
-                    }
-                    else
-                    {
-                        // pick up
-
-                        carriedBodies.Add(body);
-
-                        isCarrying = true;
-                        body.GetComponent<BodyCore>().isCarried = true;
-                        body.GetComponent<BodyCore>().carrier = gameObject;
-
-                        //
-                    }
-                }
-
-                if (GameCore.Core.player == gameObject)
-                GameCore.Core.InventoryManager();
-            }
-        }
-    }
-
     //--------------------------------------------------
-
-    new public void Hit()
-    {
-        if (hitCooldown <= 0)
-        {
-            clone = Instantiate(slashPrefab, Vector3.zero, transform.rotation) as GameObject;
-            clone.GetComponent<SlashCore>().parent = gameObject;
-            clone.transform.parent = gameObject.transform; // fixes slash wobbling bug
-            clone.GetComponent<SlashCore>().team = team;
-
-            hitCooldown = 25;
-
-        }
-	}
-    //--------------------------------------------------
-
 
     public void Throw()
 	{
@@ -149,7 +90,8 @@ public class ManCore : CritterCore
                     isCarrying = true;
                     body.GetComponent<BodyCore>().isCarried = true;
                     body.GetComponent<BodyCore>().carrier = gameObject;
-                    
+
+                    int i;
 
                     if (GameCore.Core.player == gameObject) // if player
                     {
@@ -169,7 +111,7 @@ public class ManCore : CritterCore
                 }
             }
         }
-    } //-> ManCore
+    }
 
     //--------------------------------------------------
 
@@ -183,7 +125,21 @@ public class ManCore : CritterCore
 
         if (GameCore.Core.player == gameObject)
         GameCore.Core.InventoryManager();
-    } //-> ManCore
+    } 
+
+    //--------------------------------------------------
+
+    public void DropTool()
+    {
+        tool.GetComponent<BodyCore>().carrier = null;
+        tool.GetComponent<BodyCore>().isCarried = false;
+        tool.GetComponent<BodyCore>().isFalling = true;
+
+        tool = null;
+
+        if (GameCore.Core.player == gameObject)
+        GameCore.Core.InventoryManager();
+    }
 
     //--------------------------------------------------
 
@@ -191,9 +147,9 @@ public class ManCore : CritterCore
     {
         if (obj)
         {
-            GameObject i;
-            i = GameCore.Core.SpawnItem(EItem.wood);
-            i.transform.position = obj.transform.position;
+            GameObject clone;
+            clone = GameCore.Core.SpawnItem(EItem.wood);
+            clone.transform.position = obj.transform.position;
             
             //GameCore.Core.plants.Remove(obj); <- not necessary
             Destroy(obj);
@@ -205,115 +161,289 @@ public class ManCore : CritterCore
 
     //--------------------------------------------------
 
-    public void AI_Man()
+    public void CutDown(GameObject obj)
     {
-        // if there is any command
-
-        if ((command != EAction.none)
-        && (downed == false))
+        if (obj)
         {
-            // if idle, walk around
+            obj.GetComponent<PlantCore>().rooted = false;
+            obj.transform.Rotate(0,0,90f);
+        }
+    }
 
-            if (command == EAction.idle)
-            {
-                timerMove--;
+    //--------------------------------------------------
 
-                if (timerMove <= 0)
-                {
-                    targetX = transform.position.x + Random.Range(-10f,10f);
-                    action = EAction.move;
-                    timerMove = 300;
-                }
-            }
-            else
+    public void ObtainMeat(GameObject obj)
+    {
+        if (obj)
+        {
+            GameObject clone;
+            clone = GameCore.Core.SpawnItem(EItem.meat);
+            clone.transform.position = obj.transform.position;
 
-            // if not idle, then set targetX, calculate distance and move towards target
+            Destroy(obj);
+        }
+    }
 
-            if ((target)
-            && (command != EAction.attack))
-            {
-                if (command == EAction.follow) // if command is "follow", then walk around the target
-                {
-                    if (timerMove <= 0)
-                    {
-                        targetX = target.transform.position.x + Random.Range(-10f,10f);
-                        timerMove = 150;
-                    }
+    //--------------------------------------------------
+    
+    public void CraftHandAxe(GameObject _flint)
+    {
+        if (_flint)
+        {
+            GameObject clone;
+            clone = GameCore.Core.SpawnItem(EItem.handAxe);
+            clone.transform.position = _flint.transform.position;
 
-                    timerMove--;
-                }
-                else // if command is not "follow", then walk directly to target
-                targetX = target.transform.position.x;
-            }
+            Destroy(_flint);
+        }
+    }
 
+    //--------------------------------------------------
 
-            // ========== move  ===========
+    public void Convert(GameObject obj)
+    {
+        if (obj)
+        {
+            obj.GetComponent<CritterCore>().team = team;
 
-            float dist = transform.position.x - targetX;
+            PantsCore p = obj.GetComponentInChildren<PantsCore>();
+            p.team = team;
+            p.RefreshColor();
+        }
+    }
 
-            if (Mathf.Abs(dist) > 0.1)
-            {
-                if (targetX > transform.position.x)
-                {
-                    MoveRight();
-                }
-                else
-                {
-                    MoveLeft();
-                }
-            }
-            else // if distance to the target is very small, then execute the command
-            {
-                switch (command)
-                {
-                    case EAction.move:
-                    {
-                        command = EAction.none;
-                        break;
-                    }
+    //--------------------------------------------------
 
-                    case EAction.follow:
-                    {
-                        break;
-                    }
+    public void ProcessHemp(GameObject _hemp )
+    {
+        if (_hemp)
+        {
+            GameObject clone;
+            clone = GameCore.Core.SpawnItem(EItem.fibers);
+            clone.transform.position = _hemp.transform.position;
+            clone = GameCore.Core.SpawnItem(EItem.fibers);
+            clone.transform.position = _hemp.transform.position + new Vector3(-0.2f,0f,0f);
+            clone = GameCore.Core.SpawnItem(EItem.plantMaterial);
+            clone.transform.position = _hemp.transform.position + new Vector3(0.2f,0f,0f);;
 
-                    case EAction.pickup:
-                    {
-                        PickUp(target);
-                        command = EAction.none;
-                        break;
-                    }
+            Destroy(_hemp);
+            GameCore.Core.InventoryManager();
+        }
+    }
 
-                    case EAction.eat:
-                    {
-                        break;
-                    }
-                    case EAction.chop:
-                    {
-                        Chop(target);
-                        command = EAction.none;
-                        break;
-                    }
-                    case EAction.drop_all:
-                    {
-                        DropAll();
-                        command = EAction.none;
-                        break;
-                    }
-                }
+    //--------------------------------------------------
+
+    public void SetOnFire(GameObject _obj)
+    {
+        if (_obj)
+        if (_obj.GetComponent<BodyCore>().onFire == false)
+        {
+            GameObject clone;
+
+            _obj.GetComponent<BodyCore>().onFire = true;
             
+            clone = Instantiate(GameCore.Core.firePrefab, _obj.transform.position, transform.rotation) as GameObject;
+            clone.transform.parent = _obj.transform;
 
-                // ====================
+
+            if (_obj.GetComponent<ItemCore>())
+            if (_obj.GetComponent<ItemCore>().item == EItem.firewood)
+            {
+                clone = GameCore.Core.SpawnStructure(EStructure.campfire);
+                clone.transform.position = _obj.transform.position;
+                clone.GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_firewood;
+                clone.transform.localScale = new Vector3(0.5f,0.5f,0.5f);
+
+                _obj.GetComponent<BodyCore>().onFire = true;
+            
+                Destroy(_obj);
+
             }
         }
     }
+
+    //--------------------------------------------------
+
+    public void CraftStoneSpear(GameObject _objBase, List<GameObject> _objToConsume)
+    {
+        if (_objBase)
+        {
+            GameObject clone;
+            clone = GameCore.Core.SpawnItem(EItem.stoneSpear);
+            clone.transform.position = _objBase.transform.position;
+
+            int i;
+
+            for (i=0; i < _objToConsume.Count; i++)
+            {
+                Destroy(_objToConsume[i]);
+            }
+
+        }
+    }
+
+    //--------------------------------------------------
+
+    public void ProcessTree(GameObject _tree)
+    {
+        if (_tree)
+        {
+            GameObject clone;
+            clone = GameCore.Core.SpawnItem(EItem.smallLog);
+            clone.transform.position = _tree.transform.position;
+            clone = GameCore.Core.SpawnItem(EItem.firewood);
+            clone.transform.position = _tree.transform.position + new Vector3(-0.2f,0f,0f);
+            clone = GameCore.Core.SpawnItem(EItem.plantMaterial);
+            clone.transform.position = _tree.transform.position + new Vector3(0.2f,0f,0f);
+
+            Destroy(_tree);
+        }
+    }
+
+    //--------------------------------------------------
+
+    public void CollectBark(GameObject _tree)
+    {
+        if (_tree)
+        {
+            GameObject clone;
+            clone = GameCore.Core.SpawnItem(EItem.bark);
+            clone.transform.position = _tree.transform.position + new Vector3(0f,0f,0f);
+        }
+    }
+
+    //--------------------------------------------------
     
+    public void AddFuel(GameObject _fireplace, GameObject _fuel)
+    {
+        if (_fuel)
+        {
+            _fireplace.GetComponent<FireplaceCore>().GainFuel(_fuel);
+            Destroy(_fuel);
+
+            if (_fuel == tool)
+            tool = null;
+            else
+            carriedBodies.Remove(_fuel);
+
+            if (gameObject == GameCore.Core.player)
+            {
+                GameCore.Core.InventoryManager();
+            }
+        }
+    }
+
+    //--------------------------------------------------
+
+    public override void ExecuteAction()
+    {
+        base.ExecuteAction();
+
+        switch (action)
+        {
+            case EAction.convert:
+            {
+                Convert(target);
+                Stop();
+                break;
+            }
+
+            case EAction.cutDown:
+            {
+                if (tool)
+                {
+                    if ((tool.GetComponent<ItemCore>().item == EItem.sharpRock)
+                    || (tool.GetComponent<ItemCore>().item == EItem.handAxe))
+                    {
+                        Hit();
+                    }
+                }
+                break;
+            }
+
+            case EAction.craftHandAxe:
+            {
+                if (tool)
+                {
+                    if (tool.GetComponent<ItemCore>().item == EItem.roundRock)
+                    {
+                        Hit();
+                    }
+                }
+                break;
+            }
+
+            case EAction.processHemp:
+            {
+                if (tool)
+                {
+                    if (tool.GetComponent<ItemCore>().item == EItem.roundRock)
+                    {
+                        if (target.GetComponent<InteractiveObjectCore>().projectAttached)
+                        {
+                            if (target.GetComponent<InteractiveObjectCore>().projectAttached.GetComponent<ProjectCore>().ready == true)
+                            Hit();
+                        }
+                    }
+                }
+                break;
+            }
+
+            case EAction.setOnFire:
+            {
+                SetOnFire(target);
+                Stop();
+                break;
+            }
+
+            case EAction.processTree:
+            {
+                if (tool)
+                {
+                    if ((tool.GetComponent<ItemCore>().item == EItem.sharpRock)
+                    || (tool.GetComponent<ItemCore>().item == EItem.handAxe))
+                    {
+                        Hit();
+                    }
+                }
+                break;
+            }
+
+            case EAction.collectBark:
+            {
+                if (tool)
+                {
+                    if ((tool.GetComponent<ItemCore>().item == EItem.sharpRock)
+                    || (tool.GetComponent<ItemCore>().item == EItem.handAxe))
+                    {
+                        Hit();
+                    }
+                }
+                break;
+            }
+
+            case EAction.addFuel:
+            {
+                if (gameObject == GameCore.Core.player)
+                AddFuel(target, GameCore.Core.player.GetComponent<PlayerCore>().chosenObject);
+                //else
+                //AddFuel(target, GameCore.Core.player.GetComponent<PlayerCore>().?);
+
+                break;
+            }
+
+
+
+
+        }
+    }
+
+    //--------------------------------------------------
     
 	// =========================================== MAIN LOOP ===========================================
 	
 	void Start()
 	{
-
 		BodyInitialize();
 
         timerMove = 1;
@@ -328,14 +458,10 @@ public class ManCore : CritterCore
 		PlaceOnGround();
 		DamageColorize();
     }
-    
 
 	void FixedUpdate()
 	{
-        SearchForTarget();
-        AttackTarget();
-
-        AI_Man();
+        AI();
     }
 	
 	//==================================================

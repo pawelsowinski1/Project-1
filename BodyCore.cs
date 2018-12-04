@@ -3,18 +3,20 @@ using System.Collections;
 
 public class BodyCore : InteractiveObjectCore 
 {
-	//================== BODY CORE =====================
+	//================== BODY =====================
 
-    // Enables gravity, collision with ground, and allows object to be picked up by a critter.
+    // A small, movable physical body.
+
+    // Enables gravity and collision with ground.
+    // Allows object to be picked up by a critter.
+
+    // =============================================
 
     // parent class:  InteractiveObjectCore
 
     // child classes: CritterCore
     //                ItemCore
 
-    public int    land;
-	public int    landSection;
-	public float  landSteepness;
     public bool   isFalling = true;
     public bool   isCarried = false;
 
@@ -31,28 +33,6 @@ public class BodyCore : InteractiveObjectCore
         land = GameCore.Core.currentLand;
         isFalling = true;
 		gameObject.GetComponent<Rigidbody2D>().gravityScale = GameCore.GRAVITY;
-	}
-
-	//----------------------------------------------
-
-	public void CalculateLand()
-	{
-		// calculates current landSection and landSteepness
-		
-		int i;
-		
-		for (i=1; i<GameCore.Core.landSections; i++) // BUG HERE ! NullReferenceException: Object reference not set to an instance of an object
-		{
-			if (transform.position.x < GameCore.Core.landPointX[i])
-			{
-				if (i != landSection)
-				{
-					landSection = i;
-					landSteepness = Mathf.Atan2(GameCore.Core.landPointY[i]-GameCore.Core.landPointY[i-1],GameCore.Core.landPointX[i]-GameCore.Core.landPointX[i-1]);
-				}
-				break;
-			}
-		}
 	}
 
 	//----------------------------------------------

@@ -1,21 +1,29 @@
-﻿//06-11-2017
-
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 
-public class PantsCore : MonoBehaviour {
+public class PantsCore : MonoBehaviour
+{
+    public int team;
 
-    //public GameObject target;
+    public void RefreshColor()
+    {
+        if (transform.parent.GetComponent<CritterCore>().team == 0)
+        GetComponent<SpriteRenderer>().color = Color.gray;
+        else
+        if (transform.parent.GetComponent<CritterCore>().team == 1)
+        GetComponent<SpriteRenderer>().color = Color.blue;
+        else
+        if (transform.parent.GetComponent<CritterCore>().team == 2)
+        GetComponent<SpriteRenderer>().color = Color.red;
 
+    }
+    
 	void Start()
     {
+        RefreshColor();
+
         //int i = 1;
         //GetComponent<SpriteRenderer>().sortingLayerID = i;
 	}
-	
-    void LateUpdate()
-    {
-        //transform.position = target.transform.position;
-        //transform.position += new Vector3(0,0.4f,0);
-	}
 }
+	
