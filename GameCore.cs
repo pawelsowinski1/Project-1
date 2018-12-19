@@ -3,31 +3,48 @@ using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;  // <--- enables lists
 
+public enum EWorldEvent {none, carniEnter, unitRandomMove, spawnCarniPack};
 
 public class GameCore : MonoBehaviour
 {
     string consoleOutput = 
-    /*
-    "\n Version: 0.0.3"+
+    
+    "\n Prototype"+ 
+    "\n Version: 0.0.4"+ 
 
     "\n Focus:"+
-    "\n - deleting projects"+
+    "\n - simple object name as cursor label"+
+    "\n - building panel"+
+    "\n - ground texture"+
     "\n"+
     "\n To do:"+
-    "\n - wildmen attitude parameter"+
-    "\n - wildmen gathering at campfires"+
-    "\n - critters moving between lands"+
-    "\n - building shelters from plant material"+
-    "\n - men picking up tools"+
+    "\n - men dropping tools when downed"+
+    "\n - hunger and sleep"+
+    "\n - units moving to adjacent, discovered lands"+
+    "\n - carni group roaming through the lands at night"+
+    "\n - wildman class: attitude parameter is needed only for wildmen; tribesmen will have team attitude"+
+    "\n - men throwing tools"+
+    "\n - sky changing color"+
     "\n - collecting blue, red, yellow and green points"+
+    "\n - hide edges of the land"+
+    "\n - wildmen running away to adjacent lands"+
+    "\n - different tool damage and speed"+
+    "\n - thrust spears instead of swinging"+
+    "\n - sun, stars and moon"+
+    "\n - saving world to a file"+
     "\n"+
     "\n Done:"+
-    "\n - lighting system"+
-    "\n - campfires"+
-    "\n - day and night";
-    */
+    "\n - wildmen gathering near campfires at night"+
+    "\n - men picking up tools"+
+    "\n - generating world events"+
+    "\n - units moving between lands via world events"+
+    "\n - time manipulation"+
+    "\n - timeStamp measured in days"+
+    "\n - showing units on world map"+
+    "\n - fixed worldmap looping"+
+    "\n - wildmen have attitude towards player";
 
-    
+    /*
     "\n version 0.0.3" +
     "\n release date: 04-12-2018"+
     "\n " +
@@ -41,6 +58,7 @@ public class GameCore : MonoBehaviour
     "\n W, A, D - move and jump" +
     "\n Space - pick up item / drop all items" +
     "\n " +
+    "\n H - show help on / off" +
     "\n F - fullscreen on / off" +
     "\n C - combat mode on / off" +
     "\n O - world map on / off" +
@@ -57,7 +75,7 @@ public class GameCore : MonoBehaviour
     "\n " +
     "\n "
     ;
-    
+    */
     
 
     // =================================================== GAME CORE ========================================================
@@ -90,7 +108,7 @@ public class GameCore : MonoBehaviour
     GameObject birchPrefab;
     // --------
 
-    public Sprite spr_man;
+    public Sprite spr_unit;
 
     public Sprite spr_spruce;
     public Sprite spr_birch;
@@ -120,10 +138,11 @@ public class GameCore : MonoBehaviour
     public const int   LAND_SECTIONS = 300;
     public const float GRAVITY = 5f;
     public const float JUMP_FORCE = 12f;
-    public const float MOVE_FORCE = 35f;
+    public const float MOVE_FORCE = 40f;
 
-    public int     timeDay = 0;
-    public int     timeHour = 12;
+    public float   timeStamp;
+    public int     timeDay;
+    public int     timeHour;
     public float   timeMinute = 0f;
     public float   timePrevious = 0f; // Time.time value from previous frame
     public float   timeIncrement = 0f; // calculated increment of Time.time per frame
@@ -133,19 +152,26 @@ public class GameCore : MonoBehaviour
 	public float[] landPointX;
 	public float[] landPointY;
 
+    public GameObject ground;
+    public GameObject background1;
+    public GameObject background2;
+    public GameObject background3;
+
     public GameObject player;
     public GameObject worldMap;
     public GameObject sunlight;
+    public GameObject buildPanel;
 
     public Vector3 mousePos;
     public GameObject RMBclickedObj;
 
-    public bool    combatMode = true;
-    public bool    mouseOverGUI = false;
-    public bool    chooseFromInventoryMode = false; // choosing an object from inventory (adding fuel to campfire etc.)
+    public bool combatMode = true;
+    public bool mouseOverGUI = false;
+    public bool chooseFromInventoryMode = false; // choosing an object from inventory (adding fuel to campfire etc.)
+    public bool hideHUD = false;
 
-    public bool    travelMode = false;
-    public bool    travelRight = false;
+    public bool travelMode = false;
+    public bool travelRight = false;
 
     public Canvas myCanvas;
     public Mesh mesh;
@@ -160,6 +186,8 @@ public class GameCore : MonoBehaviour
     public List<Land> lands = new List<Land>();
     public List<Node> nodes = new List<Node>();
     public List<Team> teams = new List<Team>();
+    public List<Unit> units = new List<Unit>();
+    public List<WorldEvent> events = new List<WorldEvent>();
 
     public List<GameObject> critters   = new List<GameObject>();
     public List<GameObject> items      = new List<GameObject>();
@@ -432,32 +460,53 @@ public class GameCore : MonoBehaviour
 
         public void SpawnCarniPack(Vector3 _position)
         {
+            // add new team
+
             Core.teams.Add(new Team());
+            Team _team = Core.teams[Core.teams.Count-1];
+            _team.index = Core.teams.Count-1;
+            _team.name = "Team "+_team.index;
+            _team.color = Color.magenta;
+
+            // add new unit
+
+            _team.units.Add(new Unit());
+            Unit _unit = _team.units[_team.units.Count-1];
+            Core.units.Add(_unit);
+            _unit.land = Core.currentLand;
+
+            Core.worldMap.GetComponent<WorldMapCore>().RedrawMap();
+
+            // add carni
+
+            GameObject clone;
 
             for (i=0; i<=4; i++)
             {
-                Core.clone = Instantiate (Core.carniPrefab, _position, Core.transform.rotation) as GameObject;
+                clone = Instantiate (Core.carniPrefab, _position, Quaternion.identity) as GameObject;
 
                 if (index == Core.currentLand)
                 {
-                    Core.critters.Add(Core.clone);
+                    Core.critters.Add(clone);
                 }
                 else
                 {
-                    critters.Add(Core.clone);
-                    Core.clone.SetActive(false);
+                    critters.Add(clone);
+                    clone.SetActive(false);
                 }
                 
-                Core.teams[Core.teams.Count-1].members.Add(Core.clone);
-                Core.clone.GetComponent<CritterCore>().team = Core.teams.Count-1;
+                _team.members.Add(clone);
+                _unit.members.Add(clone);
 
-                Core.clone.transform.position = new Vector3(Core.clone.transform.position.x, Core.clone.transform.position.y, 0f);
+                clone.GetComponent<CritterCore>().team = Core.teams.Count-1;
 
-                Core.clone.GetComponent<CritterCore>().command = ECommand.guard;
-                Core.clone.GetComponent<CritterCore>().commandTarget = Core.teams[Core.teams.Count-1].members[0];
+                clone.transform.position = new Vector3(clone.transform.position.x, clone.transform.position.y, 0f);
+
+                clone.GetComponent<CritterCore>().command = ECommand.guard;
+                clone.GetComponent<CritterCore>().commandTarget = _team.members[0];
             }
 
-            Core.teams[Core.teams.Count-1].members[0].GetComponent<CritterCore>().command = ECommand.none;
+            _team.members[0].GetComponent<CritterCore>().command = ECommand.none;
         }
 
         // spawn man
@@ -520,30 +569,58 @@ public class GameCore : MonoBehaviour
 
     public class Team
     {
-        public int index;
+        public int   index;
+        public string name;
+        public Color color;
 
         public List<GameObject> members = new List<GameObject>();
 
+        public List<Unit> units = new List<Unit>();
     }
 
     // ---------------------------------------
+
+    public class Unit
+    {
+        // unit on the worldmap
+
+        public int team;
+        public int land;
+
+        public List<GameObject> members = new List<GameObject>();
+    }
+
+    // ---------------------------------------
+
+    public class WorldEvent
+    {
+        public float timeStamp;
+
+        public bool executed = false;
+
+        public EWorldEvent type = EWorldEvent.none;
+
+    }
 
     //  ---------------- METHODS ------------------
 
     /// SetupFirstLand()
     /// InitializeIngamePrefabs()
+    
     /// LoadLand()
     /// ExploreNodeL(2)
     /// ExploreNodeR(2)
-    /// HighlightObjectUnderMouse()
+    /// CreateWorldEvent(1)
 
     /// SpawnPlayer()
     /// SpawnMan(1)
     /// SpawnHerbi()
     /// SpawnItem(1)
     /// SpawnPlant(2)
-    /// SpawnStructures(1)
 
+    /// LeftMouseButton()
+    /// RightMouseButton()
+    /// HighlightObjectUnderMouse()
     /// CreateButtonAList()
     /// RMBManager()
     /// AddButtonA(3)
@@ -725,12 +802,15 @@ public class GameCore : MonoBehaviour
         }
 
         // teleport player
+
         critters.Add(player);
 
-        // not much optimized :/
-        //DrawLand();
-        //RedrawLand();
-        //
+        // redraw ground and backgrounds
+
+        ground.GetComponent<BackgroundCore>().Draw();
+        background1.GetComponent<BackgroundCore>().Draw();
+        background2.GetComponent<BackgroundCore>().Draw();
+        background3.GetComponent<BackgroundCore>().Draw();
     }
 
     //-----------------------------------------------------
@@ -918,13 +998,40 @@ public class GameCore : MonoBehaviour
             if ((nodes[i].a == lands[currentLand].nodeL.a + _a)
             && (nodes[i].b == lands[currentLand].nodeL.b + _b))
             {
+                // node already exists there
+
                 thisNodeExists = true;
-                break; // if node exists, stop searching
+                
+                if ((nodes[i] != lands[currentLand].nodeR)
+                && (nodes[i] != lands[currentLand].nodeL))
+                {
+                    // generate new land
+                        
+                    land = new Land();
+                    lands.Add(land);
+                    land.index = lands.Count-1;
+                    land.GenerateLand();
+
+                    if ((_a == 1) || (_b == -1))
+                    {
+                        land.nodeL = nodes[i];
+                        land.nodeR = lands[currentLand].nodeL;
+                    }
+                    else
+                    {
+                        land.nodeL = lands[currentLand].nodeL;
+                        land.nodeR = nodes[i];
+                    }
+                        
+                }
+                
+                break;
             } 
-            // if not, keep searching
         }
 
-        if (thisNodeExists == false)  // if node not found
+        // if node not found
+
+        if (thisNodeExists == false)  
         {
             // generate new node
 
@@ -933,13 +1040,12 @@ public class GameCore : MonoBehaviour
             node.a = lands[currentLand].nodeL.a + _a;
             node.b = lands[currentLand].nodeL.b + _b;
 
-            // generate new land towards new node
-
+            // generate new land
+            
             land = new Land();
             lands.Add(land);
             land.index = lands.Count-1;
             land.GenerateLand();
-            
 
             if ((_a == 1) || (_b == -1))
             {
@@ -965,10 +1071,34 @@ public class GameCore : MonoBehaviour
             if ((nodes[i].a == lands[currentLand].nodeR.a + _a)
             && (nodes[i].b == lands[currentLand].nodeR.b + _b))
             {                
+                // node already exists there
+
                 thisNodeExists = true;
-                break; // if node exists, stop searching
+
+                if ((nodes[i] != lands[currentLand].nodeR)
+                && (nodes[i] != lands[currentLand].nodeL))
+                {
+                    // generate new land
+                
+                    land = new Land();
+                    lands.Add(land);
+                    land.index = lands.Count-1;
+                    land.GenerateLand();
+
+                    if ((_a == 1) || (_b == -1))
+                    {
+                        land.nodeL = nodes[i];
+                        land.nodeR = lands[currentLand].nodeR;
+                    }
+                    else
+                    {
+                        land.nodeL = lands[currentLand].nodeR;
+                        land.nodeR = nodes[i];
+                    }
+                }
+                
+                break;
             }
-            // if not, keep searching
         }
 
         if (thisNodeExists == false) // if node not found
@@ -980,7 +1110,7 @@ public class GameCore : MonoBehaviour
             node.a = lands[currentLand].nodeR.a + _a;
             node.b = lands[currentLand].nodeR.b + _b;
 
-            // generate new land towards new node
+            // generate new land
 
             land = new Land();
             lands.Add(land);
@@ -996,6 +1126,197 @@ public class GameCore : MonoBehaviour
             {
                 land.nodeL = lands[currentLand].nodeR;
                 land.nodeR = node;
+            }
+        }
+    }
+
+    //-----------------------------------------------------
+
+    public void CreateWorldEvent(EWorldEvent _type, float _timeStamp)
+    {
+        WorldEvent _event = new WorldEvent();
+
+        Core.events.Add(_event);
+        _event.timeStamp = _timeStamp;
+        _event.type = _type;
+
+        switch (_type)
+        {
+            case EWorldEvent.carniEnter:
+            {
+                // ...
+
+                break;
+            }
+        }
+    }
+
+    //-----------------------------------------------------
+
+    public void ExecuteWorldEvent(WorldEvent _event)
+    {
+        if (_event.executed == false)
+        {
+            print(_event.type);
+
+            switch (_event.type)
+            {
+                case EWorldEvent.carniEnter:
+                {
+                    Core.lands[currentLand].SpawnCarniPack(Core.mousePos);
+
+                    _event.executed = true;
+                    break;
+                }
+
+                case EWorldEvent.unitRandomMove:
+                {
+                    if (units.Count > 1)
+                    {
+                        int r = Random.Range(1,units.Count);
+
+                        if (units[r].land != currentLand)
+                        {
+                            int a;  // destination land
+
+                            a = Random.Range(0, lands.Count); 
+
+                            for (i=0; i < units[r].members.Count; i++)
+                            {
+                                // delete critter from one land
+
+                                lands[units[r].land].critters.Remove(units[r].members[i]);
+
+                                // change critter's land
+
+                                units[r].members[i].GetComponent<InteractiveObjectCore>().land = a;
+
+                                // add critter to other land
+
+                                if (a == currentLand)
+                                {
+                                    critters.Add(units[r].members[i]);
+                                    units[r].members[i].SetActive(true);
+                                }
+                                else
+                                {
+                                    lands[a].critters.Add(units[r].members[i]);
+                                }
+                            }
+                        
+                            units[r].land = a;
+                        
+                            if (worldMap.activeSelf == true)
+                            {
+                                worldMap.GetComponent<WorldMapCore>().RedrawMap();
+                            }
+                        }
+                    }
+
+                    CreateWorldEvent(EWorldEvent.unitRandomMove,timeStamp+0.5f/24f);
+
+                    _event.executed = true;
+                    events.Remove(_event);
+
+                    break;
+                }
+
+            }
+        }
+    }
+
+    //-----------------------------------------------------
+
+    void LeftMouseButton()
+    {
+        // ----- LEFT MOUSE BUTTON ------
+
+        if(Input.GetMouseButtonDown(0))
+        {
+            if ((chooseFromInventoryMode == true)
+            && (mouseOverGUI == false))
+            {
+                chooseFromInventoryMode = false;
+                InventoryManager(); // for clearing color from buttons type I
+            }
+
+            if ((combatMode == false)
+            && (mouseOverGUI == false))
+            {
+                // move player
+                
+                Vector3 v1;
+                v1 =  Camera.main.ScreenToWorldPoint(Input.mousePosition);
+
+                player.GetComponent<CritterCore>().targetX = v1.x;
+                player.GetComponent<CritterCore>().action = EAction.move;
+                player.GetComponent<CritterCore>().target = null;
+                player.GetComponent<CritterCore>().preciseMovement = false;
+            }
+        }
+
+        if(Input.GetMouseButtonUp(0))
+        {
+            if (combatMode == false)
+            {
+                // clear buttons (type A)    
+
+                for (i=0; i<=buttonsA.Count-1; i++)
+                {
+                    Destroy(buttonsA[i]);
+                }
+
+                buttonsA.Clear();
+                RMBclickedObj = null;
+
+                // clear existing buttons of type O
+
+                for (i=0; i<buttonsO.Count; i++)
+                {
+                    Destroy(buttonsO[i]);
+                }
+
+                buttonsO.Clear();
+            }
+        }
+    }
+
+    //-----------------------------------------------------
+
+    void RightMouseButton()
+    {
+        // ----- RIGHT MOUSE BUTTON ------
+
+        if(Input.GetMouseButtonDown(1))
+        {
+            if (combatMode == false)
+            {
+                // clear buttons (type A)  
+
+                for (i=0; i<buttonsA.Count; i++)
+                {
+                    Destroy(buttonsA[i]);
+                }
+
+                buttonsA.Clear();
+                RMBclickedObj = null;
+
+                //
+
+                // clear buttons (type O)  
+
+                for (i=0; i<buttonsO.Count; i++)
+                {
+                    Destroy(buttonsO[i]);
+                }
+
+                buttonsO.Clear();
+
+                //
+
+                // check for new objects under mouse
+
+                RMBManager();
             }
         }
     }
@@ -1045,137 +1366,155 @@ public class GameCore : MonoBehaviour
     public void CreateButtonAList()
     {
         int ind = 0; // button index   
-        
-        // item
-        
-        if (RMBclickedObj.GetComponent<ItemCore>())
-        {   
-            if (RMBclickedObj.GetComponent<ItemCore>().isCarried == false)
-            {
-                // if any item
 
-                AddButtonA(ind,"pick up",EAction.pickUp);
-                ind++;
+        // if empty space was RMB clicked
 
-                // if specific item
-
-                if (RMBclickedObj.GetComponent<ItemCore>().item == EItem.flint)
-                {
-                    AddButtonA(ind,"craft hand axe",EAction.craftHandAxe);
-                    ind++;
-                }
-                else
-                if (RMBclickedObj.GetComponent<ItemCore>().item == EItem.bark)
-                {
-                    AddButtonA(ind,"set on fire",EAction.setOnFire);
-                    ind++;
-                }
-                else
-                if (RMBclickedObj.GetComponent<ItemCore>().item == EItem.firewood)
-                {
-                    if (player.GetComponent<ManCore>().tool)
-                    {
-                        if ((player.GetComponent<ManCore>().tool.GetComponent<ItemCore>().item == EItem.bark)
-                        && (player.GetComponent<ManCore>().tool.GetComponent<ItemCore>().onFire == true))
-                        {
-                            AddButtonA(ind,"set on fire",EAction.setOnFire);
-                            ind++;
-                        }
-                    }
-                }
-            }
-        }
-
-        // structure
-
-        else
-        if (RMBclickedObj.GetComponent<InteractiveObjectCore>().kind == EKind.structure)
+        if (RMBclickedObj == null)
         {
-            // if specific structure
-
-            if (RMBclickedObj.GetComponent<StructureCore>().structure == EStructure.campfire)
-            {
-                AddButtonA(ind,"add fuel",EAction.addFuel);
-                ind++;
-
-            }
-
+            AddButtonA(ind,"build",EAction.openBuildPanel);
+            ind++;
         }
-
-        // plant
-
-        else
-        if (RMBclickedObj.GetComponent<InteractiveObjectCore>().kind == EKind.plant)
-        {
-            // if rooted
-            
-            if (RMBclickedObj.GetComponent<PlantCore>().rooted == true)
-            {
-                AddButtonA(ind,"cut down",EAction.cutDown);
-                ind++;
-
-            }
-            else // if not rooted
-            {
-                AddButtonA(ind,"pick up",EAction.pickUp);
-                ind++;
-
-                if (RMBclickedObj.GetComponent<InteractiveObjectCore>().type == EType.tree)
-                {
-                    AddButtonA(ind,"process tree",EAction.processTree);
-                    ind++;
-                }
-            }
-
-            // if specific plant
-
-            if (RMBclickedObj.GetComponent<PlantCore>().plant == EPlant.hemp)
-            {
-                if (RMBclickedObj.GetComponent<PlantCore>().rooted == false)
-                {
-                    AddButtonA(ind,"process hemp",EAction.processHemp);
-                    ind++;
-                }
-            }
-            else
-            if (RMBclickedObj.GetComponent<PlantCore>().plant == EPlant.birch)
-            {
-                AddButtonA(ind,"collect bark",EAction.collectBark);
-                ind++;
-            }
-
-        }
-
-        // critter
-
-        else
-        if (RMBclickedObj.GetComponent<InteractiveObjectCore>().kind == EKind.critter)
-        {
-            if (RMBclickedObj.GetComponent<InteractiveObjectCore>().type == EType.herbi)
-            {
-                if ((RMBclickedObj.GetComponent<CritterCore>().alive == false))
-                {
-                    AddButtonA(ind,"obtain meat",EAction.obtainMeat);
-                    ind++;
-                }
-            }
-            else
-            if (RMBclickedObj.GetComponent<InteractiveObjectCore>().type == EType.man)
-            {
-                if ((RMBclickedObj.GetComponent<CritterCore>().alive == true)
-                && (RMBclickedObj != player))
-                {
-                    AddButtonA(ind,"convert",EAction.convert);
-                    ind++;
-                }
-            }
-        }
-        /*
+                
         if (player.GetComponent<CritterCore>().carriedBodies.Count > 0)
         {
             AddButtonA(i,"drop all here",EAction.dropAll);
             ind++;
-        }*/
+        }
+
+        // if an object was RMB clicked
+        else
+        {
+            // item
+        
+            if (RMBclickedObj.GetComponent<ItemCore>())
+            {   
+                if (RMBclickedObj.GetComponent<ItemCore>().isCarried == false)
+                {
+                    // if any item
+
+                    AddButtonA(ind,"pick up",EAction.pickUp);
+                    ind++;
+
+                    // if specific item
+
+                    if (RMBclickedObj.GetComponent<ItemCore>().item == EItem.flint)
+                    {
+                        AddButtonA(ind,"craft hand axe",EAction.craftHandAxe);
+                        ind++;
+                    }
+                    else
+                    if (RMBclickedObj.GetComponent<ItemCore>().item == EItem.bark)
+                    {
+                        AddButtonA(ind,"set on fire",EAction.setOnFire);
+                        ind++;
+                    }
+                    else
+                    if (RMBclickedObj.GetComponent<ItemCore>().item == EItem.firewood)
+                    {
+                        if (player.GetComponent<ManCore>().tool)
+                        {
+                            if ((player.GetComponent<ManCore>().tool.GetComponent<ItemCore>().item == EItem.bark)
+                            && (player.GetComponent<ManCore>().tool.GetComponent<ItemCore>().onFire == true))
+                            {
+                                AddButtonA(ind,"set on fire",EAction.setOnFire);
+                                ind++;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // structure
+
+            else
+            if (RMBclickedObj.GetComponent<StructureCore>())
+            {
+                // if specific structure
+
+                if (RMBclickedObj.GetComponent<StructureCore>().structure == EStructure.campfire)
+                {
+                    AddButtonA(ind,"add fuel",EAction.addFuel);
+                    ind++;
+
+                }
+
+            }
+
+            // plant
+
+            else
+            if (RMBclickedObj.GetComponent<PlantCore>())
+            {
+                // if rooted
+            
+                if (RMBclickedObj.GetComponent<PlantCore>().rooted == true)
+                {
+                    AddButtonA(ind,"cut down",EAction.cutDown);
+                    ind++;
+
+                }
+                else // if not rooted
+                {
+                    AddButtonA(ind,"pick up",EAction.pickUp);
+                    ind++;
+
+                    if (RMBclickedObj.GetComponent<InteractiveObjectCore>().type == EType.tree)
+                    {
+                        AddButtonA(ind,"process tree",EAction.processTree);
+                        ind++;
+                    }
+                }
+
+                // if specific plant
+
+                if (RMBclickedObj.GetComponent<PlantCore>().plant == EPlant.hemp)
+                {
+                    if (RMBclickedObj.GetComponent<PlantCore>().rooted == false)
+                    {
+                        AddButtonA(ind,"process hemp",EAction.processHemp);
+                        ind++;
+                    }
+                }
+                else
+                if (RMBclickedObj.GetComponent<PlantCore>().plant == EPlant.birch)
+                {
+                    AddButtonA(ind,"collect bark",EAction.collectBark);
+                    ind++;
+                }
+
+            }
+
+            // critter
+
+            else
+            if (RMBclickedObj.GetComponent<CritterCore>())
+            {
+                if (RMBclickedObj.GetComponent<HerbiCore>())
+                {
+                    if ((RMBclickedObj.GetComponent<CritterCore>().alive == false))
+                    {
+                        AddButtonA(ind,"obtain meat",EAction.obtainMeat);
+                        ind++;
+                    }
+                }
+                else
+                if (RMBclickedObj.GetComponent<ManCore>())
+                {
+                    if ((RMBclickedObj.GetComponent<CritterCore>().alive == true)
+                    && (RMBclickedObj != player))
+                    {
+                        AddButtonA(ind,"convert",EAction.convert);
+                        ind++;
+                    }
+                }
+            }
+            else
+            if (RMBclickedObj.GetComponent<ProjectCore>())
+            {
+                AddButtonA(ind,"delete",EAction.deleteProject);
+                ind++;
+            }
+        }
     }
 
     //-----------------------------------------------------
@@ -1183,11 +1522,16 @@ public class GameCore : MonoBehaviour
     void RMBManager()
     {
         if (rhit2D.Length > 0)
+        RMBclickedObj = rhit2D[0].transform.gameObject;
+
+        CreateButtonAList();
+
+        if (rhit2D.Length > 0)
         {
 
             RMBclickedObj = rhit2D[0].transform.gameObject;
 
-            CreateButtonAList();
+            //CreateButtonAList();
 
 
         // if there are multiple objects under mouse
@@ -1212,6 +1556,8 @@ public class GameCore : MonoBehaviour
             
         //
         }
+
+        
 
     }
 
@@ -1354,18 +1700,6 @@ public class GameCore : MonoBehaviour
             clone.GetComponent<CritterCore>().command = ECommand.guard;
         }
 
-        // pants
-        /*
-        clone2 = Instantiate (pantsPrefab,transform.position, transform.rotation) as GameObject;
-        clone2.transform.parent = clone.transform;
-        clone2.transform.position = clone.transform.position + v2;
-        clone2.GetComponent<PantsCore>().team = _team;
-
-        if (_team == 1)
-        clone2.GetComponent<SpriteRenderer>().color = Color.blue;
-        else if (_team == 2)
-        clone2.GetComponent<SpriteRenderer>().color = Color.red;
-        */
         // hp bar
 
         //clone2 = Instantiate(hpBarPrefab, transform.position, transform.rotation) as GameObject;
@@ -1442,16 +1776,23 @@ public class GameCore : MonoBehaviour
         Core = gameObject.GetComponent<GameCore>();
 
         // raycast
-        rhit2D = Physics2D.RaycastAll(new Vector2(Camera.main.ScreenToWorldPoint(Input.mousePosition).x,Camera.main.ScreenToWorldPoint(Input.mousePosition).y), new Vector2(0f,0f));
+        rhit2D = Physics2D.RaycastAll(new Vector2(Camera.main.ScreenToWorldPoint(Input.mousePosition).x,
+                            Camera.main.ScreenToWorldPoint(Input.mousePosition).y), new Vector2(0f,0f));
 
         teams.Add(new Team()); // Team 0 -> Peaceful animals and wildmen
         teams[0].index = 0;
+        teams[0].name = "Team 0";
+        teams[0].color = Color.gray;
 
         teams.Add(new Team()); // Team 1 -> Player Team
         teams[1].index = 1;
+        teams[1].name = "Team 1";
+        teams[1].color = Color.blue;
 
         teams.Add(new Team()); // Team 2 -> Bad Guys Team
         teams[2].index = 2;
+        teams[2].name = "Team 2";
+        teams[2].color = Color.red;
 
         InitializeIngamePrefabs();
         SetupFirstLand();
@@ -1461,21 +1802,39 @@ public class GameCore : MonoBehaviour
         
         teams[1].members.Add(player);
 
-        consoleText.text = consoleOutput;
+        Unit _unit;
+
+        _unit = new Unit();
+
+        teams[1].units.Add(_unit);
+        units.Add(_unit);
+        
+        _unit.team = 1;
+        _unit.land = currentLand;
+        _unit.members.Add(player);
+
+        CreateWorldEvent(EWorldEvent.unitRandomMove, 0.5f+0.5f/24f);
+        
 	}
 
-    /// ----------------------- START ---------------------------
+    /// ---------------------------------------------------- START ---------------------------------------------------------
 
 	void Start() 
 	{
         //Application.targetFrameRate = -1; // for performance check (remember to turn v-sync off)
 
         timeHour = 12;
+        timeDay = 1;
+        timeStamp = timeHour/24f;
 
         sunlight = Instantiate(sunlightPrefab, new Vector3(0f,0f,0f), Quaternion.identity);
+
+        // time scale
+        Time.timeScale = 1f;
+        Time.fixedDeltaTime = 0.02f * Time.timeScale;
 	}
 
-    /// --------------------- UPDATE -----------------------
+    /// ---------------------------------------------------- UPDATE ----------------------------------------------------------
      
 	void Update()
 	{
@@ -1485,31 +1844,54 @@ public class GameCore : MonoBehaviour
 
         // time
 
-        if (timeHour >= 19)
-        {
-            if (sunlight.GetComponent<Light>().intensity > 0)
-            sunlight.GetComponent<Light>().intensity -= 0.00008f;
-            else
-            sunlight.GetComponent<Light>().intensity = 0;
-        }
-        else
-        if (timeHour >= 3)
-        {
-            if (sunlight.GetComponent<Light>().intensity < 1)
-            sunlight.GetComponent<Light>().intensity += 0.00008f;
-            else
-            sunlight.GetComponent<Light>().intensity = 1;
-        }
-
         timeIncrement = Time.time - timePrevious;
         timePrevious = Time.time;
         
-        timeMinute += timeIncrement/1; // 1 day and night cycle = 24 real minutes
-
+        timeMinute += timeIncrement/1f; // 1 day and night cycle = 24 real minutes
+        timeStamp += timeIncrement/1f * 0.000694444444444f; 
+                                        // the number is 1/1140 -> one divided by number of minutes in a day. This number
+                                        // multiplied by timeIncrement (in minutes) gives the correct timeStamp increment (in days)
         if (timeMinute >= 60f)
         {
             timeHour++;
             timeMinute -= 60f;
+
+            if (timeHour == 24)
+            {
+                timeHour = 0;
+                timeDay++;
+            }
+        }
+
+        // check and execute world events
+
+        for (i=0; i<events.Count; i++)
+        {
+            if (events[i].executed == false)
+            {
+                if (timeStamp >= events[i].timeStamp)
+                {
+                    ExecuteWorldEvent(events[i]);
+                }
+            }
+        }
+
+        // sunlight
+
+        if (timeHour >= 18)
+        {
+            if (sunlight.GetComponent<Light>().intensity > 0)
+            sunlight.GetComponent<Light>().intensity -= 0.00008f*Time.timeScale;
+            else
+            sunlight.GetComponent<Light>().intensity = 0;
+        }
+        else
+        if (timeHour >= 4)
+        {
+            if (sunlight.GetComponent<Light>().intensity < 1)
+            sunlight.GetComponent<Light>().intensity += 0.00008f*Time.timeScale;
+            else
+            sunlight.GetComponent<Light>().intensity = 1;
         }
 
         // input
@@ -1524,7 +1906,7 @@ public class GameCore : MonoBehaviour
 		SpawnItem(EItem.bark);
 
         if (Input.GetKeyDown(KeyCode.H))
-        SpawnHerbi();
+        hideHUD = !hideHUD;
 
         if (Input.GetKeyDown(KeyCode.V))
         lands[currentLand].SpawnCarniPack(mousePos);
@@ -1544,6 +1926,11 @@ public class GameCore : MonoBehaviour
         {
             worldMap.SetActive(!worldMap.activeSelf);
         }
+
+        if (Input.GetKeyDown(KeyCode.B))
+        {
+            buildPanel.SetActive(!buildPanel.activeSelf);
+        }
         
         if (Input.GetKeyDown(KeyCode.R))
         {
@@ -1553,6 +1940,17 @@ public class GameCore : MonoBehaviour
             player.transform.rotation = Quaternion.identity;
         }
 
+        if (Input.GetKeyDown(KeyCode.KeypadPlus))
+        {
+            Time.timeScale += 0.5f;
+            Time.fixedDeltaTime = 0.02f * Time.timeScale;
+        }
+
+        if (Input.GetKeyDown(KeyCode.KeypadMinus))
+        {
+            Time.timeScale -= 0.5f;
+            Time.fixedDeltaTime = 0.02f * Time.timeScale;
+        }
         
         if (Input.GetKeyDown(KeyCode.C))
         {
@@ -1587,95 +1985,8 @@ public class GameCore : MonoBehaviour
         //
 
         HighlightObjectUnderMouse();
-
-        // ----- LEFT MOUSE BUTTON ------
-
-
-        if(Input.GetMouseButtonDown(0))
-        {
-            if ((chooseFromInventoryMode == true)
-            && (mouseOverGUI == false))
-            {
-                chooseFromInventoryMode = false;
-                InventoryManager(); // for clearing color from buttons type I
-            }
-
-
-            if ((combatMode == false)
-            && (mouseOverGUI == false))
-            {
-                // move player
-                
-                Vector3 v1;
-                v1 =  Camera.main.ScreenToWorldPoint(Input.mousePosition);
-
-                player.GetComponent<CritterCore>().targetX = v1.x;
-                player.GetComponent<CritterCore>().action = EAction.move;
-                player.GetComponent<CritterCore>().target = null;
-                player.GetComponent<CritterCore>().preciseMovement = false;
-            }
-        }
-
-        if(Input.GetMouseButtonUp(0))
-        {
-            if (combatMode == false)
-            {
-                // clear buttons (type A)    
-
-                for (i=0; i<=buttonsA.Count-1; i++)
-                {
-                    Destroy(buttonsA[i]);
-                }
-
-                buttonsA.Clear();
-                RMBclickedObj = null;
-
-                // clear existing buttons of type O
-
-                for (i=0; i<buttonsO.Count; i++)
-                {
-                    Destroy(buttonsO[i]);
-                }
-
-                buttonsO.Clear();
-            }
-        }
-
-
-        // ----- RIGHT MOUSE BUTTON ------
-
-        if(Input.GetMouseButtonDown(1))
-        {
-            if (combatMode == false)
-            {
-                // clear buttons (type A)  
-
-                for (i=0; i<buttonsA.Count; i++)
-                {
-                    Destroy(buttonsA[i]);
-                }
-
-                buttonsA.Clear();
-                RMBclickedObj = null;
-
-                //
-
-                // clear buttons (type O)  
-
-                for (i=0; i<buttonsO.Count; i++)
-                {
-                    Destroy(buttonsO[i]);
-                }
-
-                buttonsO.Clear();
-
-                //
-
-                // check for new objects under mouse
-
-                RMBManager();
-            }
-        }
+        LeftMouseButton();
+        RightMouseButton();
 
         // ----------------------------
 
@@ -1687,20 +1998,34 @@ public class GameCore : MonoBehaviour
 
             if (fpsRefreshTimer <= 0)
             {
+                if (hideHUD == true)
+                {
+                    guiText.text = "";
+                    consoleText.text = "";
+                }
+                else
+                {
+                consoleText.text = consoleOutput;
+
                 guiText.text = " FPS: "+(1.0f / Time.deltaTime).ToString()+
+                               "\n Time.timeScale: " + Time.timeScale +
                                "\n Time.time: " + Time.time +
+                               "\n Time Stamp: " + timeStamp +
                                "\n Day: " + timeDay +
                                "\n Time: " + timeHour + ":" + Mathf.FloorToInt(timeMinute) + 
-                               "\n Lands count: " + lands.Count.ToString()+
-                               "\n Plants count: " + plants.Count.ToString()+
-                               "\n Structures count: " + structures.Count.ToString()+
-                               "\n Critters count: " + critters.Count.ToString()+
-                               "\n Items count: " + items.Count.ToString()+
-                               "\n mouseOverGUI: " + mouseOverGUI+
+                               "\n Lands: " + lands.Count.ToString()+
+                               "\n Units: " + units.Count.ToString()+
+                             "\n\n Plants: " + plants.Count.ToString()+
+                               "\n Structures: " + structures.Count.ToString()+
+                               "\n Critters: " + critters.Count.ToString()+
+                               "\n Items: " + items.Count.ToString()+
+                               "\n\n mouseOverGUI: " + mouseOverGUI+
                                "\n chooseFromInventoryMode: " + chooseFromInventoryMode+
                                "\n player.chosenObject: " + player.GetComponent<PlayerCore>().chosenObject+
-                               "\n sunlight intensity: " + sunlight.GetComponent<Light>().intensity;
-
+                               "\n sunlight intensity: " + sunlight.GetComponent<Light>().intensity+
+                               "\n rhit2D.Length: " + rhit2D.Length+
+                               "\n RMBclickedObj: " + RMBclickedObj;
+                }
 
                 fpsRefreshTimer = 10;
             }
@@ -1710,10 +2035,17 @@ public class GameCore : MonoBehaviour
 
         if (combatModeText)
         {
-            if (combatMode == false)
-            combatModeText.text = "Combat mode OFF";
+            if (hideHUD == true)
+            {
+                combatModeText.text = "";
+            }
             else
-            combatModeText.text = "Combat mode ON";
+            {
+                if (combatMode == false)
+                combatModeText.text = "Combat mode OFF";
+                else
+                combatModeText.text = "Combat mode ON";
+            }
         }
     }
 

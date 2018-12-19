@@ -3,7 +3,8 @@ using System.Collections;
 using System.Collections.Generic; // <--- Lists
 
 public enum EAction {none, idle, moveRight, moveLeft, move, follow, attack, pickUp, dropAll, eat, chop,cutDown, craftHandAxe, obtainMeat,
-                     convert, processHemp, craftStoneSpear, runAway, setOnFire, processTree, collectBark, addFuel, deleteProject };
+                     convert, processHemp, craftStoneSpear, runAway, setOnFire, processTree, collectBark, addFuel, deleteProject,
+                     openBuildPanel};
 
 public enum ECommand {none, guard}
 
@@ -13,13 +14,15 @@ public class CritterCore : BodyCore
 
     // A creature. Can move and pick up objects. Can hit, receive damage and be killed. 
 
-    // parent class:  BodyCore
+    // parent class:  BodyCores
 
     // child classes: HerbiCore
     //                CarniCore
     //                ManCore
 
+    public float lastTimeStamp; // time stamp when critter was seen by player for the last time - used to calculate events
     public int   team = -1;
+    public float attitude = 0f;
 	public bool  directionRight = true;
 	public float damageColorIntensity = 0f;
     public int   hitCooldown = 0;
@@ -65,6 +68,7 @@ public class CritterCore : BodyCore
     /// SearchForTarget()
     /// AttackTarget()
     /// AI()
+    /// MoveToLand(1)
 
     //--------------------------------------------------
 
@@ -134,34 +138,37 @@ public class CritterCore : BodyCore
     
     //--------------------------------------------------
 
-    public void PickUp(GameObject body)
+    public void PickUp(GameObject _body)
+
+    // note: only men are able to pick up correctly
+
     {
-        if (body)
+        if (_body)
         {
-            if (body.GetComponent<BodyCore>().isCarried == false)
+            if (_body.GetComponent<BodyCore>().isCarried == false)
             {
                 //if (Mathf.Abs(transform.position.x - body.transform.position.x) < 1f)
                 //{
-                    if (body.GetComponent<InteractiveObjectCore>().kind == EKind.item)
+                    if (_body.GetComponent<ItemCore>())
                     {
-                        if (body.GetComponent<ItemCore>().isTool == true)
+                        if ((_body.GetComponent<ItemCore>().isTool == true)
+                        && (GetComponent<ManCore>().tool == null)) 
                         {
                             // equip
-
+                            
                             if (GetComponent<ManCore>())
                             {
-                                GetComponent<ManCore>().Equip(body);
+                                GetComponent<ManCore>().Equip(_body);
                             }
                         }
                         else
                         {
                             // pick up
-
-                            carriedBodies.Add(body);
+                            carriedBodies.Add(_body);
 
                             isCarrying = true;
-                            body.GetComponent<BodyCore>().isCarried = true;
-                            body.GetComponent<BodyCore>().carrier = gameObject;
+                            _body.GetComponent<BodyCore>().isCarried = true;
+                            _body.GetComponent<BodyCore>().carrier = gameObject;
 
                             //
                         }
@@ -170,11 +177,11 @@ public class CritterCore : BodyCore
                     {
                         // pick up
 
-                        carriedBodies.Add(body);
+                        carriedBodies.Add(_body);
 
                         isCarrying = true;
-                        body.GetComponent<BodyCore>().isCarried = true;
-                        body.GetComponent<BodyCore>().carrier = gameObject;
+                        _body.GetComponent<BodyCore>().isCarried = true;
+                        _body.GetComponent<BodyCore>().carrier = gameObject;
 
                         //
                     }
@@ -400,7 +407,7 @@ public class CritterCore : BodyCore
                 if (commandTarget)
                 commandTargetDistance = Mathf.Abs(transform.position.x - commandTarget.transform.position.x);
 
-                // ---------- 1. commands -----------
+                // ---------- 1. check command -----------
 
                 // if there is a command
 
@@ -433,9 +440,11 @@ public class CritterCore : BodyCore
                     }
                 }
 
-                // ------------ 2. running away -------------
+                // ------------ 2. check for critters to run away from -------------
 
-                if (type == EType.herbi)
+                // if herbi
+
+                if (GetComponent<HerbiCore>()) 
                 {
                     GameObject o = null;
                     float f = 0f;
@@ -447,9 +456,10 @@ public class CritterCore : BodyCore
 
                     for (i=0; i<GameCore.Core.critters.Count; i++)
                     {
-                        if ((GameCore.Core.critters[i].GetComponent<InteractiveObjectCore>().type == EType.man)
-                        || (GameCore.Core.critters[i].GetComponent<InteractiveObjectCore>().type == EType.carni))
+                        if ((GameCore.Core.critters[i].GetComponent<ManCore>())
+                        || (GameCore.Core.critters[i].GetComponent<CarniCore>()))
                         {
+                            if (GameCore.Core.critters[i] != gameObject)
                             if (GameCore.Core.critters[i].GetComponent<CritterCore>().downed == false)
                             {
                                 dist = Mathf.Abs(transform.position.x - GameCore.Core.critters[i].transform.position.x);
@@ -486,6 +496,87 @@ public class CritterCore : BodyCore
                     //
                 }
 
+                // if wildman
+
+                else
+                if ((GetComponent<ManCore>())
+                && (GetComponent<CritterCore>().team == 0))
+                {
+                    GameObject o = null;
+                    float f = 0f;
+                    float dist;
+
+                    int i;
+
+                    // check for men and carni
+
+                    for (i=0; i<GameCore.Core.critters.Count; i++)
+                    {
+                        if ( 
+                                (
+                                    (GameCore.Core.critters[i].GetComponent<ManCore>())
+                                    && (GameCore.Core.critters[i].GetComponent<ManCore>().team == 1)
+                                    && (attitude < 0)
+                                )
+                                ||
+                                (GameCore.Core.critters[i].GetComponent<CarniCore>())
+                            )
+                        {
+                            if (GameCore.Core.critters[i] != gameObject)
+                            if (GameCore.Core.critters[i].GetComponent<CritterCore>().downed == false)
+                            {
+                                dist = Mathf.Abs(transform.position.x - GameCore.Core.critters[i].transform.position.x);
+
+                                float range = 0f;
+
+                                // if carni -> max range
+                                if (GameCore.Core.critters[i].GetComponent<CarniCore>())
+                                {
+                                    range = 1000f;
+                                }
+
+                                // if man -> attitude determines range
+                                else
+                                if (GameCore.Core.critters[i].GetComponent<ManCore>())
+                                {
+                                    range = Mathf.Abs(attitude*10f);
+                                }
+                                
+                                if (dist < range)
+                                {
+                                    if (o == null)
+                                    {
+                                        o = GameCore.Core.critters[i];
+                                        f = dist;
+                                    }
+                                    else
+                                    if (dist < f)
+                                    {
+                                        o = GameCore.Core.critters[i];
+                                        f = dist;
+                                    }
+                                }  
+
+                            }
+                        }
+                    }
+
+                    if (o)
+                    {
+                        target = o;
+                        action = EAction.runAway;
+                    }
+                    else
+                    {
+                        if (action == EAction.runAway)
+                        action = EAction.idle;
+                    }
+
+                    //
+                }
+
+
+
                 // ------------ 3. actions -------------
 
                 // if there is any action
@@ -512,6 +603,50 @@ public class CritterCore : BodyCore
                             targetX = transform.position.x + Random.Range(-10f,10f);
                             timerMove = 100 + Random.Range(0,200);
                         }
+
+                        // if it's wildman, if positive attitude, if it's dark, then check for campfires and go there
+                        if (GameCore.Core.sunlight.GetComponent<Light>().intensity < 0.5f)
+                        if (team == 0)
+                        if (GetComponent<ManCore>())
+                        if (attitude > 0)
+                        {
+                            int i;
+                            float _dist = 5000f;
+
+                            // create campfire list
+
+                            List<GameObject> _list = new List<GameObject>();
+
+                            if (GameCore.Core.structures.Count > 0)
+                            {
+                                for (i=0; i<GameCore.Core.structures.Count; i++)
+                                {
+                                    if (GameCore.Core.structures[i].GetComponent<StructureCore>().structure == EStructure.campfire)
+                                    {
+                                        _list.Add(GameCore.Core.structures[i]);
+
+                                        if (Mathf.Abs(transform.position.x - GameCore.Core.structures[i].transform.position.x) < _dist)
+                                        {
+                                            _dist = Mathf.Abs(transform.position.x - GameCore.Core.structures[i].transform.position.x);
+                                        }
+                                    }
+                                }
+
+                                if (_list.Count > 0)
+                                if (_dist > 5f)
+                                {
+                                    // choose random campfire
+
+                                    int r = 0;
+
+                                    if (_list.Count > 1)                                
+                                    r = Random.Range(0, _list.Count);
+                                    
+                                    targetX = _list[r].transform.position.x;
+                                }
+                            }
+                        }
+                        //
                     }
 
                     // if action is "follow", then walk around the target
@@ -564,9 +699,6 @@ public class CritterCore : BodyCore
                 else
                 f1 = 1f;
 
-                bool b1 = false;
-
-
 
                 if (targetXDistance > f1)
                 {
@@ -590,12 +722,36 @@ public class CritterCore : BodyCore
                 }
             }
 
-            //
+            // slowly raise attitude
+
+            attitude += 0.00001f;
 
         }
     }
 
     //--------------------------------------------------
+
+    public void MoveToLand(int _index)
+    {
+        // if leaving current land
+
+        if (land == GameCore.Core.currentLand)
+        {
+            GameCore.Core.critters.Remove(gameObject);
+            GameCore.Core.lands[_index].critters.Add(gameObject);
+
+            land = _index;
+            gameObject.SetActive(false);
+        }
+
+        // if leaving non-current land
+
+        else
+        {
+            land = _index;
+        }
+
+    }
 
     void OnDestroy()
     {

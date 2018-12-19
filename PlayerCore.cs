@@ -152,13 +152,13 @@ public class PlayerCore : ManCore
     {   
         bool b = false;
 
-        if (other.gameObject.GetComponent<InteractiveObjectCore>().kind == EKind.item)
+        if (other.gameObject.GetComponent<ItemCore>())
         b = true;
 
-        if (other.gameObject.GetComponent<InteractiveObjectCore>().type == EType.herbi)
+        if (other.gameObject.GetComponent<HerbiCore>())
         b = true;
 
-        if (other.gameObject.GetComponent<InteractiveObjectCore>().kind == EKind.plant)
+        if (other.gameObject.GetComponent<PlantCore>())
         {
             if (other.gameObject.GetComponent<PlantCore>().rooted == false) 
             b = true;

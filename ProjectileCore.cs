@@ -64,6 +64,10 @@ public class ProjectileCore : BodyCore // <-- doesn't need to be a full BodyCore
 		{
 			other.gameObject.GetComponent<CritterCore>().damageColorIntensity = 1f;
 
+            if (parent.GetComponent<CritterCore>().team == 1)
+            other.GetComponent<CritterCore>().attitude -= 1f;
+
+
             // apply damage
 
             other.gameObject.GetComponent<CritterCore>().hp -= GetComponent<Rigidbody2D>().velocity.magnitude;

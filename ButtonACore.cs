@@ -25,7 +25,7 @@ public class ButtonACore : MonoBehaviour
     public void AddProject()
     {
         GameObject clone;
-        clone = Instantiate(GameCore.Core.projectPrefab, obj.transform.position, GameCore.Core.transform.rotation) as GameObject;
+        clone = Instantiate(GameCore.Core.projectPrefab, obj.transform.position, Quaternion.identity) as GameObject;
         clone.GetComponent<ProjectCore>().target = obj;
         clone.GetComponent<ProjectCore>().action = action;
 
@@ -119,6 +119,12 @@ public class ButtonACore : MonoBehaviour
                 GameCore.Core.buttonsI[i].GetComponent<Image>().color = Color.green;
             }
         }
+        else
+        if (action == EAction.deleteProject)
+        {
+            obj.GetComponent<ProjectCore>().target.GetComponent<InteractiveObjectCore>().hasProject = false;            
+            Destroy(obj);
+        }
 
         
 
@@ -130,7 +136,8 @@ public class ButtonACore : MonoBehaviour
             if ((action != EAction.pickUp)
             && (action != EAction.setOnFire)
             && (action != EAction.addFuel)
-            && (action != EAction.convert))
+            && (action != EAction.convert)
+            && (action != EAction.deleteProject))
             AddProject();
         }
 

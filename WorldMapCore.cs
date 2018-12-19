@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+
 public class WorldMapCore : MonoBehaviour
 {
     GameObject clone;
@@ -88,15 +89,55 @@ public class WorldMapCore : MonoBehaviour
 
         }
 
-        // ------------- player figure --------------
+        // ---------------- units -----------------
+        
+        for (i=0; i<GameCore.Core.teams.Count; i++)
+        {
+            int j;
+
+            for (j=0; j<GameCore.Core.teams[i].units.Count; j++)
+            {
+                clone = Instantiate(imagePrefab, transform.position, transform.rotation) as GameObject;
+                worldMapObjects.Add(clone);
+
+                clone.transform.SetParent(transform,false);
+                clone.transform.position = transform.position;
+                clone.GetComponent<Image>().sprite = GameCore.Core.spr_unit;
+                clone.transform.localScale = new Vector3(0.35f,0.35f,0.35f);
+
+                clone.GetComponent<Image>().color = GameCore.Core.teams[i].color;
+
+                l = GameCore.Core.lands[GameCore.Core.teams[i].units[j].land];
+                
+                //if (GameCore.Core.travelMode == false)
+                {
+                    // translate along "A" axis
+
+                    nx = -100f * ((1f* l.nodeL.a + 1f* l.nodeR.a) / 2); // float * int => float
+                    ny = 50f * ((1f* l.nodeL.a + 1f* l.nodeR.a) / 2);   // float * int => float
+                    clone.transform.position += new Vector3(nx,ny,0);
+
+                    // translate along "B" axis
+
+                    nx = 100f * ((1f* l.nodeL.b + 1f* l.nodeR.b) / 2); // float * int => float
+                    ny = 50f * ((1f* l.nodeL.b + 1f* l.nodeR.b) / 2);  // float * int => float
+                    clone.transform.position += new Vector3(nx,ny,0);
+                }
+                
+            }
+        }
+
+        // ------------- player --------------
 
         clone = Instantiate(imagePrefab, transform.position, transform.rotation) as GameObject;
         worldMapObjects.Add(clone);
 
         clone.transform.SetParent(transform,false);
         clone.transform.position = transform.position;
-        clone.GetComponent<Image>().sprite = GameCore.Core.spr_man;
-        clone.transform.localScale = new Vector3(1f,1f,1f);
+        clone.GetComponent<Image>().sprite = GameCore.Core.spr_unit;
+        clone.transform.localScale = new Vector3(0.35f,0.35f,0.35f);
+
+        clone.GetComponent<Image>().color = GameCore.Core.teams[1].color;
 
 
         l = GameCore.Core.lands[GameCore.Core.currentLand];
@@ -160,16 +201,31 @@ public class WorldMapCore : MonoBehaviour
         worldMapObjects.Clear();
     }
 
+    public void RedrawMap()
+    {
+        ClearMap();
+        DrawMap();
+    }
+
     // ----------------------------------
+
+    void Start()
+    {
+
+    }
 
     void OnEnable()
     {
         DrawMap();
+
+        GameCore.Core.mouseOverGUI = true;
     }
 
     void OnDisable()
     {
         ClearMap();
+
+        GameCore.Core.mouseOverGUI = false;
     }
 
 }

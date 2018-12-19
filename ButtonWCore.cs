@@ -5,11 +5,15 @@ using UnityEngine.UI;
 
 public class ButtonWCore : MonoBehaviour 
 {
+    // Button representing nodes and lands on the worldmap.
+
+    // -----------------------------------------------------
+
     public bool isLand = false;
     public int  landIndex = -1;
     public bool isVisitable = false;
 
-    int i;
+    // -----------------------------------------------------
 
     public void Colorize()
     {
@@ -48,12 +52,22 @@ public class ButtonWCore : MonoBehaviour
             {
                 GetComponent<Image>().color = Color.gray;
             }
+
+            if (landIndex == GameCore.Core.currentLand)
+            {
+                GetComponent<Image>().color = Color.gray;
+            }
+
+
         }
 
+        // blue color
+        /*
         if (landIndex == GameCore.Core.currentLand)
         {
             GetComponent<Image>().color = Color.blue;
         }
+        */
     }
 
     public void TaskOnClick()

@@ -19,6 +19,8 @@ public class BackgroundCore : MonoBehaviour
 
         mesh = GetComponent<MeshFilter>().mesh;
         mesh.Clear();
+        verts.Clear();
+        tris.Clear();
         
         for (i=0; i<GameCore.Core.landSections-1; i++)
         {
@@ -115,14 +117,10 @@ public class BackgroundCore : MonoBehaviour
 	void Start ()
     {
 		Draw();
-        
 	}
 	
 	void Update ()
     {
-        GameObject p;
-        p = GameCore.Core.player;
-
         if (index == 1)
 		transform.position = new Vector3(Camera.main.transform.position.x * 0.50f - 200f, -Camera.main.transform.position.y * 0.1f + 5f, transform.position.z);
         else

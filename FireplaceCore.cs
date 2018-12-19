@@ -26,7 +26,7 @@ public class FireplaceCore : StructureCore
 
         fire = Instantiate(GameCore.Core.firePrefab, transform.position, Quaternion.identity) as GameObject;
         fire.transform.parent = transform;
-
+        fire.GetComponent<FireCore>().myLight = fire.transform.Find("Light").gameObject;
     }
 
     void Update()

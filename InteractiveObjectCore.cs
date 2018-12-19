@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// ================= INTERACTIVE OBJECT ======================
+// ================= INTERACTIVE (PHYSICAL) OBJECT ======================
 
 // A physical object which can be interacted with.
 
@@ -18,6 +18,8 @@ using UnityEngine;
 //                StructureCore
 
 // ====================== ENUMS ==============================
+
+// THESE ARE OBSOLETE !
 
 public enum EKind {none, critter, slash, projectile, item, plant, structure, project};
 public enum EType {none,

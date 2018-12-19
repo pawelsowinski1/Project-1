@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
- using UnityEngine.EventSystems;
- using UnityEngine.Events;
+// using UnityEngine.EventSystems;
+// using UnityEngine.Events;
 
 // Button type I: inventory object button
 //
@@ -99,11 +99,13 @@ public class ButtonICore : MonoBehaviour
 
     public void TaskOnEnter()
     {
+        if (GameCore.Core.worldMap.activeSelf == false)
         GameCore.Core.mouseOverGUI = true;
     }
 
     public void TaskOnExit()
     {
+        if (GameCore.Core.worldMap.activeSelf == false)
         GameCore.Core.mouseOverGUI = false;
     }
 }

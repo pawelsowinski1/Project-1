@@ -116,11 +116,14 @@ public class SlashCore : MonoBehaviour
 	{
         // if hit critter
 
-        if (other.gameObject.GetComponent<CritterCore>() != null) // fixes null reference exception bug
+        if (other.gameObject.GetComponent<CritterCore>())
         if (alive == true)
         if (other.gameObject.GetComponent<CritterCore>().alive == true)
 		if (other.gameObject.GetComponent<CritterCore>().team != team)
 		{
+            if (parent.GetComponent<CritterCore>().team == 1)
+            other.GetComponent<CritterCore>().attitude -= 1f;
+
 			other.gameObject.GetComponent<CritterCore>().damageColorIntensity = 1f;
             other.gameObject.GetComponent<CritterCore>().hp -= 9f;
 
@@ -128,7 +131,11 @@ public class SlashCore : MonoBehaviour
             && (other.gameObject.GetComponent<CritterCore>().downed == false))
             {
             other.gameObject.GetComponent<CritterCore>().downed = true;
-            other.transform.Rotate(0,0,90f);
+                
+                if (other.gameObject.GetComponent<CarniCore>())
+                other.transform.Rotate(0,0,180f);
+                else
+                other.transform.Rotate(0,0,90f);
 
                 if (other.gameObject == GameCore.Core.player)
                 {
@@ -142,16 +149,18 @@ public class SlashCore : MonoBehaviour
 
             if (other.gameObject.GetComponent<CritterCore>().hp <= -other.gameObject.GetComponent<CritterCore>().hpMax)
             {
-            other.gameObject.GetComponent<CritterCore>().alive = false;
+                other.gameObject.GetComponent<CritterCore>().alive = false;
             }
             
             alive = false;
             Destroy(gameObject,0.0f);
 		}
 
+        // -----------------------------------------------------------------------------------------------------
+
         // if hit project
 
-        if (other.gameObject.GetComponent<InteractiveObjectCore>().kind == EKind.project)
+        if (other.gameObject.GetComponent<ProjectCore>())
         {
             bool b = false;
 

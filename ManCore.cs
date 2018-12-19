@@ -72,24 +72,24 @@ public class ManCore : CritterCore
 
     //--------------------------------------------------
 
-    public void Equip(GameObject body)
+    public void Equip(GameObject _body)
     {
-        if (body)
+        if (_body)
         {
-            if (body.GetComponent<InteractiveObjectCore>().kind == EKind.item)
+            if (_body.GetComponent<ItemCore>())
             {
-                if (body.GetComponent<ItemCore>().isTool == true)
+                if (_body.GetComponent<ItemCore>().isTool == true)
                 {
                     if (tool != null)
                     {
                         Unequip(tool);
                     }
                     
-                    tool = body;
+                    tool = _body;
 
                     isCarrying = true;
-                    body.GetComponent<BodyCore>().isCarried = true;
-                    body.GetComponent<BodyCore>().carrier = gameObject;
+                    _body.GetComponent<BodyCore>().isCarried = true;
+                    _body.GetComponent<BodyCore>().carrier = gameObject;
 
                     int i;
 
@@ -98,7 +98,7 @@ public class ManCore : CritterCore
                         for (i=0; i<carriedBodies.Count; i++)
                         {
                             // check if the target body is in player's inventory
-                            if (GetComponent<CritterCore>().carriedBodies[i] == body)
+                            if (GetComponent<CritterCore>().carriedBodies[i] == _body)
                             {
                                 // if yes, remove it from player's inventory
                                GetComponent<CritterCore>().carriedBodies.RemoveAt(i);
@@ -464,5 +464,33 @@ public class ManCore : CritterCore
         AI();
     }
 	
+	//--------------------------------------------------
+
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (downed == false)
+        {
+            if (team != 0)
+            {
+                if (tool == null)
+                {
+                    bool b = false;
+
+                    if (other.gameObject.GetComponent<ItemCore>())
+                    if (other.gameObject.GetComponent<ItemCore>().isTool == true)
+                    b = true;
+
+                    if (b == true)
+                    {
+                        if (other.gameObject.GetComponent<BodyCore>().isCarried == false)
+                        {
+                            PickUp(other.gameObject);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
 	//==================================================
 }

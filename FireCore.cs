@@ -12,7 +12,7 @@ public class FireCore : MonoBehaviour
     {
 		//transform.position += new Vector3(0f,0f,-1f);
 
-        myLight = transform.Find("Light").gameObject;
+        //myLight = transform.Find("Light").gameObject;
 
 	}
 	

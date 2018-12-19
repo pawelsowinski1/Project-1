@@ -176,14 +176,15 @@ public class ItemCore : BodyCore
             {
                 // if carried by a critter
 
-                if (carrier.GetComponent<InteractiveObjectCore>().kind == EKind.critter)
+                if (carrier.GetComponent<CritterCore>())
                 {
                     // if carried in tool slot
-                    if ((isTool == true)
-                    && (GameCore.Core.player.GetComponent<ManCore>().tool == gameObject))
+
+                    if (carrier.GetComponent<ManCore>())
+                    if (carrier.GetComponent<ManCore>().tool == gameObject)
                     {
                         Vector3 v1;
-
+                            
                         Quaternion q;
                         q = new Quaternion();
 
@@ -199,11 +200,11 @@ public class ItemCore : BodyCore
                         }
 
                         transform.SetPositionAndRotation(carrier.transform.position + new Vector3(0f,0.6f,0f) + v1,q);
-
                     }
+
+                    // if carried in inventory slot
                     else
                     {
-                        // if carried in inventory slot
                         transform.position = carrier.transform.position + new Vector3(0,0.6f,0); 
                     }
                 }
