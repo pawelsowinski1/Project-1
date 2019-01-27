@@ -5,14 +5,16 @@ using System.Collections.Generic;  // <--- enables lists
 
 public class ManCore : CritterCore
 {
-    // =================== MAN CORE ====================
+    // =================== MAN  ====================
 
-    // Human or humanoidal creature. Can use tools and throw items.
+    // A human. Can equip, use and throw tools. Can process and craft items. Collects points.
 
     // parent class:  CritterCore
     // child classes: PlayerCore
 
     public GameObject tool = null;
+
+    public float rp, bp, gp, yp; // red, blue, green and yellow points
 
     /// Throw()
     /// Equip(1)
@@ -219,9 +221,9 @@ public class ManCore : CritterCore
         if (_hemp)
         {
             GameObject clone;
-            clone = GameCore.Core.SpawnItem(EItem.fibers);
+            clone = GameCore.Core.SpawnItem(EItem.cordage);
             clone.transform.position = _hemp.transform.position;
-            clone = GameCore.Core.SpawnItem(EItem.fibers);
+            clone = GameCore.Core.SpawnItem(EItem.cordage);
             clone.transform.position = _hemp.transform.position + new Vector3(-0.2f,0f,0f);
             clone = GameCore.Core.SpawnItem(EItem.plantMaterial);
             clone.transform.position = _hemp.transform.position + new Vector3(0.2f,0f,0f);;
@@ -264,22 +266,19 @@ public class ManCore : CritterCore
 
     //--------------------------------------------------
 
-    public void CraftStoneSpear(GameObject _objBase, List<GameObject> _objToConsume)
+    public void CraftStoneSpear(List<GameObject> _objToConsume)
     {
-        if (_objBase)
+        GameObject clone;
+        clone = GameCore.Core.SpawnItem(EItem.stoneSpear);
+        clone.transform.position = transform.position;
+
+        int i;
+
+        for (i=0; i < _objToConsume.Count; i++)
         {
-            GameObject clone;
-            clone = GameCore.Core.SpawnItem(EItem.stoneSpear);
-            clone.transform.position = _objBase.transform.position;
-
-            int i;
-
-            for (i=0; i < _objToConsume.Count; i++)
-            {
-                Destroy(_objToConsume[i]);
-            }
-
+            Destroy(_objToConsume[i]);
         }
+
     }
 
     //--------------------------------------------------
@@ -445,6 +444,11 @@ public class ManCore : CritterCore
 	void Start()
 	{
 		BodyInitialize();
+
+        rp = 0f;
+        bp = 0f;
+        gp = 0f;
+        yp = 0f;
 
         timerMove = 1;
         timerHit = Random.Range(30, 70);

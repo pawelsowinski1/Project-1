@@ -61,13 +61,6 @@ public class ButtonWCore : MonoBehaviour
 
         }
 
-        // blue color
-        /*
-        if (landIndex == GameCore.Core.currentLand)
-        {
-            GetComponent<Image>().color = Color.blue;
-        }
-        */
     }
 
     public void TaskOnClick()
@@ -119,12 +112,52 @@ public class ButtonWCore : MonoBehaviour
         
             GameCore.Core.LoadLand(landIndex);
 
+            // move player unit
+
+            GameCore.Core.teams[1].units[0].land = landIndex;
+
             GameCore.Core.worldMap.GetComponent<WorldMapCore>().ClearMap();
             GameCore.Core.worldMap.GetComponent<WorldMapCore>().DrawMap();
 
 
             //
         }
+    }
+
+    public void PointerEnter()
+    {
+        //GameCore.Core.cursorLabel.GetComponent<CursorLabelCore>().isHidden = false;
+
+        if (isLand == true)
+        {
+            string s1, s2;
+
+            s1 = "Land "+ landIndex.ToString()+"\n";
+            s2 = "";
+
+            int i;
+
+            for (i=0; i<GameCore.Core.units.Count; i++)
+            {
+                if (GameCore.Core.units[i].land == landIndex)
+                {
+                    s2 = "Unit of "+GameCore.Core.teams[GameCore.Core.units[i].team].name+
+                    " ("+GameCore.Core.teams[GameCore.Core.units[i].team].members.Count+" members)";
+
+                }
+            }
+
+            GameCore.Core.cursorLabel.GetComponent<CursorLabelCore>().text.text = s1+s2;
+        }
+        else
+        {
+            GameCore.Core.cursorLabel.GetComponent<CursorLabelCore>().text.text = "";
+        }
+    }
+
+    public void PointerExit()
+    {
+        GameCore.Core.cursorLabel.GetComponent<CursorLabelCore>().text.text = "";
     }
 }
 

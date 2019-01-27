@@ -12,21 +12,9 @@ using UnityEngine;
 public class ButtonICore : MonoBehaviour
 {
     public GameObject obj; // object represented by a button
-    public Sprite sprite;
+    //public Sprite sprite;
 
     public int index;
-
-	void Start ()
-    {
-		
-	}
-	
-	void Update ()
-    {
-		
-	}
-
-
 
     public void TaskOnLMBClick()
     {

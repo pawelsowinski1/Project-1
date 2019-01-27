@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum EStructure {none, campfire};
+public enum EStructure {none, campfire, shelter};
 
 public class StructureCore : InteractiveObjectCore
 {
 	//================== STRUCTURE =====================
 
-    // A large, immovable physical body.
+    // A large, immobile physical body.
 
     // Enables staying ground.
     // Allows object to be set on fire.
@@ -40,6 +40,15 @@ public class StructureCore : InteractiveObjectCore
                 //transform.localScale = new Vector3(0.3f,0.3f,0.3f);
                 break;
             }
+            case EStructure.shelter:
+            {
+                name = "Shelter";
+                GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_shelter;
+                transform.localScale = new Vector3(1.5f,1.5f,1.5f);
+                break;
+            }
+
+
         }
     }
 

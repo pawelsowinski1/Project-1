@@ -97,31 +97,43 @@ public class WorldMapCore : MonoBehaviour
 
             for (j=0; j<GameCore.Core.teams[i].units.Count; j++)
             {
-                clone = Instantiate(imagePrefab, transform.position, transform.rotation) as GameObject;
-                worldMapObjects.Add(clone);
-
-                clone.transform.SetParent(transform,false);
-                clone.transform.position = transform.position;
-                clone.GetComponent<Image>().sprite = GameCore.Core.spr_unit;
-                clone.transform.localScale = new Vector3(0.35f,0.35f,0.35f);
-
-                clone.GetComponent<Image>().color = GameCore.Core.teams[i].color;
-
-                l = GameCore.Core.lands[GameCore.Core.teams[i].units[j].land];
-                
-                //if (GameCore.Core.travelMode == false)
+                if ((i == 1)
+                && (j == 0))
                 {
-                    // translate along "A" axis
+                    // player unit -> do not draw
+                }
+                else
+                {
+                    // draw unit on the world map
 
-                    nx = -100f * ((1f* l.nodeL.a + 1f* l.nodeR.a) / 2); // float * int => float
-                    ny = 50f * ((1f* l.nodeL.a + 1f* l.nodeR.a) / 2);   // float * int => float
-                    clone.transform.position += new Vector3(nx,ny,0);
+                    clone = Instantiate(imagePrefab, transform.position, transform.rotation) as GameObject;
+                    worldMapObjects.Add(clone);
 
-                    // translate along "B" axis
+                    clone.transform.SetParent(transform,false);
+                    clone.transform.position = transform.position;
+                    clone.GetComponent<Image>().sprite = GameCore.Core.spr_unit;
+                    clone.transform.localScale = new Vector3(0.35f,0.35f,0.35f);
 
-                    nx = 100f * ((1f* l.nodeL.b + 1f* l.nodeR.b) / 2); // float * int => float
-                    ny = 50f * ((1f* l.nodeL.b + 1f* l.nodeR.b) / 2);  // float * int => float
-                    clone.transform.position += new Vector3(nx,ny,0);
+                    clone.GetComponent<Image>().color = GameCore.Core.teams[i].color;
+
+                    l = GameCore.Core.lands[GameCore.Core.teams[i].units[j].land];
+                
+                    //if (GameCore.Core.travelMode == false)
+                    {
+                        // translate along "A" axis
+
+                        nx = -100f * ((1f* l.nodeL.a + 1f* l.nodeR.a) / 2); // float * int => float
+                        ny = 50f * ((1f* l.nodeL.a + 1f* l.nodeR.a) / 2);   // float * int => float
+                        clone.transform.position += new Vector3(nx,ny,0);
+
+                        // translate along "B" axis
+
+                        nx = 100f * ((1f* l.nodeL.b + 1f* l.nodeR.b) / 2); // float * int => float
+                        ny = 50f * ((1f* l.nodeL.b + 1f* l.nodeR.b) / 2);  // float * int => float
+                        clone.transform.position += new Vector3(nx,ny,0);
+                    }
+
+                    //
                 }
                 
             }

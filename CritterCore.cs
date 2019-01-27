@@ -2,9 +2,6 @@
 using System.Collections;
 using System.Collections.Generic; // <--- Lists
 
-public enum EAction {none, idle, moveRight, moveLeft, move, follow, attack, pickUp, dropAll, eat, chop,cutDown, craftHandAxe, obtainMeat,
-                     convert, processHemp, craftStoneSpear, runAway, setOnFire, processTree, collectBark, addFuel, deleteProject,
-                     openBuildPanel};
 
 public enum ECommand {none, guard}
 

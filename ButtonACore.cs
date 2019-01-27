@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 // Button type A: action button
 //
-// Button created by clicking RMB, allows player to make actions.
+// Button created by clicking RMB, allows player to make an action.
 
 public class ButtonACore : MonoBehaviour
 {
@@ -122,6 +122,7 @@ public class ButtonACore : MonoBehaviour
         else
         if (action == EAction.deleteProject)
         {
+            if (obj.GetComponent<ProjectCore>().target)
             obj.GetComponent<ProjectCore>().target.GetComponent<InteractiveObjectCore>().hasProject = false;            
             Destroy(obj);
         }

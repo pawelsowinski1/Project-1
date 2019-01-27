@@ -2,7 +2,7 @@
 using System.Collections;
 
 public enum EItem {none, rock, roundRock, sharpRock, largeRock, flatRock, flint, handAxe, bark, firewood, plantMaterial,
-                    meat, berries, fibers, smallLog, bigLog, wood, stoneSpear};
+                    meat, berries, smallLog, bigLog, wood, stoneSpear, cordage};
 
 public class ItemCore : BodyCore
 {
@@ -106,11 +106,11 @@ public class ItemCore : BodyCore
                 isTool = true;
                 break;
             }  
-            case EItem.fibers:
+            case EItem.cordage:
             {
-                name = "Fibers";
-                GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_fibers;
-                transform.localScale = new Vector3(0.4f,0.4f,0.4f);
+                name = "Cordage";
+                GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_cordage;
+                transform.localScale = new Vector3(0.5f,0.5f,0.5f);
                 isTool = false;
                 isFlammable = true;
                 break;
@@ -128,7 +128,7 @@ public class ItemCore : BodyCore
             {
                 name = "Plant material";
                 GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_plantMaterial;
-                transform.localScale = new Vector3(0.5f,0.5f,0.5f);
+                transform.localScale = new Vector3(0.6f,0.6f,0.6f);
                 isTool = false;
                 isFlammable = true;
                 break;
@@ -137,7 +137,7 @@ public class ItemCore : BodyCore
             {
                 name = "Firewood";
                 GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_firewood;
-                transform.localScale = new Vector3(0.5f,0.5f,0.5f);
+                transform.localScale = new Vector3(0.6f,0.6f,0.6f);
                 isTool = false;
                 isFlammable = true;
                 break;

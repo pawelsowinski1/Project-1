@@ -7,9 +7,9 @@ using UnityEngine;
 // A physical object which can be interacted with.
 
 // Allows calculations for standing on the ground.
-// Enables being highlighted by mouse.
-// Enables having a project on itself.
-// Allows object to be set on fire. 
+// Allows to be highlighted by mouse.
+// Allows to have a project on itself.
+// Allows to be set on fire. 
 
 // 
 // parent class:  MonoBehaviour

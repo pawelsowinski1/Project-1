@@ -5,24 +5,78 @@ using UnityEngine;
 
 public class CursorLabelCore : MonoBehaviour 
 {
-    Vector3 v1;
+    Vector3 v1 = new Vector3(180f,-160f,1f); // offset
+
+    public bool isHidden;
 
     public Text text;
 
 
+    public void WorldMap()
+    {
+        transform.position = Input.mousePosition + v1;
+    }
+
+    public void BuildPanel()
+    {
+        transform.position = Input.mousePosition + v1;
+    }
+
+    public void Game()
+    {
+        if (GameCore.Core.combatMode == false)
+        {
+            transform.position = Input.mousePosition + v1;
+
+            if (GameCore.Core.rhit2D.Length == 0)
+            {
+                text.text = "";
+            }
+            else
+            if (GameCore.Core.rhit2D.Length == 1)
+            {
+                text.text = GameCore.Core.rhit2D[0].transform.gameObject.name;
+            }
+            else
+            text.text = "objects: "+GameCore.Core.rhit2D.Length.ToString();
+        }
+        else
+        text.text = "";
+    }
+
+    // -------------------------- main ------------------------------
+
 	void Start()
     {
-		v1 = new Vector3(200f,-200f,1f); // offset
+		isHidden = false;
+
+        
 	}
 	
 	void Update()
     {
-        transform.position = Input.mousePosition + v1;
+        transform.SetSiblingIndex(100);
 
+        if (GameCore.Core.worldMap.activeSelf == true)
+        {
+            WorldMap();
+        }
+        else
+        if (GameCore.Core.buildPanel.activeSelf == true)
+        {
+            BuildPanel();
+        }
+        else
+        {
+            Game();
+        }
 
-
+        if (isHidden == true)
+        {
+            text.text = "elo";
+        }
         
-        // --- CHECK OBJECT UNDER MOUSE ===
+        // if HUD is on, show more info
         
         if (GameCore.Core.hideHUD == false)
         {
@@ -64,7 +118,7 @@ public class CursorLabelCore : MonoBehaviour
                         "\ntype = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<InteractiveObjectCore>().type.ToString();
                     }
 
-                    // if fireplace (test -> success -> kind not needed )
+                    // if fireplace
 
                     if (GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<FireplaceCore>())
                     {
@@ -125,6 +179,6 @@ public class CursorLabelCore : MonoBehaviour
             // -------
 
         }
-
+        
 	}
 }

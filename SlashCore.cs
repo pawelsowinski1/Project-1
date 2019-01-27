@@ -3,7 +3,7 @@ using System.Collections;
 
 public class SlashCore : MonoBehaviour
 {
-    // ================= SLASH CORE ====================
+    // ================= SLASH =========================
 
 	public GameObject parent;
     public int team;
@@ -12,7 +12,7 @@ public class SlashCore : MonoBehaviour
 	Transform target;
 
 	public bool directionRight;
-    public bool alive = true; // fixes multiple hit bug
+    public bool alive = true; // fixes multiple hit issue
 
     // =================================================
 
@@ -114,6 +114,8 @@ public class SlashCore : MonoBehaviour
 
 	void OnTriggerEnter2D(Collider2D other) 
 	{
+        // -----------------------------------------------------------------------------------------------------
+
         // if hit critter
 
         if (other.gameObject.GetComponent<CritterCore>())
@@ -201,6 +203,19 @@ public class SlashCore : MonoBehaviour
                 }
             }
             else
+            if (other.gameObject.GetComponent<ProjectCore>().action == EAction.craftStoneSpear)
+            {
+                if (parent.GetComponent<ManCore>().tool)
+                {
+                    if ((parent.GetComponent<ManCore>().tool.GetComponent<ItemCore>().item == EItem.roundRock)
+                    || (parent.GetComponent<ManCore>().tool.GetComponent<ItemCore>().item == EItem.handAxe)
+                    || (parent.GetComponent<ManCore>().tool.GetComponent<ItemCore>().item == EItem.sharpRock))
+                    {
+                        b = true;
+                    }
+                }
+            }
+            else
             if (other.gameObject.GetComponent<ProjectCore>().action == EAction.processHemp)
             {
                 if (parent.GetComponent<ManCore>().tool)
@@ -266,13 +281,18 @@ public class SlashCore : MonoBehaviour
                         parent.GetComponent<ManCore>().ObtainMeat(other.gameObject.GetComponent<ProjectCore>().target);
                         else
                         if (other.gameObject.GetComponent<ProjectCore>().action == EAction.craftHandAxe)
-                        parent.GetComponent<ManCore>().CraftHandAxe(other.gameObject.GetComponent<ProjectCore>().target);
+                        {
+                            if (other.gameObject.GetComponent<ProjectCore>().target)
+                            parent.GetComponent<ManCore>().CraftHandAxe(other.gameObject.GetComponent<ProjectCore>().target);
+                            else
+                            parent.GetComponent<ManCore>().CraftHandAxe(other.gameObject.GetComponent<ProjectCore>().objectsToConsume[0]);
+                        }
                         else
                         if (other.gameObject.GetComponent<ProjectCore>().action == EAction.processHemp)
                         parent.GetComponent<ManCore>().ProcessHemp(other.gameObject.GetComponent<ProjectCore>().target);
                         else
                         if (other.gameObject.GetComponent<ProjectCore>().action == EAction.craftStoneSpear)
-                        parent.GetComponent<ManCore>().CraftStoneSpear(other.gameObject.GetComponent<ProjectCore>().target, other.gameObject.GetComponent<ProjectCore>().objectsToConsume);
+                        parent.GetComponent<ManCore>().CraftStoneSpear(other.gameObject.GetComponent<ProjectCore>().objectsToConsume);
                         else
                         if (other.gameObject.GetComponent<ProjectCore>().action == EAction.processTree)
                         parent.GetComponent<ManCore>().ProcessTree(other.gameObject.GetComponent<ProjectCore>().target);
@@ -283,7 +303,9 @@ public class SlashCore : MonoBehaviour
 
                         parent.GetComponent<CritterCore>().Stop();
 
+                        if (other.gameObject.GetComponent<ProjectCore>().target)
                         other.gameObject.GetComponent<ProjectCore>().target.GetComponent<InteractiveObjectCore>().hasProject = false;
+
                         Destroy(other.gameObject);
                     }
 

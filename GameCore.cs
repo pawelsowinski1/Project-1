@@ -2,6 +2,11 @@
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;  // <--- enables lists
+using UnityEngine.EventSystems;
+
+public enum EAction {none, idle, moveRight, moveLeft, move, follow, attack, pickUp, dropAll, eat, chop,cutDown, craftHandAxe, obtainMeat,
+                     convert, processHemp, craftStoneSpear, runAway, setOnFire, processTree, collectBark, addFuel, deleteProject,
+                     openBuildPanel};
 
 public enum EWorldEvent {none, carniEnter, unitRandomMove, spawnCarniPack};
 
@@ -10,43 +15,42 @@ public class GameCore : MonoBehaviour
     string consoleOutput = 
     
     "\n Prototype"+ 
-    "\n Version: 0.0.4"+ 
-
+    "\n Version: 0.0.5"+ 
+    "\n"+
     "\n Focus:"+
-    "\n - simple object name as cursor label"+
-    "\n - building panel"+
-    "\n - ground texture"+
+    "\n - "+
+ 
     "\n"+
     "\n To do:"+
-    "\n - men dropping tools when downed"+
-    "\n - hunger and sleep"+
     "\n - units moving to adjacent, discovered lands"+
-    "\n - carni group roaming through the lands at night"+
-    "\n - wildman class: attitude parameter is needed only for wildmen; tribesmen will have team attitude"+
+    "\n - ground texture"+
+    "\n - collecting blue, red, yellow and green points"+
+    "\n - men dropping tools when downed"+
+    "\n - men carrying items to other lands"+
+    "\n - hunger and sleep"+
+    "\n - attitude parameter is needed only for wildmen; tribesmen will have team attitude"+
     "\n - men throwing tools"+
     "\n - sky changing color"+
-    "\n - collecting blue, red, yellow and green points"+
     "\n - hide edges of the land"+
     "\n - wildmen running away to adjacent lands"+
     "\n - different tool damage and speed"+
     "\n - thrust spears instead of swinging"+
+    "\n - critters slowing down when moving uphill"+
     "\n - sun, stars and moon"+
     "\n - saving world to a file"+
     "\n"+
-    "\n Done:"+
-    "\n - wildmen gathering near campfires at night"+
-    "\n - men picking up tools"+
-    "\n - generating world events"+
-    "\n - units moving between lands via world events"+
-    "\n - time manipulation"+
-    "\n - timeStamp measured in days"+
-    "\n - showing units on world map"+
-    "\n - fixed worldmap looping"+
-    "\n - wildmen have attitude towards player";
+    "\n Done:" +
+    "\n - build panel"+
+    "\n - cursor label upgrades"+
+    "\n - world map unit info"+
+    "\n - spawning enemies as units"+
+    "\n - crafting handaxe via build menu"+
+    "\n - crafting spear via build menu"+
+    "\n - placing shelter via build menu";
 
     /*
-    "\n version 0.0.3" +
-    "\n release date: 04-12-2018"+
+    "\n version 0.0.4" +
+    "\n release date: 19-12-2018"+
     "\n " +
     "\n --------- Game controls ---------" +
     "\n " +
@@ -78,7 +82,7 @@ public class GameCore : MonoBehaviour
     */
     
 
-    // =================================================== GAME CORE ========================================================
+    // =================================================== GAME ========================================================
 
     // ------------- VARIABLES ----------------
 
@@ -132,6 +136,9 @@ public class GameCore : MonoBehaviour
     public Sprite spr_plantMaterial;
     public Sprite spr_firewood;
     public Sprite spr_bark;
+    public Sprite spr_cordage;
+
+    public Sprite spr_shelter;
 
  // ----------------------------------------------
 
@@ -158,16 +165,18 @@ public class GameCore : MonoBehaviour
     public GameObject background3;
 
     public GameObject player;
+    public GameObject cursorLabel;
     public GameObject worldMap;
     public GameObject sunlight;
     public GameObject buildPanel;
+    public GameObject ghostObject; // image for building placement
 
     public Vector3 mousePos;
     public GameObject RMBclickedObj;
 
     public bool combatMode = true;
     public bool mouseOverGUI = false;
-    public bool chooseFromInventoryMode = false; // choosing an object from inventory (adding fuel to campfire etc.)
+    public bool chooseFromInventoryMode = false; // choosing an object from inventory (f.e. adding fuel to campfire)
     public bool hideHUD = false;
 
     public bool travelMode = false;
@@ -465,7 +474,7 @@ public class GameCore : MonoBehaviour
             Core.teams.Add(new Team());
             Team _team = Core.teams[Core.teams.Count-1];
             _team.index = Core.teams.Count-1;
-            _team.name = "Team "+_team.index;
+            _team.name = "Wolf Team #"+_team.index;
             _team.color = Color.magenta;
 
             // add new unit
@@ -474,6 +483,7 @@ public class GameCore : MonoBehaviour
             Unit _unit = _team.units[_team.units.Count-1];
             Core.units.Add(_unit);
             _unit.land = Core.currentLand;
+            _unit.team = _team.index;
 
             Core.worldMap.GetComponent<WorldMapCore>().RedrawMap();
 
@@ -508,6 +518,58 @@ public class GameCore : MonoBehaviour
 
             _team.members[0].GetComponent<CritterCore>().command = ECommand.none;
         }
+
+        // spawn enemy group
+
+        public void SpawnEnemyGroup(Vector3 _position)
+        {
+        
+        // add new unit
+
+            
+            Core.teams[2].units.Add(new Unit());
+            Unit _unit = Core.teams[2].units[Core.teams[2].units.Count-1];
+            Core.units.Add(_unit);
+            _unit.land = Core.currentLand;
+            _unit.team = 2;
+
+            Core.worldMap.GetComponent<WorldMapCore>().RedrawMap();
+
+            // add men
+
+            GameObject clone;
+
+            for (i=0; i<=4; i++)
+            {
+                clone = Instantiate (Core.manPrefab, _position, Quaternion.identity) as GameObject;
+
+                if (index == Core.currentLand)
+                {
+                    Core.critters.Add(clone);
+                }
+                else
+                {
+                    critters.Add(clone);
+                    clone.SetActive(false);
+                }
+                
+                Core.teams[2].members.Add(clone);
+                _unit.members.Add(clone);
+
+                clone.GetComponent<CritterCore>().team = Core.teams.Count-1;
+
+                clone.transform.position = new Vector3(clone.transform.position.x, clone.transform.position.y, 0f);
+
+                clone.GetComponent<CritterCore>().command = ECommand.guard;
+                clone.GetComponent<CritterCore>().commandTarget = Core.teams[2].members[0];
+            }
+
+            Core.teams[2].members[0].GetComponent<CritterCore>().command = ECommand.none;
+
+
+
+            }
+
 
         // spawn man
 
@@ -1327,7 +1389,6 @@ public class GameCore : MonoBehaviour
     {
         // ---- HIGHLIGHTING OBJECTS UNDER MOUSE ----
 
-
         // 1. make previous objects white
 
         if (rhit2D.Length > 0) 
@@ -1339,26 +1400,20 @@ public class GameCore : MonoBehaviour
             }
         }
 
-
         // 2. find new objects under mouse
 
-        if (combatMode == false)
-        {
-
-            rhit2D = Physics2D.RaycastAll(new Vector2(Camera.main.ScreenToWorldPoint(Input.mousePosition).x,Camera.main.ScreenToWorldPoint(Input.mousePosition).y), new Vector2(0f,0f));
+        rhit2D = Physics2D.RaycastAll(new Vector2(Camera.main.ScreenToWorldPoint(Input.mousePosition).x,Camera.main.ScreenToWorldPoint(Input.mousePosition).y), new Vector2(0f,0f));
         
-            // 3. make new objects colored
+        // 3. make new objects colored
 
-            if (rhit2D.Length > 0)
+        if (combatMode == false)
+        if (rhit2D.Length > 0)
+        {
+            for (i=0; i < rhit2D.Length; i++)
             {
-                for (i=0; i < rhit2D.Length; i++)
-                {
-                    rhit2D[i].transform.gameObject.GetComponent<SpriteRenderer>().color = new Color(0f,0.7f,0.7f,1f);
-                }
+                rhit2D[i].transform.gameObject.GetComponent<SpriteRenderer>().color = new Color(0f,0.7f,0.7f,1f);
             }
-
         }
-
     }
 
     //-----------------------------------------------------
@@ -1373,12 +1428,12 @@ public class GameCore : MonoBehaviour
         {
             AddButtonA(ind,"build",EAction.openBuildPanel);
             ind++;
-        }
-                
-        if (player.GetComponent<CritterCore>().carriedBodies.Count > 0)
-        {
-            AddButtonA(i,"drop all here",EAction.dropAll);
-            ind++;
+        
+            if (player.GetComponent<CritterCore>().carriedBodies.Count > 0)
+            {
+                AddButtonA(i,"drop all here",EAction.dropAll);
+                ind++;
+            }
         }
 
         // if an object was RMB clicked
@@ -1618,7 +1673,6 @@ public class GameCore : MonoBehaviour
         clone = Instantiate(buttonIPrefab, transform.position, transform.rotation) as GameObject;
         buttonsI.Add(clone);
         clone.transform.SetParent(myCanvas.transform,false);
-        
 
         clone2 = Instantiate(imagePrefab, transform.position, transform.rotation) as GameObject;
         clone2.transform.SetParent(clone.transform,false);
@@ -1669,13 +1723,6 @@ public class GameCore : MonoBehaviour
             player = Instantiate (playerPrefab, transform.position + v1, transform.rotation) as GameObject;
             critters.Add(player);
 
-            // pants
-            /*
-            clone = Instantiate (pantsPrefab,transform.position,transform.rotation) as GameObject;
-            clone.transform.parent = player.transform;
-            clone.transform.position = clone.transform.parent.position + v2;
-            clone.GetComponent<PantsCore>().team = 1;
-            */
             // hp bar
 
             //clone = Instantiate(hpBarPrefab, transform.position, transform.rotation) as GameObject;
@@ -1766,8 +1813,20 @@ public class GameCore : MonoBehaviour
 
     //-----------------------------------------------------
 
+    public void CheckUIObjectsUnderMouse() // TEST
+    {
+        PointerEventData eventDataCurrentPosition = new PointerEventData(EventSystem.current);
+        eventDataCurrentPosition.position = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
+        List<RaycastResult> results = new List<RaycastResult>();
+        EventSystem.current.RaycastAll(eventDataCurrentPosition, results);
 
-    // ============================================================ MAIN LOOP ==================================================================
+        print(results.Count);
+    }
+
+    //-----------------------------------------------------
+
+
+    // ============================================================ MAIN ======================================================================
 
     /// ---------------------- AWAKE ---------------------------
 
@@ -1776,22 +1835,23 @@ public class GameCore : MonoBehaviour
         Core = gameObject.GetComponent<GameCore>();
 
         // raycast
+
         rhit2D = Physics2D.RaycastAll(new Vector2(Camera.main.ScreenToWorldPoint(Input.mousePosition).x,
                             Camera.main.ScreenToWorldPoint(Input.mousePosition).y), new Vector2(0f,0f));
 
-        teams.Add(new Team()); // Team 0 -> Peaceful animals and wildmen
+        teams.Add(new Team()); // Team 0 -> Peaceful Team
         teams[0].index = 0;
-        teams[0].name = "Team 0";
+        teams[0].name = "Nature";
         teams[0].color = Color.gray;
 
         teams.Add(new Team()); // Team 1 -> Player Team
         teams[1].index = 1;
-        teams[1].name = "Team 1";
+        teams[1].name = "Blue Tribe";
         teams[1].color = Color.blue;
 
-        teams.Add(new Team()); // Team 2 -> Bad Guys Team
+        teams.Add(new Team()); // Team 2 -> Bad Guys
         teams[2].index = 2;
-        teams[2].name = "Team 2";
+        teams[2].name = "Dakini Tribe";
         teams[2].color = Color.red;
 
         InitializeIngamePrefabs();
@@ -1814,6 +1874,8 @@ public class GameCore : MonoBehaviour
         _unit.members.Add(player);
 
         CreateWorldEvent(EWorldEvent.unitRandomMove, 0.5f+0.5f/24f);
+
+        hideHUD = true;
         
 	}
 
@@ -1903,13 +1965,14 @@ public class GameCore : MonoBehaviour
 		SpawnItem(EItem.handAxe);
 
         if (Input.GetKeyDown(KeyCode.I))
-		SpawnItem(EItem.bark);
+		SpawnItem(EItem.cordage);
 
         if (Input.GetKeyDown(KeyCode.H))
         hideHUD = !hideHUD;
 
         if (Input.GetKeyDown(KeyCode.V))
-        lands[currentLand].SpawnCarniPack(mousePos);
+        lands[currentLand].SpawnEnemyGroup(mousePos);
+        //lands[currentLand].SpawnCarniPack(mousePos);
 
         if (Input.GetKeyDown(KeyCode.P))
         SpawnPlatform();
