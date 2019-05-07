@@ -6,18 +6,20 @@ using UnityEngine.UI;
 
 public class WorldMapCore : MonoBehaviour
 {
-    GameObject clone;
-    GameObject clone2;
 
     public GameObject buttonWPrefab;
     public GameObject imagePrefab;
 
     public List<GameObject> worldMapObjects = new List<GameObject>();
 
+    public float cx, cy; // world map "camera" x and y position
+
     int i;
 
 	public void DrawMap()
     {
+        GameObject clone;
+
         // --------------- nodes -----------------
 
         GameCore.Node n;
@@ -46,12 +48,14 @@ public class WorldMapCore : MonoBehaviour
             nx = -100f*n.a; // float * int => float
             ny = 50f*n.a;   // float * int => float
             clone.transform.position += new Vector3(nx,ny,0);
+            clone.transform.position -= new Vector3(cx,cy,0); // "camera" offset
 
             // translate along "B" axis
 
             nx = 100f*n.b; // float * int => float
             ny = 50f*n.b;  // float * int => float
             clone.transform.position += new Vector3(nx,ny,0);
+            clone.transform.position -= new Vector3(cx,cy,0); // "camera" offset
         }
 
         // ------------------- lands --------------------
@@ -80,12 +84,14 @@ public class WorldMapCore : MonoBehaviour
             nx = -100f * ((1f* l.nodeL.a + 1f* l.nodeR.a) / 2); // float * int => float
             ny = 50f * ((1f* l.nodeL.a + 1f* l.nodeR.a) / 2);   // float * int => float
             clone.transform.position += new Vector3(nx,ny,0);
+            clone.transform.position -= new Vector3(cx,cy,0); // "camera" offset
 
             // translate along "B" axis
 
             nx = 100f * ((1f* l.nodeL.b + 1f* l.nodeR.b) / 2); // float * int => float
             ny = 50f * ((1f* l.nodeL.b + 1f* l.nodeR.b) / 2);  // float * int => float
             clone.transform.position += new Vector3(nx,ny,0);
+            clone.transform.position -= new Vector3(cx,cy,0); // "camera" offset
 
         }
 
@@ -125,12 +131,14 @@ public class WorldMapCore : MonoBehaviour
                         nx = -100f * ((1f* l.nodeL.a + 1f* l.nodeR.a) / 2); // float * int => float
                         ny = 50f * ((1f* l.nodeL.a + 1f* l.nodeR.a) / 2);   // float * int => float
                         clone.transform.position += new Vector3(nx,ny,0);
+                        clone.transform.position -= new Vector3(cx,cy,0); // "camera" offset
 
                         // translate along "B" axis
 
                         nx = 100f * ((1f* l.nodeL.b + 1f* l.nodeR.b) / 2); // float * int => float
                         ny = 50f * ((1f* l.nodeL.b + 1f* l.nodeR.b) / 2);  // float * int => float
                         clone.transform.position += new Vector3(nx,ny,0);
+                        clone.transform.position -= new Vector3(cx,cy,0); // "camera" offset
                     }
 
                     //
@@ -161,12 +169,14 @@ public class WorldMapCore : MonoBehaviour
             nx = -100f * ((1f* l.nodeL.a + 1f* l.nodeR.a) / 2); // float * int => float
             ny = 50f * ((1f* l.nodeL.a + 1f* l.nodeR.a) / 2);   // float * int => float
             clone.transform.position += new Vector3(nx,ny,0);
+            clone.transform.position -= new Vector3(cx,cy,0); // "camera" offset
 
             // translate along "B" axis
 
             nx = 100f * ((1f* l.nodeL.b + 1f* l.nodeR.b) / 2); // float * int => float
             ny = 50f * ((1f* l.nodeL.b + 1f* l.nodeR.b) / 2);  // float * int => float
             clone.transform.position += new Vector3(nx,ny,0);
+            clone.transform.position -= new Vector3(cx,cy,0); // "camera" offset
         }
         else
         {
@@ -176,11 +186,13 @@ public class WorldMapCore : MonoBehaviour
                 nx = -100f * l.nodeL.a; // float * int => float
                 ny = 50f * l.nodeL.a; // float * int => float
                 clone.transform.position += new Vector3(nx,ny,0);
+                clone.transform.position -= new Vector3(cx,cy,0); // "camera" offset
 
                 // translate along "B" axis
                 nx = 100f * l.nodeL.b; // float * int => float
                 ny = 50f * l.nodeL.b; // float * int => float
                 clone.transform.position += new Vector3(nx,ny,0);
+                clone.transform.position -= new Vector3(cx,cy,0); // "camera" offset
             }
             else                                    // player travelling right -> figure standing on right node
             {
@@ -188,18 +200,18 @@ public class WorldMapCore : MonoBehaviour
                 nx = -100f * l.nodeR.a; // float * int => float
                 ny = 50f * l.nodeR.a; // float * int => float
                 clone.transform.position += new Vector3(nx,ny,0);
+                clone.transform.position -= new Vector3(cx,cy,0); // "camera" offset
 
                 // translate along "B" axis
                 nx = 100f * l.nodeR.b; // float * int => float
                 ny = 50f * l.nodeR.b; // float * int => float
                 clone.transform.position += new Vector3(nx,ny,0);
+                clone.transform.position -= new Vector3(cx,cy,0); // "camera" offset
             }
         
         }
 
-
         // -----------------------------------------------
-
 
 	}
 
@@ -223,11 +235,14 @@ public class WorldMapCore : MonoBehaviour
 
     void Start()
     {
-
+        //
     }
 
     void OnEnable()
     {
+        cx = 0f;
+        cy = 0f;
+
         DrawMap();
 
         GameCore.Core.mouseOverGUI = true;

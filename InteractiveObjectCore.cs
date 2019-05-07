@@ -9,7 +9,7 @@ using UnityEngine;
 // Allows calculations for standing on the ground.
 // Allows to be highlighted by mouse.
 // Allows to have a project on itself.
-// Allows to be set on fire. 
+// Allows to be set on fire. ?
 
 // 
 // parent class:  MonoBehaviour

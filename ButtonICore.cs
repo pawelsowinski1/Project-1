@@ -41,28 +41,14 @@ public class ButtonICore : MonoBehaviour
             GameCore.Core.player.GetComponent<CritterCore>().Stop();
         }
         
-        // choose item mode
+        // choose from inventory mode
 
         else
         {
-            if (obj.GetComponent<ItemCore>())
-            if (obj.GetComponent<ItemCore>().isFlammable == true)
-            {
-                if (GameCore.Core.player.GetComponent<CritterCore>().target)
-                if (GameCore.Core.player.GetComponent<CritterCore>().target.GetComponent<StructureCore>())
-                if (GameCore.Core.player.GetComponent<CritterCore>().target.GetComponent<StructureCore>().structure == EStructure.campfire)
-                {
-                    GameCore.Core.player.GetComponent<CritterCore>().action = EAction.addFuel;
-                    GameCore.Core.player.GetComponent<PlayerCore>().chosenObject = obj;
+            GameCore.Core.chosenObject = obj;
 
-                }
-            }
-
-            if (GameCore.Core.player.GetComponent<CritterCore>().action != EAction.addFuel)
-            {
-                GameCore.Core.chooseFromInventoryMode = false;
-                GameCore.Core.InventoryManager(); // to clear the colors of buttons type I
-            }
+            GameCore.Core.chooseFromInventoryMode = false;
+            GameCore.Core.InventoryManager(); // to clear the colors of buttons type I
         }
         
     }
@@ -74,13 +60,11 @@ public class ButtonICore : MonoBehaviour
         if (GameCore.Core.player.GetComponent<ManCore>().tool == obj)
         {
             GameCore.Core.player.GetComponent<ManCore>().Unequip(obj);
-            GameCore.Core.player.GetComponent<CritterCore>().DropItem(GameCore.Core.player.GetComponent<CritterCore>().carriedBodies.Count-1);
+            GameCore.Core.player.GetComponent<CritterCore>().DropItem(obj);
         }
         else
-        GameCore.Core.player.GetComponent<CritterCore>().DropItem(index);
+        GameCore.Core.player.GetComponent<CritterCore>().DropItem(GameCore.Core.player.GetComponent<CritterCore>().carriedBodies[index]);
 
-
-        GameCore.Core.player.GetComponent<CritterCore>().Stop();
         GameCore.Core.mouseOverGUI = false;
     }
 

@@ -77,6 +77,15 @@ public class ProjectileCore : BodyCore // <-- doesn't need to be a full BodyCore
              {
                 other.gameObject.GetComponent<CritterCore>().downed = true;
                 other.transform.Rotate(0,0,90f);
+
+                if (other.gameObject.GetComponent<ManCore>())
+                {
+                    if (other.gameObject.GetComponent<ManCore>().tool != null)
+                    {
+                        other.gameObject.GetComponent<ManCore>().DropTool();
+                    }
+                }
+
              }
 
              if (other.gameObject.GetComponent<CritterCore>().hp <= -other.gameObject.GetComponent<CritterCore>().hpMax)

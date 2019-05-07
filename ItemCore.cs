@@ -2,7 +2,7 @@
 using System.Collections;
 
 public enum EItem {none, rock, roundRock, sharpRock, largeRock, flatRock, flint, handAxe, bark, firewood, plantMaterial,
-                    meat, berries, smallLog, bigLog, wood, stoneSpear, cordage};
+                    meat, berries, smallLog, bigLog, wood, stoneSpear, cordage, cookedMeat};
 
 public class ItemCore : BodyCore
 {
@@ -16,7 +16,7 @@ public class ItemCore : BodyCore
     public EItem item;
 
     public bool isTool = false;
-    public bool isFlammable = false;
+    public bool isFlammable = false; // currently needed for "add fuel" action
 
     // =================== METHODS ========================
 
@@ -25,7 +25,7 @@ public class ItemCore : BodyCore
 
     // -------------------------------------------------
 
-    void ItemInitialize()
+    public void ItemInitialize()
     {
         kind = EKind.item;
         GetComponent<SpriteRenderer>().sortingOrder = 10;
@@ -61,7 +61,6 @@ public class ItemCore : BodyCore
                 name = "Flat rock";
                 GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_flatRock;
                 transform.localScale = new Vector3(0.5f,0.5f,0.5f);
-                isTool = false;
                 break;
             }
             case EItem.wood:
@@ -75,6 +74,8 @@ public class ItemCore : BodyCore
             {
                 name = "Meat";
                 GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_meat;
+                transform.localScale = new Vector3(1.5f,1.5f,1.5f);
+
                 break;
             }      
             case EItem.berries:
@@ -111,7 +112,6 @@ public class ItemCore : BodyCore
                 name = "Cordage";
                 GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_cordage;
                 transform.localScale = new Vector3(0.5f,0.5f,0.5f);
-                isTool = false;
                 isFlammable = true;
                 break;
             }  
@@ -129,7 +129,6 @@ public class ItemCore : BodyCore
                 name = "Plant material";
                 GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_plantMaterial;
                 transform.localScale = new Vector3(0.6f,0.6f,0.6f);
-                isTool = false;
                 isFlammable = true;
                 break;
             }  
@@ -138,7 +137,6 @@ public class ItemCore : BodyCore
                 name = "Firewood";
                 GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_firewood;
                 transform.localScale = new Vector3(0.6f,0.6f,0.6f);
-                isTool = false;
                 isFlammable = true;
                 break;
             }  
@@ -149,6 +147,13 @@ public class ItemCore : BodyCore
                 transform.localScale = new Vector3(0.3f,0.3f,0.3f);
                 isTool = true;
                 isFlammable = true;
+                break;
+            }  
+            case EItem.cookedMeat:
+            {
+                name = "Cooked meat";
+                GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_cookedMeat;
+                transform.localScale = new Vector3(1.5f,1.5f,1.5f);
                 break;
             }  
 

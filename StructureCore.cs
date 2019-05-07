@@ -10,8 +10,8 @@ public class StructureCore : InteractiveObjectCore
 
     // A large, immobile physical body.
 
-    // Enables staying ground.
-    // Allows object to be set on fire.
+    // Enables staying on the ground.
+    // Allows object to be set on fire. ?
 
 
     // parent class:  InteractiveObjectCore
@@ -50,6 +50,12 @@ public class StructureCore : InteractiveObjectCore
 
 
         }
+
+        // fit box collider 2D to the sprite; 
+        gameObject.GetComponent<BoxCollider2D>().size = gameObject.GetComponent<SpriteRenderer>().sprite.bounds.size;
+        gameObject.GetComponent<BoxCollider2D>().offset = gameObject.GetComponent<SpriteRenderer>().sprite.bounds.center;
+        //
+
     }
 
     // =========================== MAIN LOOP ================================
@@ -62,8 +68,6 @@ public class StructureCore : InteractiveObjectCore
         groundY = GameCore.Core.landPointY[landSection-1] + (transform.position.x-GameCore.Core.landPointX[landSection-1]) * Mathf.Tan(landSteepness);
         transform.position = new Vector2 (transform.position.x, groundY);
     }
-
-
 
 
 }

@@ -9,11 +9,10 @@ public class ProjectCore : InteractiveObjectCore
     public float progress;
     public float maxProgress;
     public GameObject target = null;                                   // object to which project is attached
+    public GameObject secondaryTarget;                                 // needed for certain actions (e.g. heat item)
     public EAction action;                                             // action executed when project is completed
     public List<GameObject> collisionObjects = new List<GameObject>(); // objects in collision
     public List<GameObject> objectsToConsume = new List<GameObject>(); // objects to be consumed in project
-
-    //public GameObject obj; // OBSOLETE! // used to pass data to input man core methods 
 
     public float colorIntensity = 0f;
 
@@ -28,13 +27,12 @@ public class ProjectCore : InteractiveObjectCore
     {
         kind = EKind.project;
 
-        conditionsMet = 1;
-        conditionsAll = 1;
+        conditionsMet = 0;
+        conditionsAll = 0;
 
         progress = 0f;
         maxProgress = 3f;
 
-        // actions, which require more than 1 object
 
         if (action == EAction.processHemp)
         {
@@ -46,6 +44,9 @@ public class ProjectCore : InteractiveObjectCore
 
         if (action == EAction.craftStoneSpear)
         ready = false;
+
+        if (action == EAction.heating)
+        maxProgress = 60f;
 
 
     }
@@ -85,142 +86,277 @@ public class ProjectCore : InteractiveObjectCore
         if (target)
         transform.position = target.transform.position;
 
-        // process hemp update
-
-        conditionsMet = 1; // hemp
-
-        if (action == EAction.processHemp)
+        switch (action)
         {
-            if (collisionObjects.Count > 0)
+            // process hemp update
+
+            case EAction.processHemp:
             {
-                ready = false;
-
-                for (i=0; i<collisionObjects.Count; i++)
-                {
-                    if (collisionObjects[i])
-                    if (collisionObjects[i].GetComponent<ItemCore>())
-                    {
-                        if (collisionObjects[i].gameObject.GetComponent<ItemCore>().item == EItem.flatRock)
-                        {
-                            if ((collisionObjects[i].gameObject.GetComponent<ItemCore>().isCarried == false)
-                            && (collisionObjects[i].gameObject.GetComponent<BodyCore>().isCarried == false))
-                            {
-                                ready = true;
-                                //obj = collisionObjects[i];
-                                conditionsMet++;
-                            }
-                        }
-                    }
-                }
-
-                if (ready == false)
-                progress = 0f;
-
-            }
-        }
-
-        // craft hand axe update
-
-        else
-        if (action == EAction.craftHandAxe)
-        {
-            if (target == null)
-            {
-                conditionsMet = 0;
-                ready = false;
+                conditionsMet = 1;
+                conditionsAll = 2;
 
                 if (collisionObjects.Count > 0)
                 {
+                    ready = false;
+
                     for (i=0; i<collisionObjects.Count; i++)
                     {
+                        if (collisionObjects[i])
                         if (collisionObjects[i].GetComponent<ItemCore>())
                         {
-                            if (collisionObjects[i].gameObject.GetComponent<ItemCore>().item == EItem.flint)
+                            if (collisionObjects[i].gameObject.GetComponent<ItemCore>().item == EItem.flatRock)
                             {
-                                conditionsMet++;
-                                objectsToConsume.Add(collisionObjects[i]);
-                                ready = true;
+                                if ((collisionObjects[i].gameObject.GetComponent<ItemCore>().isCarried == false)
+                                && (collisionObjects[i].gameObject.GetComponent<BodyCore>().isCarried == false))
+                                {
+                                    ready = true;
+                                    //obj = collisionObjects[i];
+                                    conditionsMet++;
+                                }
+                            }
+                        }
+                    }
+
+                    if (ready == false)
+                    progress = 0f;
+                }
+
+                break;
+            }
+
+            // craft hand axe update
+
+            case EAction.craftHandAxe:
+            {
+                if (target == null)
+                {
+                    conditionsMet = 0;
+                    ready = false;
+
+                    if (collisionObjects.Count > 0)
+                    {
+                        for (i=0; i<collisionObjects.Count; i++)
+                        {
+                            if (collisionObjects[i].GetComponent<ItemCore>())
+                            {
+                                if (collisionObjects[i].gameObject.GetComponent<ItemCore>().item == EItem.flint)
+                                {
+                                    conditionsMet++;
+                                    objectsToConsume.Add(collisionObjects[i]);
+                                    ready = true;
+                                }
                             }
                         }
                     }
                 }
+
+                break;
             }
-        }
 
-        // craft stone spear update
+            // craft stone spear update
 
-        else 
-        if (action == EAction.craftStoneSpear)
-        {
+            case EAction.craftStoneSpear:
+            {
             conditionsMet = 0;
             conditionsAll = 3;
 
-            if (collisionObjects.Count > 0)
-            {
-                ready = false;
-
-                bool flint = false;
-                bool cordage = false;
-                bool smallLog = false;
-
-                for (i=0; i<collisionObjects.Count; i++)
+                if (collisionObjects.Count > 0)
                 {
-                    if (collisionObjects[i])
+                    ready = false;
+
+                    bool flint = false;
+                    bool cordage = false;
+                    bool smallLog = false;
+
+                    for (i=0; i<collisionObjects.Count; i++)
                     {
-                        if (collisionObjects[i].GetComponent<ItemCore>())
+                        if (collisionObjects[i])
                         {
-                            if (collisionObjects[i].gameObject.GetComponent<ItemCore>().item == EItem.flint)
+                            if (collisionObjects[i].GetComponent<ItemCore>())
                             {
-                                if (collisionObjects[i].gameObject.GetComponent<BodyCore>().isCarried == false)
+                                if (collisionObjects[i].gameObject.GetComponent<ItemCore>().item == EItem.flint)
                                 {
-                                    if (flint == false)
+                                    if (collisionObjects[i].gameObject.GetComponent<BodyCore>().isCarried == false)
                                     {
-                                        flint = true;
-                                        conditionsMet++;
-                                        objectsToConsume.Add(collisionObjects[i]);
+                                        if (flint == false)
+                                        {
+                                            flint = true;
+                                            conditionsMet++;
+                                            objectsToConsume.Add(collisionObjects[i]);
+                                        }
                                     }
                                 }
-                            }
-                            else
-                            if (collisionObjects[i].gameObject.GetComponent<ItemCore>().item == EItem.smallLog)
-                            {
-                                if (collisionObjects[i].gameObject.GetComponent<BodyCore>().isCarried == false)
+                                else
+                                if (collisionObjects[i].gameObject.GetComponent<ItemCore>().item == EItem.smallLog)
                                 {
-                                    if (smallLog == false)
+                                    if (collisionObjects[i].gameObject.GetComponent<BodyCore>().isCarried == false)
                                     {
-                                        smallLog = true;
-                                        conditionsMet++;
-                                        objectsToConsume.Add(collisionObjects[i]);
+                                        if (smallLog == false)
+                                        {
+                                            smallLog = true;
+                                            conditionsMet++;
+                                            objectsToConsume.Add(collisionObjects[i]);
+                                        }
                                     }
                                 }
-                            }
-                            else
-                            if (collisionObjects[i].gameObject.GetComponent<ItemCore>().item == EItem.cordage)
-                            {
-                                if (collisionObjects[i].gameObject.GetComponent<BodyCore>().isCarried == false)
+                                else
+                                if (collisionObjects[i].gameObject.GetComponent<ItemCore>().item == EItem.cordage)
                                 {
-                                    if (cordage == false)
+                                    if (collisionObjects[i].gameObject.GetComponent<BodyCore>().isCarried == false)
                                     {
-                                        cordage = true;
-                                        conditionsMet++;
-                                        objectsToConsume.Add(collisionObjects[i]);
+                                        if (cordage == false)
+                                        {
+                                            cordage = true;
+                                            conditionsMet++;
+                                            objectsToConsume.Add(collisionObjects[i]);
+                                        }
                                     }
                                 }
                             }
                         }
                     }
+
+                    if (conditionsMet == conditionsAll)
+                    {
+                        ready = true;
+                    }
+
+                    if (ready == false)
+                    {
+                        progress = 0f;
+                    }
+                }
+
+                break;
+            }
+
+            // build shelter update
+
+            case EAction.buildShelter:
+            {
+                conditionsMet = 0;
+                conditionsAll = 2;
+
+                if (collisionObjects.Count > 0)
+                {
+                    ready = false;
+
+                    bool plantMaterial = false;
+                    bool cordage = false;
+
+                    for (i=0; i<collisionObjects.Count; i++)
+                    {
+                        if (collisionObjects[i])
+                        {
+                            if (collisionObjects[i].GetComponent<ItemCore>())
+                            {
+                                if (collisionObjects[i].gameObject.GetComponent<ItemCore>().item == EItem.plantMaterial)
+                                {
+                                    if (collisionObjects[i].gameObject.GetComponent<BodyCore>().isCarried == false)
+                                    {
+                                        if (plantMaterial == false)
+                                        {
+                                            plantMaterial = true;
+                                            conditionsMet++;
+                                            objectsToConsume.Add(collisionObjects[i]);
+                                        }
+                                    }
+                                }
+                                else
+                                if (collisionObjects[i].gameObject.GetComponent<ItemCore>().item == EItem.cordage)
+                                {
+                                    if (collisionObjects[i].gameObject.GetComponent<BodyCore>().isCarried == false)
+                                    {
+                                        if (cordage == false)
+                                        {
+                                            cordage = true;
+                                            conditionsMet++;
+                                            objectsToConsume.Add(collisionObjects[i]);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (conditionsMet == conditionsAll)
+                    {
+                        ready = true;
+                    }
+
+                    if (ready == false)
+                    {
+                        progress = 0f;
+                    }
+                }
+
+                break;
+            }
+
+            // heating update
+            
+            case EAction.heating:
+            {
+                conditionsMet = 0;
+                conditionsAll = 1;
+
+                if (collisionObjects.Count > 0)
+                {
+                    ready = false;
+
+                    bool heatedItem = false;
+
+                    for (i=0; i<collisionObjects.Count; i++)
+                    {
+                        if (collisionObjects[i])
+                        {
+                            if (collisionObjects[i].GetComponent<ItemCore>())
+                            {
+                                if (collisionObjects[i].gameObject.GetComponent<ItemCore>().item == EItem.meat)
+                                {
+                                    if (heatedItem == false)
+                                    {
+                                        heatedItem = true;
+                                        conditionsMet++;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                 }
 
                 if (conditionsMet == conditionsAll)
                 {
-                    ready = true;
+                    progress += GameCore.Core.timeIncrement; // progress is equal to the amount of real life seconds passed
+
+                    if (progress > maxProgress)
+                    {
+                        // turn raw meat to cooked meat
+
+                        secondaryTarget.GetComponent<ItemCore>().item = EItem.cookedMeat;
+                        secondaryTarget.GetComponent<ItemCore>().ItemInitialize();
+
+                        target.GetComponent<InteractiveObjectCore>().hasProject = false;
+                        Destroy(gameObject);
+                    }
                 }
 
-                if (ready == false)
+                // if meat was picked up during heating, reset the progress
+
+                else
                 {
+                    target.GetComponent<FireplaceCore>().itemHeated = null;
                     progress = 0f;
+
+
+                    Destroy(gameObject); 
                 }
+
+                break;
             }
+            
+
         }
 	}
 

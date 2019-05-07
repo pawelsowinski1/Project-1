@@ -137,7 +137,8 @@ public class CritterCore : BodyCore
 
     public void PickUp(GameObject _body)
 
-    // note: only men are able to pick up correctly
+    // note: currently, only men are able to pick up correctly
+    // todo: make this method virtual, then override it in ManCore
 
     {
         if (_body)
@@ -167,6 +168,8 @@ public class CritterCore : BodyCore
                             _body.GetComponent<BodyCore>().isCarried = true;
                             _body.GetComponent<BodyCore>().carrier = gameObject;
 
+                            action = EAction.none;
+
                             //
                         }
                     }
@@ -180,6 +183,8 @@ public class CritterCore : BodyCore
                         _body.GetComponent<BodyCore>().isCarried = true;
                         _body.GetComponent<BodyCore>().carrier = gameObject;
 
+                        action = EAction.none;
+
                         //
                     }
 
@@ -192,19 +197,25 @@ public class CritterCore : BodyCore
 
     //--------------------------------------------------
 
-    public void DropItem(int _index)
+    public void DropItem(GameObject _object)
+
+    // doesn't work on item in hand slot ?
     {
-        carriedBodies[_index].GetComponent<BodyCore>().carrier = null;
-        carriedBodies[_index].GetComponent<BodyCore>().isCarried = false;
-        carriedBodies[_index].GetComponent<BodyCore>().isFalling = true;
+        int i = carriedBodies.IndexOf(_object);
+        
+        carriedBodies[i].GetComponent<BodyCore>().carrier = null;
+        carriedBodies[i].GetComponent<BodyCore>().isCarried = false;
+        carriedBodies[i].GetComponent<BodyCore>().isFalling = true;
 
-        carriedBodies.RemoveAt(_index);
-
+        carriedBodies.RemoveAt(i);
+        
         if (carriedBodies.Count == 0)
         isCarrying = false;
 
         if (GameCore.Core.player == gameObject)
         GameCore.Core.InventoryManager();
+       
+        action = EAction.none;
     }
 
     //--------------------------------------------------
@@ -231,7 +242,19 @@ public class CritterCore : BodyCore
 
         if (GameCore.Core.player == gameObject)
         GameCore.Core.InventoryManager();
+
+        action = EAction.none;
     }
+
+    //--------------------------------------------------
+
+    public void GiveItem(GameObject _item, GameObject _critter)
+    {
+        DropItem(_item);
+        _critter.GetComponent<CritterCore>().PickUp(_item);
+        _critter.GetComponent<CritterCore>().attitude += 5f;
+    }
+
 
     //--------------------------------------------------
 
@@ -257,7 +280,6 @@ public class CritterCore : BodyCore
             case EAction.pickUp:
             {
                 PickUp(target);
-                Stop();
                 break;
             }
 
@@ -265,12 +287,23 @@ public class CritterCore : BodyCore
             {
                 break;
             }
+
             case EAction.dropAll:
             {
                 DropAll();
-                Stop();
                 break;
             }
+
+            case EAction.giveItem:
+            {
+                if (gameObject == GameCore.Core.player)
+                if (GameCore.Core.chosenObject)
+                {
+                    GiveItem(GameCore.Core.chosenObject, GameCore.Core.player.GetComponent<CritterCore>().target);
+                }
+                break;
+            }
+
         }
     }
 
@@ -323,8 +356,8 @@ public class CritterCore : BodyCore
         {
             if (team == 1)
             {
-                action = EAction.follow;
-                target = GameCore.Core.player;
+                //action = EAction.follow;
+                //target = GameCore.Core.player;
             }
             else
             action = EAction.idle;
@@ -382,7 +415,7 @@ public class CritterCore : BodyCore
         hitCooldown--;
     }
     
-    //--------------------------------------------------
+    //----------------------------------------------------------------------------------------------
 
     public void AI()
     {
@@ -398,11 +431,28 @@ public class CritterCore : BodyCore
 
             if (timerAI <= 0)
             {
-                
                 timerAI = Random.Range(100,200);
 
                 if (commandTarget)
                 commandTargetDistance = Mathf.Abs(transform.position.x - commandTarget.transform.position.x);
+
+                // ---------- 0. gathering point check -----------
+
+                if ((team == 1)
+                && (gameObject != GameCore.Core.player))
+                {
+                    if (GameCore.Core.gatheringPoint.activeSelf == true)
+                    {
+                        command = ECommand.guard;
+                        commandTarget = GameCore.Core.gatheringPoint;
+                    }
+                    else
+                    {
+                        command = ECommand.guard;
+                        commandTarget = GameCore.Core.player;
+                    }
+                }
+
 
                 // ---------- 1. check command -----------
 
@@ -651,14 +701,17 @@ public class CritterCore : BodyCore
                     else
                     if (action == EAction.follow) 
                     {
-                        if (target)
+                        if (timerMove <= 0)
                         {
-                            if (timerMove <= 0)
+                            if (target)
                             {
                                 targetX = target.transform.position.x + Random.Range(-10f,10f);
-                                timerMove = 150;
                             }
+
+                            timerMove = 150;
                         }
+
+                        
                     }
 
                     // if action is none of the above, then walk directly to the target to execute action

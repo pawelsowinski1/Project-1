@@ -139,12 +139,11 @@ public class SlashCore : MonoBehaviour
                 else
                 other.transform.Rotate(0,0,90f);
 
-                if (other.gameObject == GameCore.Core.player)
+                if (other.gameObject.GetComponent<ManCore>())
                 {
-                    if (GameCore.Core.player.GetComponent<ManCore>().tool != null)
+                    if (other.gameObject.GetComponent<ManCore>().tool != null)
                     {
-                        GameCore.Core.player.GetComponent<ManCore>().tool.GetComponent<ItemCore>().isCarried = false;
-                        GameCore.Core.player.GetComponent<ManCore>().tool.GetComponent<ItemCore>().carrier = null;
+                        other.gameObject.GetComponent<ManCore>().DropTool();
                     }
                 }
             }
@@ -262,6 +261,11 @@ public class SlashCore : MonoBehaviour
                     }
                 }
             }
+            else
+            if (other.gameObject.GetComponent<ProjectCore>().action == EAction.buildShelter)
+            {
+                b = true;
+            }
 
             // execute a hit
 
@@ -299,6 +303,22 @@ public class SlashCore : MonoBehaviour
                         else
                         if (other.gameObject.GetComponent<ProjectCore>().action == EAction.collectBark)
                         parent.GetComponent<ManCore>().CollectBark(other.gameObject.GetComponent<ProjectCore>().target);
+                        else
+                        if (other.gameObject.GetComponent<ProjectCore>().action == EAction.buildShelter)
+                        {
+                            // build shelter    
+
+                            GameObject clone = GameCore.Core.SpawnStructure(EStructure.shelter);
+                            clone.transform.position = other.transform.position;
+
+                            for (int i=0; i < other.gameObject.GetComponent<ProjectCore>().objectsToConsume.Count; i++)
+                            {
+                                Destroy(other.gameObject.GetComponent<ProjectCore>().objectsToConsume[i]);
+                            }
+
+                            //
+
+                        }
 
 
                         parent.GetComponent<CritterCore>().Stop();

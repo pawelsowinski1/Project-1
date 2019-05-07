@@ -5,6 +5,10 @@ using UnityEngine;
 public class FireplaceCore : StructureCore
 {
     public GameObject fire;
+    public GameObject itemInFire; // item laying directly in fire (e.g. flat rock, clay pot)
+    public GameObject itemHeated; // item laying on top or inside the item on fire (e.g. meat, water)
+
+    //public enum EFireplace {none, campfire, bonfire, stove, kiln, furnace};
 
     public float fuel;
 
@@ -13,6 +17,8 @@ public class FireplaceCore : StructureCore
         fuel += 1f;
         
     }
+
+    // =============================================== MAIN ================================================
 
     void Start()
     {

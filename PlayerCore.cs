@@ -9,7 +9,7 @@ public class PlayerCore : ManCore
     // child classes: -
 
     public GameObject pickupTarget;
-    public GameObject chosenObject; // object chosen by clicking highlighted button type I
+    //public GameObject chosenObject; // object chosen by clicking highlighted button type I
 
     /// SetDirection()
 

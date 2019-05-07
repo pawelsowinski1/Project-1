@@ -73,7 +73,7 @@ public class CursorLabelCore : MonoBehaviour
 
         if (isHidden == true)
         {
-            text.text = "elo";
+
         }
         
         // if HUD is on, show more info
@@ -125,7 +125,9 @@ public class CursorLabelCore : MonoBehaviour
                         text.text = GameCore.Core.rhit2D[0].transform.gameObject.name+
                         "\nkind = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<FireplaceCore>().kind+
                         "\ntype = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<FireplaceCore>().type+
-                        "\nfuel = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<FireplaceCore>().fuel;
+                        "\nfuel = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<FireplaceCore>().fuel+
+                        "\nitem in fire = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<FireplaceCore>().itemInFire+
+                        "\nitem heated = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<FireplaceCore>().itemHeated;
                     }
 
                     // if critter

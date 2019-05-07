@@ -211,6 +211,8 @@ public class ManCore : CritterCore
             PantsCore p = obj.GetComponentInChildren<PantsCore>();
             p.team = team;
             p.RefreshColor();
+
+            action = EAction.none;
         }
     }
 
@@ -343,7 +345,6 @@ public class ManCore : CritterCore
             case EAction.convert:
             {
                 Convert(target);
-                Stop();
                 break;
             }
 
@@ -421,17 +422,91 @@ public class ManCore : CritterCore
                 break;
             }
 
-            case EAction.addFuel:
+            case EAction.putItemInFireplace: 
+
+            // add fuel to fireplace / put fireproof container on the fireplace
             {
                 if (gameObject == GameCore.Core.player)
-                AddFuel(target, GameCore.Core.player.GetComponent<PlayerCore>().chosenObject);
-                //else
-                //AddFuel(target, GameCore.Core.player.GetComponent<PlayerCore>().?);
+                if (GameCore.Core.chosenObject)
+                {
+                    if (target.GetComponent<FireplaceCore>())
+                    {
+                        // if item being put into fireplace is flammable    
+
+                        if (GameCore.Core.chosenObject.GetComponent<ItemCore>().isFlammable == true)
+                        {
+                            AddFuel(target, GameCore.Core.chosenObject);
+                        }
+
+                        // if not, 
+                        else
+                        {
+                            // check if item being put into fireplace is a fireproof container (e.g. flat rock, clay pot)
+
+                            if (GameCore.Core.chosenObject.GetComponent<ItemCore>().item == EItem.flatRock)
+                            {
+                                // put flat rock in the fireplace
+                                
+                                DropItem(GameCore.Core.chosenObject);
+                                
+                                GameCore.Core.chosenObject.transform.position =
+                                new Vector3(target.transform.position.x,
+                                            GameCore.Core.chosenObject.transform.position.y,
+                                            GameCore.Core.chosenObject.transform.position.z);
+
+                                target.GetComponent<FireplaceCore>().itemInFire = GameCore.Core.chosenObject;
+                                GameCore.Core.chosenObject.GetComponent<ItemCore>().isCarried = true; // prevent from being picked up
+                                
+
+                            }
+                        }
+                    }
+                }
 
                 break;
             }
 
+            case EAction.heatItem:
+            // put item into the heated container in the fireplace
+            {
+                if (gameObject == GameCore.Core.player)
+                if (GameCore.Core.chosenObject)
+                {
+                    // if there is any heated container in fireplace (e.g. flat rock, clay pot)
 
+                    if (target.GetComponent<FireplaceCore>().itemInFire)
+                    {
+                        if (target.GetComponent<FireplaceCore>().itemInFire.GetComponent<ItemCore>().item == EItem.flatRock)
+                        {
+                            if ((GameCore.Core.chosenObject.GetComponent<ItemCore>().item == EItem.meat)
+                            && !(target.GetComponent<FireplaceCore>().itemHeated))
+                            {
+                                // put meat on top of flat rock
+
+                                DropItem(GameCore.Core.chosenObject);
+
+                                GameCore.Core.chosenObject.transform.position =
+                                new Vector3(target.transform.position.x, target.transform.position.y,
+                                            GameCore.Core.chosenObject.transform.position.z);
+
+                                target.GetComponent<FireplaceCore>().itemHeated = GameCore.Core.chosenObject;
+
+                                // add project
+
+                                clone = Instantiate(GameCore.Core.projectPrefab, target.transform.position, Quaternion.identity);
+                                clone.GetComponent<ProjectCore>().action = EAction.heating;
+                                clone.GetComponent<ProjectCore>().target = target; // set fireplace as target
+                                clone.GetComponent<ProjectCore>().secondaryTarget = GameCore.Core.chosenObject; // set meat as secondary target
+                                target.GetComponent<InteractiveObjectCore>().hasProject = true;
+
+                            }
+                        }
+                    }
+                }
+
+                break;
+
+            }
 
 
         }

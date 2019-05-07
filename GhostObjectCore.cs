@@ -26,11 +26,10 @@ public class GhostObjectCore : InteractiveObjectCore
 
             GameObject clone;
             clone = Instantiate(GameCore.Core.projectPrefab, transform.position, Quaternion.identity) as GameObject;
-            //clone.GetComponent<ProjectCore>().target = obj;
-            //clone.GetComponent<ProjectCore>().action = action;
+            clone.GetComponent<ProjectCore>().action = EAction.buildShelter;
 
-            clone = GameCore.Core.SpawnStructure(EStructure.shelter);
-            clone.transform.position = transform.position;
+            //clone = GameCore.Core.SpawnStructure(EStructure.shelter);
+            //clone.transform.position = transform.position;
 
         }
 	}

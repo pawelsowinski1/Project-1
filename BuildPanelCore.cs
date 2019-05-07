@@ -31,8 +31,8 @@ public class BuildPanelCore : MonoBehaviour
         if (_isStructure == true)
         {
             clone.transform.position += new Vector3(-400f,200f,0f);
-            clone.GetComponent<ButtonSCore>().isStructure = true;
-            clone.GetComponent<ButtonSCore>().structure = EStructure.shelter;
+            clone.GetComponent<ButtonBCore>().isStructure = true;
+            clone.GetComponent<ButtonBCore>().structure = EStructure.shelter;
 
             clone2.GetComponent<Image>().sprite = GameCore.Core.spr_shelter;
         }
@@ -41,12 +41,12 @@ public class BuildPanelCore : MonoBehaviour
 
         else
         {
-            clone.GetComponent<ButtonSCore>().isStructure = false;
+            clone.GetComponent<ButtonBCore>().isStructure = false;
         
             if (index == 0)
             {
                 clone.transform.position += new Vector3(-400f,-100f,0f);
-                clone.GetComponent<ButtonSCore>().item = EItem.handAxe;
+                clone.GetComponent<ButtonBCore>().item = EItem.handAxe;
 
                 clone2.GetComponent<Image>().sprite = GameCore.Core.spr_handAxe;
             }
@@ -54,7 +54,7 @@ public class BuildPanelCore : MonoBehaviour
             if (index == 1)
             {
                 clone.transform.position += new Vector3(-400f+125f*index,-100f,0f);
-                clone.GetComponent<ButtonSCore>().item = EItem.stoneSpear;
+                clone.GetComponent<ButtonBCore>().item = EItem.stoneSpear;
 
                 clone2.GetComponent<Image>().sprite = GameCore.Core.spr_stoneSpear;
             }
