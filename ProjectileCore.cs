@@ -47,7 +47,7 @@ public class ProjectileCore : BodyCore // <-- doesn't need to be a full BodyCore
             prevPos = gameObject.transform.position;
         }
 
-        // else, rotate around (rotation speed based of velocity.x)
+        // else, rotate around (rotation speed based on velocity.x)
 
         else
         transform.RotateAround(transform.position, new Vector3(0,0,1), -f1*0.35f);
@@ -65,7 +65,12 @@ public class ProjectileCore : BodyCore // <-- doesn't need to be a full BodyCore
 			other.gameObject.GetComponent<CritterCore>().damageColorIntensity = 1f;
 
             if (parent.GetComponent<CritterCore>().team == 1)
-            other.GetComponent<CritterCore>().attitude -= 1f;
+            {
+                if (other.gameObject.GetComponent<CritterCore>().team == 0)
+                other.GetComponent<CritterCore>().attitude -= 1f;
+                else
+                GameCore.Core.teams[other.gameObject.GetComponent<CritterCore>().team].attitude -= 1f;
+            }
 
 
             // apply damage

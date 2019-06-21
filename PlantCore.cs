@@ -43,6 +43,8 @@ public class PlantCore : BodyCore
     {
         age = Random.Range(10f,100f);
 
+        //GetComponent<SpriteRenderer>().sortingOrder = 20;
+
         switch (plant)
         {
             case EPlant.spruce:
@@ -76,7 +78,7 @@ public class PlantCore : BodyCore
             }
             case EPlant.berryBush:
             {
-                name = "Berry bush";
+                name = "Bush";
                 GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_berry_bush;
                 transform.localScale = new Vector3(1f,1f,1f);
                 break;

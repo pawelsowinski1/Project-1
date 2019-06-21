@@ -7,7 +7,7 @@ public class BodyCore : InteractiveObjectCore
 
     // A small, movable physical body.
 
-    // Enables gravity and collision with ground.
+    // Enables gravity and collision with the ground.
     // Allows object to be picked up by a critter.
 
     // =============================================
@@ -33,6 +33,8 @@ public class BodyCore : InteractiveObjectCore
         land = GameCore.Core.currentLand;
         isFalling = true;
 		gameObject.GetComponent<Rigidbody2D>().gravityScale = GameCore.GRAVITY;
+
+
 	}
 
 	//----------------------------------------------

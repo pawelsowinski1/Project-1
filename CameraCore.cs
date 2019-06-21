@@ -12,9 +12,12 @@ public class CameraCore : MonoBehaviour
 
 	GameObject player;
 
-    GameObject game;
+    //GameObject game;
 
     public Material imageEffectMaterial;
+
+    public float zoom;
+    public float targetZoom;
 
     // =================================================
 
@@ -22,9 +25,12 @@ public class CameraCore : MonoBehaviour
 
 	void Start () 
 	{
-        //Application.targetFrameRate = -1; // for performance check (remember to turn v-sync off) //move this to GameCore.cs
-        game = GameObject.Find("Game");
-        player = game.GetComponent<GameCore>().player;
+        
+        //game = GameObject.Find("Game");
+        player = GameCore.Core.player;
+
+        zoom = 10f;
+        targetZoom = 10f;
 
         //Camera.main.backgroundColor = new Color(5f,20f,255f,255f);
         //Camera.main.backgroundColor = new Color(145,205,255,255);
@@ -39,13 +45,23 @@ public class CameraCore : MonoBehaviour
             
 		    diff = mousePos - player.transform.position;
 
-		    transform.position = new Vector3(player.transform.position.x+diff.x/2, player.transform.position.y+diff.y/2, -1);
+            if (GameCore.Core.combatMode)
+            {
+		        transform.position = new Vector3(player.transform.position.x+diff.x/2, player.transform.position.y+diff.y/2, -1);
+            }
+            else
+            {
+                transform.position = new Vector3(player.transform.position.x, player.transform.position.y, -1);
+            }
+
+
+
         }
 	}
 
     /// ----- FIXED UPDATE -----
 
-	void FixedUpdate()
+	void Update()
 	{	
          var d = Input.GetAxis("Mouse ScrollWheel");
 
@@ -53,17 +69,25 @@ public class CameraCore : MonoBehaviour
          {
              // scroll up
 
-             Camera.main.orthographicSize -= 1.5f;
+             targetZoom -= 2f;
 
-             if (Camera.main.orthographicSize <= 2f)
-             Camera.main.orthographicSize = 2f;
+             if (targetZoom <= 2f)
+             targetZoom = 2f;
          }
          else if (d < 0f)
          {
              // scroll down
 
-             Camera.main.orthographicSize += 1.5f;
+             targetZoom += 2f;
          }
+
+         zoom += (targetZoom - zoom)*0.1f;
+
+         Camera.main.orthographicSize = zoom;
+    }
+
+	void FixedUpdate()
+	{	
 
         if (player == null)
         {

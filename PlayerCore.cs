@@ -3,7 +3,7 @@ using System.Collections;
 
 public class PlayerCore : ManCore 
 {
-    // =================== PLAYER CORE ==================
+    // ============================================ PLAYER CORE ====================================================
 
     // parent class:  ManCore
     // child classes: -
@@ -12,8 +12,6 @@ public class PlayerCore : ManCore
     //public GameObject chosenObject; // object chosen by clicking highlighted button type I
 
     /// SetDirection()
-
-	// ====================================================
 
 	void SetDirection()
 	{
@@ -29,7 +27,7 @@ public class PlayerCore : ManCore
 		}
 	}
 
-	// ==================== MAIN LOOP =======================
+	// ============================================= MAIN LOOP ====================================================
 
     ///  ----- START -----
 	
@@ -40,13 +38,23 @@ public class PlayerCore : ManCore
 		BodyInitialize();
         team = 1;
         pickupTarget = null;
+
+        // add hudText
+
+        GameObject clone;
+        clone = Instantiate(GameCore.Core.hudTextPrefab, GameCore.Core.myCanvas.transform);
+        clone.GetComponent<HudText>().objectToFollow = gameObject;
+
+        //
+
 	}
 
     /// ----- FIXED UPDATE -----
 
 	void FixedUpdate()
 	{
-        AI();
+        PlaceOnGround();
+        AI(); // <---- shouldn't this be in Update ?
 
         if (downed == false)
         {
@@ -124,7 +132,7 @@ public class PlayerCore : ManCore
 
 
         CalculateLand();
-        PlaceOnGround();
+        //PlaceOnGround();
 		DamageColorize();
 		
 

@@ -493,6 +493,8 @@ public class ManCore : CritterCore
 
                                 // add project
 
+                                GameObject clone;
+
                                 clone = Instantiate(GameCore.Core.projectPrefab, target.transform.position, Quaternion.identity);
                                 clone.GetComponent<ProjectCore>().action = EAction.heating;
                                 clone.GetComponent<ProjectCore>().target = target; // set fireplace as target
@@ -519,6 +521,15 @@ public class ManCore : CritterCore
 	void Start()
 	{
 		BodyInitialize();
+
+        // add hudText
+
+        GameObject clone;
+        clone = Instantiate(GameCore.Core.hudTextPrefab, GameCore.Core.myCanvas.transform);
+        clone.GetComponent<HudText>().objectToFollow = gameObject;
+
+        //
+
 
         rp = 0f;
         bp = 0f;

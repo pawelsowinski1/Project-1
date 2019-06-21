@@ -112,12 +112,13 @@ public class ButtonWCore : MonoBehaviour
         
             GameCore.Core.LoadLand(landIndex);
 
-            // move player unit
+            // move unit
 
             GameCore.Core.teams[1].units[0].land = landIndex;
 
-            GameCore.Core.worldMap.GetComponent<WorldMapCore>().ClearMap();
-            GameCore.Core.worldMap.GetComponent<WorldMapCore>().DrawMap();
+
+            //GameCore.Core.worldMap.GetComponent<WorldMapCore>().ClearMap();
+            //GameCore.Core.worldMap.GetComponent<WorldMapCore>().DrawMap();
 
 
             //
@@ -130,24 +131,23 @@ public class ButtonWCore : MonoBehaviour
 
         if (isLand == true)
         {
-            string s1, s2;
-
-            s1 = "Land "+ landIndex.ToString()+"\n";
-            s2 = "";
-
             int i;
+
+            GameCore.Core.cursorLabel.GetComponent<CursorLabelCore>().text.text = "Land "+ landIndex;
 
             for (i=0; i<GameCore.Core.units.Count; i++)
             {
                 if (GameCore.Core.units[i].land == landIndex)
                 {
-                    s2 = "Unit of "+GameCore.Core.teams[GameCore.Core.units[i].team].name+
+                    GameCore.Core.cursorLabel.GetComponent<CursorLabelCore>().text.text += "\nUnit of "+GameCore.Core.teams[GameCore.Core.units[i].team].name+
                     " ("+GameCore.Core.teams[GameCore.Core.units[i].team].members.Count+" members)";
 
                 }
             }
 
-            GameCore.Core.cursorLabel.GetComponent<CursorLabelCore>().text.text = s1+s2;
+            //GameCore.Core.cursorLabel.GetComponent<CursorLabelCore>().text.text = s1+s2;
+
+            print("PointerEnter");
         }
         else
         {

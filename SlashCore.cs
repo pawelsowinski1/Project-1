@@ -31,13 +31,15 @@ public class SlashCore : MonoBehaviour
         && (parent.GetComponent<ManCore>().tool == null))
         {
 		    v.Set(0,0.85f,0); 
-            Destroy(gameObject,0.08f);
+            Destroy(gameObject,0.10f);
         }
         else
         {
             v.Set(0,1.5f,0);
             Destroy(gameObject,0.18f);
         }
+
+        //
 
 		target = parent.GetComponent<Transform>();
 
@@ -47,6 +49,8 @@ public class SlashCore : MonoBehaviour
         if ((parent.GetComponent<InteractiveObjectCore>().type == EType.man)
         && (parent.GetComponent<ManCore>().tool == null))
         {
+            // rotate the slash according to mouse or target position
+
             if ((parent == GameCore.Core.player) // aim at mouse position
             && (GameCore.Core.combatMode == true))
             {
@@ -73,11 +77,13 @@ public class SlashCore : MonoBehaviour
 
         if (parent.GetComponent<CritterCore>().type == EType.man)
         {
+            // if parent has a tool, copy the tool's sprite
+
             if (parent.GetComponent<ManCore>().tool != null)
             {
                 GetComponent<SpriteRenderer>().sprite = parent.GetComponent<ManCore>().tool.GetComponent<SpriteRenderer>().sprite;
                 transform.localScale = parent.GetComponent<ManCore>().tool.transform.localScale/2;
-            }
+            }            
         }
         //
 
@@ -95,7 +101,7 @@ public class SlashCore : MonoBehaviour
         if ((parent.GetComponent<InteractiveObjectCore>().type == EType.man)
         && (parent.GetComponent<ManCore>().tool == null))
         {
-            transform.Translate(Vector3.right*0.3f);
+            transform.Translate(Vector3.right*0.2f);
         }
         else
         {
@@ -124,7 +130,12 @@ public class SlashCore : MonoBehaviour
 		if (other.gameObject.GetComponent<CritterCore>().team != team)
 		{
             if (parent.GetComponent<CritterCore>().team == 1)
-            other.GetComponent<CritterCore>().attitude -= 1f;
+            {
+                if (other.gameObject.GetComponent<CritterCore>().team == 0)
+                other.GetComponent<CritterCore>().attitude -= 1f;
+                else
+                GameCore.Core.teams[other.gameObject.GetComponent<CritterCore>().team].attitude -= 1f;
+            }
 
 			other.gameObject.GetComponent<CritterCore>().damageColorIntensity = 1f;
             other.gameObject.GetComponent<CritterCore>().hp -= 9f;
@@ -289,14 +300,14 @@ public class SlashCore : MonoBehaviour
                             if (other.gameObject.GetComponent<ProjectCore>().target)
                             parent.GetComponent<ManCore>().CraftHandAxe(other.gameObject.GetComponent<ProjectCore>().target);
                             else
-                            parent.GetComponent<ManCore>().CraftHandAxe(other.gameObject.GetComponent<ProjectCore>().objectsToConsume[0]);
+                            parent.GetComponent<ManCore>().CraftHandAxe(other.gameObject.GetComponent<ProjectCore>().itemsToConsume[0]);
                         }
                         else
                         if (other.gameObject.GetComponent<ProjectCore>().action == EAction.processHemp)
                         parent.GetComponent<ManCore>().ProcessHemp(other.gameObject.GetComponent<ProjectCore>().target);
                         else
                         if (other.gameObject.GetComponent<ProjectCore>().action == EAction.craftStoneSpear)
-                        parent.GetComponent<ManCore>().CraftStoneSpear(other.gameObject.GetComponent<ProjectCore>().objectsToConsume);
+                        parent.GetComponent<ManCore>().CraftStoneSpear(other.gameObject.GetComponent<ProjectCore>().itemsToConsume);
                         else
                         if (other.gameObject.GetComponent<ProjectCore>().action == EAction.processTree)
                         parent.GetComponent<ManCore>().ProcessTree(other.gameObject.GetComponent<ProjectCore>().target);
@@ -311,9 +322,9 @@ public class SlashCore : MonoBehaviour
                             GameObject clone = GameCore.Core.SpawnStructure(EStructure.shelter);
                             clone.transform.position = other.transform.position;
 
-                            for (int i=0; i < other.gameObject.GetComponent<ProjectCore>().objectsToConsume.Count; i++)
+                            for (int i=0; i < other.gameObject.GetComponent<ProjectCore>().itemsToConsume.Count; i++)
                             {
-                                Destroy(other.gameObject.GetComponent<ProjectCore>().objectsToConsume[i]);
+                                Destroy(other.gameObject.GetComponent<ProjectCore>().itemsToConsume[i]);
                             }
 
                             //

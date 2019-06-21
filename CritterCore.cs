@@ -25,11 +25,13 @@ public class CritterCore : BodyCore
     public int   hitCooldown = 0;
     public float hp = 100f;
     public float hpMax = 100f;
+    public float moveSpeed = 1f;
+    public float sightRange = 20f;
     public bool  downed = false;
     public bool  alive = true;
     public bool  isCarrying = false;
     public float targetX;
-    public bool  preciseMovement = false; // used for automated executing tasks - cutting down trees etc.
+    public bool  preciseMovement = false; // needed for certain tasks - cutting down trees etc.
 
     public GameObject target = null;
     public GameObject commandTarget = null;
@@ -40,9 +42,8 @@ public class CritterCore : BodyCore
 	public GameObject slashPrefab;
 	public GameObject projectilePrefab;
 
-    public LayerMask groundLayer;
 
-    public GameObject clone;
+    public LayerMask groundLayer;
 
     public int timerMove = 1;
     public int timerHit = 0;
@@ -71,15 +72,14 @@ public class CritterCore : BodyCore
 
 	public void MoveLeft()
 	{
-		GetComponent<Rigidbody2D>().AddForce(new Vector2(-GameCore.MOVE_FORCE,0));
-
+		GetComponent<Rigidbody2D>().AddForce( new Vector2(-GameCore.MOVE_FORCE*moveSpeed,0));
 	}
 
     //--------------------------------------------------
 	
 	public void MoveRight()
 	{
-		GetComponent<Rigidbody2D>().AddForce(new Vector2(GameCore.MOVE_FORCE,0));
+		GetComponent<Rigidbody2D>().AddForce(new Vector2(GameCore.MOVE_FORCE*moveSpeed,0));
 	}
 
     //--------------------------------------------------
@@ -124,7 +124,9 @@ public class CritterCore : BodyCore
     {
         if (hitCooldown <= 0)
         {
-            clone = Instantiate(slashPrefab, Vector3.zero, transform.rotation) as GameObject;
+            GameObject clone;
+
+            clone = Instantiate(slashPrefab, transform.position, transform.rotation) as GameObject;
             clone.GetComponent<SlashCore>().parent = gameObject;
             clone.transform.parent = gameObject.transform; // fixes slash wobbling bug
             clone.GetComponent<SlashCore>().team = team;
@@ -255,7 +257,6 @@ public class CritterCore : BodyCore
         _critter.GetComponent<CritterCore>().attitude += 5f;
     }
 
-
     //--------------------------------------------------
 
     public virtual void ExecuteAction()
@@ -327,7 +328,7 @@ public class CritterCore : BodyCore
 	}
 
     //--------------------------------------------------
-
+    /*
     public void SearchForTarget()
     {
         int i;
@@ -341,13 +342,77 @@ public class CritterCore : BodyCore
             {
                 if ((GameCore.Core.critters[i].GetComponent<CritterCore>().team != team)
                 && (GameCore.Core.critters[i].GetComponent<CritterCore>().downed == false)
-                && (GameCore.Core.critters[i].GetComponent<CritterCore>().team != 0)) // do not attack neutral critters
+                && (GameCore.Core.critters[i].GetComponent<CritterCore>().team != 0) // do not attack neutral critters
+                && (attitude < 0))
                 {
                     target = GameCore.Core.critters[i];
                     action = EAction.attack;
                     
                     if (targetX == 0f) // fixes strange 'enemy men walking to the scene origin' bug
                     targetX = transform.position.x;
+                }
+            }
+        }
+
+        if (target == null)
+        {
+            if (team == 1)
+            {
+                //action = EAction.follow;
+                //target = GameCore.Core.player;
+            }
+            else
+            action = EAction.idle;
+        }
+    }
+    */
+    public void FindNearestEnemy()
+    {
+        int i;
+        float d = 10000f; // distance to enemy
+        float pd = 10000f; // distance to enemy (previous)
+
+
+        target = null;
+
+        for (i=0; i < GameCore.Core.critters.Count; i++)
+        {
+            if (GameCore.Core.critters[i])
+            {
+                if ((GameCore.Core.critters[i].GetComponent<CritterCore>().team != team)
+                && (GameCore.Core.critters[i].GetComponent<CritterCore>().downed == false)
+                && (GameCore.Core.critters[i].GetComponent<CritterCore>().team != 0)) // do not attack peaceful critters
+                {
+                    bool isEnemy = false;
+
+                    if (team == 1)
+                    {
+                        if (GameCore.Core.critters[i].GetComponent<CritterCore>().attitude < 0)
+                        isEnemy = true;
+                    }
+                    else
+                    {
+                        if (attitude < 0)
+                        isEnemy = true;
+                    }
+
+                    if (isEnemy == true)
+                    {
+                        d = Mathf.Abs(transform.position.x - GameCore.Core.critters[i].transform.position.x);
+
+                        if (d < pd)
+                        {
+
+                            target = GameCore.Core.critters[i];
+                            action = EAction.attack;
+                    
+                            if (targetX == 0f) // fixes strange 'enemy men walking to the scene origin' bug
+                            targetX = transform.position.x;
+
+                            pd = d;
+                        }
+                    }
+                    
                 }
             }
         }
@@ -431,7 +496,10 @@ public class CritterCore : BodyCore
 
             if (timerAI <= 0)
             {
-                timerAI = Random.Range(100,200);
+                timerAI = Random.Range(50,100);
+
+                if (team != 0)
+                attitude = GameCore.Core.teams[team].attitude;
 
                 if (commandTarget)
                 commandTargetDistance = Mathf.Abs(transform.position.x - commandTarget.transform.position.x);
@@ -469,7 +537,8 @@ public class CritterCore : BodyCore
                         }
                         else
                         {
-                            SearchForTarget();
+                            if (team != 0)
+                            FindNearestEnemy();
                         }
                     }
                 }
@@ -481,7 +550,7 @@ public class CritterCore : BodyCore
                         {
                             if (team != 0)
                             {
-                                SearchForTarget();
+                                FindNearestEnemy();
                             }
                         }
                     }
@@ -511,7 +580,7 @@ public class CritterCore : BodyCore
                             {
                                 dist = Mathf.Abs(transform.position.x - GameCore.Core.critters[i].transform.position.x);
 
-                                if (dist < 10f)
+                                if (dist < sightRange)
                                 {
                                     if (o == null)
                                     {
@@ -780,7 +849,7 @@ public class CritterCore : BodyCore
     }
 
     //--------------------------------------------------
-
+    /*
     public void MoveToLand(int _index)
     {
         // if leaving current land
@@ -802,7 +871,7 @@ public class CritterCore : BodyCore
         }
 
     }
-
+    */
     void OnDestroy()
     {
         GameCore.Core.critters.Remove(gameObject); 

@@ -17,7 +17,16 @@ public class HerbiCore : CritterCore
 
     public void HerbiInitialize()
     {
-        GetComponent<SpriteRenderer>().sortingOrder = 10;
+        //GetComponent<SpriteRenderer>().sortingOrder = 30;
+
+        // add hudText
+
+        GameObject clone;
+        clone = Instantiate(GameCore.Core.hudTextPrefab, GameCore.Core.myCanvas.transform);
+        clone.GetComponent<HudText>().objectToFollow = gameObject;
+
+        //
+
 
         switch (herbi)
         {
@@ -26,6 +35,10 @@ public class HerbiCore : CritterCore
                 name = "Chick";
                 GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_chick;
                 transform.localScale = new Vector3(0.3f,0.3f,0.3f);
+                moveSpeed = 1.25f;
+                hpMax = 20f;
+                sightRange = 15f;
+
 
                 break;
             }
@@ -35,6 +48,9 @@ public class HerbiCore : CritterCore
                 name = "Deer";
                 GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_deer;
                 transform.localScale = new Vector3(1.3f,1.3f,1.3f);
+                moveSpeed = 1.75f;
+                hpMax = 300f;
+                sightRange = 30f;
                 
                 break;
             }
@@ -44,14 +60,16 @@ public class HerbiCore : CritterCore
 
 	void Start () 
     {
-        team = 0;
-        hp = 30f;
-
-
-    
     	BodyInitialize();
         HerbiInitialize();
+
+        hp = hpMax;
+        team = 0;
+
         timerMove = 1;
+
+
+
 	}
 	
 	void Update ()

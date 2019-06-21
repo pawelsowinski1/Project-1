@@ -21,7 +21,7 @@ public class WorldMapCore : MonoBehaviour
         GameObject clone;
 
         // --------------- nodes -----------------
-
+        
         GameCore.Node n;
         float nx,ny;
 
@@ -57,7 +57,7 @@ public class WorldMapCore : MonoBehaviour
             clone.transform.position += new Vector3(nx,ny,0);
             clone.transform.position -= new Vector3(cx,cy,0); // "camera" offset
         }
-
+        
         // ------------------- lands --------------------
 
         GameCore.Land l;
@@ -75,10 +75,8 @@ public class WorldMapCore : MonoBehaviour
             clone.transform.position = transform.position;
             clone.GetComponentInChildren<Text>().text = i.ToString();
 
-            
-
             l = GameCore.Core.lands[i];
-
+            
             // translate along "A" axis
 
             nx = -100f * ((1f* l.nodeL.a + 1f* l.nodeR.a) / 2); // float * int => float
@@ -92,7 +90,7 @@ public class WorldMapCore : MonoBehaviour
             ny = 50f * ((1f* l.nodeL.b + 1f* l.nodeR.b) / 2);  // float * int => float
             clone.transform.position += new Vector3(nx,ny,0);
             clone.transform.position -= new Vector3(cx,cy,0); // "camera" offset
-
+            
         }
 
         // ---------------- units -----------------
@@ -127,7 +125,7 @@ public class WorldMapCore : MonoBehaviour
                     //if (GameCore.Core.travelMode == false)
                     {
                         // translate along "A" axis
-
+                        
                         nx = -100f * ((1f* l.nodeL.a + 1f* l.nodeR.a) / 2); // float * int => float
                         ny = 50f * ((1f* l.nodeL.a + 1f* l.nodeR.a) / 2);   // float * int => float
                         clone.transform.position += new Vector3(nx,ny,0);
@@ -140,7 +138,7 @@ public class WorldMapCore : MonoBehaviour
                         clone.transform.position += new Vector3(nx,ny,0);
                         clone.transform.position -= new Vector3(cx,cy,0); // "camera" offset
                     }
-
+                    
                     //
                 }
                 
@@ -148,7 +146,7 @@ public class WorldMapCore : MonoBehaviour
         }
 
         // ------------- player --------------
-
+        
         clone = Instantiate(imagePrefab, transform.position, transform.rotation) as GameObject;
         worldMapObjects.Add(clone);
 
@@ -210,7 +208,7 @@ public class WorldMapCore : MonoBehaviour
             }
         
         }
-
+        
         // -----------------------------------------------
 
 	}

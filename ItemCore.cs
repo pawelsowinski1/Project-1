@@ -28,7 +28,7 @@ public class ItemCore : BodyCore
     public void ItemInitialize()
     {
         kind = EKind.item;
-        GetComponent<SpriteRenderer>().sortingOrder = 10;
+        //GetComponent<SpriteRenderer>().sortingOrder = 10;
 
         switch (item)
         {

@@ -7,6 +7,7 @@ public class PantsCore : MonoBehaviour
 
     public void RefreshColor()
     {
+        /*
         if (transform.parent.GetComponent<CritterCore>().team == 0)
         GetComponent<SpriteRenderer>().color = Color.gray;
         else
@@ -15,6 +16,9 @@ public class PantsCore : MonoBehaviour
         else
         if (transform.parent.GetComponent<CritterCore>().team == 2)
         GetComponent<SpriteRenderer>().color = Color.red;
+        */
+
+        GetComponent<SpriteRenderer>().color = GameCore.Core.teams[transform.parent.GetComponent<CritterCore>().team].color;
 
     }
     

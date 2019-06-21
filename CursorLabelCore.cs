@@ -105,8 +105,9 @@ public class CursorLabelCore : MonoBehaviour
                         text.text = GameCore.Core.rhit2D[0].transform.gameObject.name+
                         "\nkind = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<InteractiveObjectCore>().kind.ToString()+
                         "\ntype = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<InteractiveObjectCore>().type.ToString()+
-                        "\nage = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<PlantCore>().age;
-
+                        "\nage = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<PlantCore>().age+
+                        "\nsorting order = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<SpriteRenderer>().sortingOrder;
+                        
                     }
 
                     // if structure
@@ -115,7 +116,8 @@ public class CursorLabelCore : MonoBehaviour
                     {
                         text.text = GameCore.Core.rhit2D[0].transform.gameObject.name+
                         "\nkind = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<InteractiveObjectCore>().kind.ToString()+
-                        "\ntype = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<InteractiveObjectCore>().type.ToString();
+                        "\ntype = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<InteractiveObjectCore>().type.ToString()+
+                        "\nsorting order = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<SpriteRenderer>().sortingOrder;
                     }
 
                     // if fireplace
@@ -125,6 +127,7 @@ public class CursorLabelCore : MonoBehaviour
                         text.text = GameCore.Core.rhit2D[0].transform.gameObject.name+
                         "\nkind = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<FireplaceCore>().kind+
                         "\ntype = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<FireplaceCore>().type+
+                        "\nsorting order = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<SpriteRenderer>().sortingOrder+
                         "\nfuel = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<FireplaceCore>().fuel+
                         "\nitem in fire = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<FireplaceCore>().itemInFire+
                         "\nitem heated = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<FireplaceCore>().itemHeated;
@@ -138,6 +141,7 @@ public class CursorLabelCore : MonoBehaviour
                         text.text = GameCore.Core.rhit2D[0].transform.gameObject.name+
                         "\nkind = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<InteractiveObjectCore>().kind.ToString()+
                         "\ntype = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<InteractiveObjectCore>().type.ToString()+
+                        "\nsorting order = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<SpriteRenderer>().sortingOrder+
                         "\nteam = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<CritterCore>().team.ToString()+
                         "\naction = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<CritterCore>().action.ToString()+
                         "\ncommand = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<CritterCore>().command.ToString()+
@@ -158,6 +162,7 @@ public class CursorLabelCore : MonoBehaviour
                     {
                         text.text = GameCore.Core.rhit2D[0].transform.gameObject.name+
                         "\nkind = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<InteractiveObjectCore>().kind.ToString()+
+                        "\nsorting order = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<SpriteRenderer>().sortingOrder+
                         "\ntype = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<InteractiveObjectCore>().type.ToString()+
                         "\ntarget = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<ProjectCore>().target.ToString()+
                         "\naction = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<ProjectCore>().action.ToString()+
