@@ -22,7 +22,7 @@ public class BackgroundCore : MonoBehaviour
         verts.Clear();
         tris.Clear();
         
-        for (i=0; i<GameCore.Core.landSections-1; i++)
+        for (i=0; i<core.landSections-1; i++)
         {
             if (core.landPointY[i+1] > core.landPointY[i])
             {

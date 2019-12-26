@@ -19,6 +19,8 @@ public class ButtonACore : MonoBehaviour
 
     public bool isAnchoredToButtonO = false;
     public GameObject anchorObject;
+
+    public bool isMouseOver = false;
     
     // methods
 
@@ -29,40 +31,38 @@ public class ButtonACore : MonoBehaviour
         clone.GetComponent<ProjectCore>().target = obj;
         clone.GetComponent<ProjectCore>().action = action;
 
-        obj.GetComponent<InteractiveObjectCore>().hasProject = true;
-        obj.GetComponent<InteractiveObjectCore>().projectAttached = clone;
+        obj.GetComponent<PhysicalObject>().hasProject = true;
+        obj.GetComponent<PhysicalObject>().projectAttached = clone;
     }
 
-    // ========================================== MAIN LOOP ================================================
 
-	void Start ()
-    {
-        if (isAnchoredToButtonO == false)
-        {
-		    transform.position = Camera.main.ScreenToWorldPoint(pos) + GameCore.Core.v4*index*100f;
-        }
-        else
-        {
-		    transform.position = anchorObject.transform.position + new Vector3(0f,-75f,0f) + GameCore.Core.v4*index*100f;
-        }
-	}
-	
-	void Update ()  
-    {
-        if (isAnchoredToButtonO == false)
-        {
-            transform.position = Camera.main.ScreenToWorldPoint(pos) + GameCore.Core.v4*index*100f;
-        }
-        else
-        {
-		    transform.position = anchorObject.transform.position + new Vector3(0f,-75f,0f) + GameCore.Core.v4*index*100f;
-        }
-    }
+    // ================================================================
 
     public void TaskOnClick()
     {
         GameCore.Core.player.GetComponent<CritterCore>().action = action;
         GameCore.Core.player.GetComponent<CritterCore>().target = obj;
+
+
+        // add projects
+
+        if (obj)
+        if (obj.GetComponent<PhysicalObject>().hasProject == false)
+        {
+        
+            if ((action != EAction.pickUp)
+            && (action != EAction.setOnFire)
+            && (action != EAction.putItemInFireplace)
+            && (action != EAction.heatItem)
+            && (action != EAction.convert)
+            && (action != EAction.giveItem)
+            && (action != EAction.deleteProject))
+            AddProject();
+            
+        }
+
+
+
 
         switch (action)
         {
@@ -92,13 +92,6 @@ public class ButtonACore : MonoBehaviour
                 break;
             }
 
-            case EAction.processHemp:
-            {
-                GameCore.Core.player.GetComponent<CritterCore>().targetX = obj.transform.position.x;
-                GameCore.Core.player.GetComponent<CritterCore>().preciseMovement = true;
-                break;
-            }
-
             case EAction.obtainMeat:
             {
                 GameCore.Core.player.GetComponent<CritterCore>().targetX = obj.transform.position.x;
@@ -107,13 +100,6 @@ public class ButtonACore : MonoBehaviour
             }
 
             case EAction.processTree:
-            {
-                GameCore.Core.player.GetComponent<CritterCore>().targetX = obj.transform.position.x;
-                GameCore.Core.player.GetComponent<CritterCore>().preciseMovement = true;
-                break;
-            }
-
-            case EAction.collectBark:
             {
                 GameCore.Core.player.GetComponent<CritterCore>().targetX = obj.transform.position.x;
                 GameCore.Core.player.GetComponent<CritterCore>().preciseMovement = true;
@@ -132,7 +118,7 @@ public class ButtonACore : MonoBehaviour
                 {
                     if (GameCore.Core.buttonsI[i].GetComponent<ButtonICore>().obj.GetComponent<ItemCore>())
                     {
-                        if (GameCore.Core.buttonsI[i].GetComponent<ButtonICore>().obj.GetComponent<ItemCore>().isFlammable == true)
+                        if (GameCore.Core.buttonsI[i].GetComponent<ButtonICore>().obj.GetComponent<Burnable>())
                         GameCore.Core.buttonsI[i].GetComponent<Image>().color = Color.green;
                         else
                         if (GameCore.Core.buttonsI[i].GetComponent<ButtonICore>().obj.GetComponent<ItemCore>().item == EItem.flatRock)
@@ -166,7 +152,7 @@ public class ButtonACore : MonoBehaviour
             case EAction.deleteProject:
             {
                 if (obj.GetComponent<ProjectCore>().target)
-                obj.GetComponent<ProjectCore>().target.GetComponent<InteractiveObjectCore>().hasProject = false;   
+                obj.GetComponent<ProjectCore>().target.GetComponent<PhysicalObject>().hasProject = false;   
                 
                 Destroy(obj);
 
@@ -184,7 +170,7 @@ public class ButtonACore : MonoBehaviour
                 {
                     if (GameCore.Core.buttonsI[i].GetComponent<ButtonICore>().obj.GetComponent<ItemCore>())
                     {
-                        if (GameCore.Core.buttonsI[i].GetComponent<ButtonICore>().obj.GetComponent<ItemCore>().item == EItem.meat)
+                        if (GameCore.Core.buttonsI[i].GetComponent<ButtonICore>().obj.GetComponent<ItemCore>().item == EItem.cookedMeat)
                         {
                             GameCore.Core.buttonsI[i].GetComponent<Image>().color = Color.green;
                         }                    
@@ -209,27 +195,79 @@ public class ButtonACore : MonoBehaviour
 
                 break;
             }
+            
+            case EAction.craftCordage:
+            {
+                obj.GetComponent<PhysicalObject>().projectAttached.GetComponent<ProjectCore>().itemsToConsume.Add(obj);
+                break;
+            }
 
+            case EAction.convert:
+            {
+                GameCore.Core.player.GetComponent<CritterCore>().action = EAction.convert;
+                GameCore.Core.player.GetComponent<CritterCore>().target = obj;
+
+
+                break;
+            }
+
+            
         }
         
-
-        // adding projects
-
-        if (obj)
-        if (obj.GetComponent<InteractiveObjectCore>().hasProject == false)
-        {
-            if ((action != EAction.pickUp)
-            && (action != EAction.setOnFire)
-            && (action != EAction.putItemInFireplace)
-            && (action != EAction.heatItem)
-            && (action != EAction.convert)
-            && (action != EAction.giveItem)
-            && (action != EAction.deleteProject))
-            AddProject();
-        }
-
-        //
+        // destroy button 
 
         Destroy(gameObject);
     }
+
+    // ---------------------- events ---------------------
+
+    public void TaskOnEnter()
+    {
+        isMouseOver = true;
+    }
+
+
+    public void TaskOnExit()
+    {
+        isMouseOver = false;
+        obj.GetComponent<PhysicalObject>().highlightAmount = 0f;
+        obj.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,1f);
+
+    }
+
+
+    // ========================================== MAIN LOOP ================================================
+
+	void Start ()
+    {
+        if (isAnchoredToButtonO == false)
+        {
+		    transform.position = Camera.main.ScreenToWorldPoint(pos) + GameCore.Core.v4*index*100f;
+        }
+        else
+        {
+		    transform.position = anchorObject.transform.position + new Vector3(0f,-75f,0f) + GameCore.Core.v4*index*100f;
+        }
+	}
+	
+	void Update ()  
+    {
+        if (isAnchoredToButtonO == false)
+        {
+            transform.position = Camera.main.ScreenToWorldPoint(pos) + GameCore.Core.v4*index*100f;
+        }
+        else
+        {
+		    transform.position = anchorObject.transform.position + new Vector3(0f,-75f,0f) + GameCore.Core.v4*index*100f;
+        }
+
+        if (isMouseOver)
+        {
+            obj.GetComponent<PhysicalObject>().Highlight();
+
+        }
+    }
+
+
+
 }

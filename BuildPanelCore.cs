@@ -5,20 +5,20 @@ using UnityEngine.UI;
 
 public class BuildPanelCore : MonoBehaviour
 {
-    public GameObject buttonSPrefab;
+    public GameObject buttonBPrefab;
     public GameObject ghostObject;
 
-    List<GameObject> buttonsS = new List<GameObject>();
+    List<GameObject> buttonsB = new List<GameObject>();
 
 
-    public void AddButtonS(bool _isStructure, int index)
+    public void AddButtonB(bool _isStructure, int index)
     {
         GameObject clone, clone2;
 
         // create button    
 
-        clone = Instantiate(buttonSPrefab, new Vector3(0f,0f,0f) , Quaternion.identity) as GameObject;
-        buttonsS.Add(clone);
+        clone = Instantiate(buttonBPrefab, new Vector3(0f,0f,0f) , Quaternion.identity) as GameObject;
+        buttonsB.Add(clone);
         clone.transform.SetParent(GameCore.Core.myCanvas.transform,false);
 
         // create image
@@ -42,44 +42,69 @@ public class BuildPanelCore : MonoBehaviour
         else
         {
             clone.GetComponent<ButtonBCore>().isStructure = false;
+
+            clone.transform.position += new Vector3(-400f+125f*index,-100f,0f);
         
-            if (index == 0)
+            switch (index)
             {
-                clone.transform.position += new Vector3(-400f,-100f,0f);
-                clone.GetComponent<ButtonBCore>().item = EItem.handAxe;
+                case 0:
+                {
+                    clone.GetComponent<ButtonBCore>().item = EItem.cordage;
+                    clone2.GetComponent<Image>().sprite = GameCore.Core.spr_cordage;
 
-                clone2.GetComponent<Image>().sprite = GameCore.Core.spr_handAxe;
-            }
-            else
-            if (index == 1)
-            {
-                clone.transform.position += new Vector3(-400f+125f*index,-100f,0f);
-                clone.GetComponent<ButtonBCore>().item = EItem.stoneSpear;
+                    break;
+                }
+                case 1:
+                {
+                    clone.GetComponent<ButtonBCore>().item = EItem.handAxe;
 
-                clone2.GetComponent<Image>().sprite = GameCore.Core.spr_stoneSpear;
+                    clone2.GetComponent<Image>().sprite = GameCore.Core.spr_handAxe;
+
+                    break;
+                }
+                case 2:
+                {
+                    clone.GetComponent<ButtonBCore>().item = EItem.stoneSpear;
+
+                    clone2.GetComponent<Image>().sprite = GameCore.Core.spr_stoneSpear;
+
+                    break;
+                }
+
+                case 3:
+                {
+                    clone.GetComponent<ButtonBCore>().item = EItem.barkTorch;
+
+                    clone2.GetComponent<Image>().sprite = GameCore.Core.spr_barkTorch;
+
+                    break;
+                }
             }
+
         }
       
     }
 
     public void Draw()
     {
-        AddButtonS(true,0);
+        AddButtonB(true,0);
 
-        AddButtonS(false,0);
-        AddButtonS(false,1);
+        AddButtonB(false,0);
+        AddButtonB(false,1);
+        AddButtonB(false,2);
+        AddButtonB(false,3);
     }
 
     public void Clear()
     {
         int i;
 
-        for (i=0; i<buttonsS.Count; i++)
+        for (i=0; i<buttonsB.Count; i++)
         {
-            Destroy(buttonsS[i]);
+            Destroy(buttonsB[i]);
         }
 
-        buttonsS.Clear();
+        buttonsB.Clear();
     }
 
 

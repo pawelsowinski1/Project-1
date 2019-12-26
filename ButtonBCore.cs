@@ -38,17 +38,26 @@ public class ButtonBCore : MonoBehaviour
                 case EItem.handAxe:
                 {
                     clone.GetComponent<ProjectCore>().action = EAction.craftHandAxe;
+                    break;
                 }
-                
-
-                break;
 
                 case EItem.stoneSpear:
                 {
                     clone.GetComponent<ProjectCore>().action = EAction.craftStoneSpear;
+                    break;
                 }
 
-                break;
+                case EItem.cordage:
+                {
+                    clone.GetComponent<ProjectCore>().action = EAction.craftCordage;
+                    break;
+                }
+
+                case EItem.barkTorch:
+                {
+                    clone.GetComponent<ProjectCore>().action = EAction.craftBarkTorch;
+                    break;
+                }                
             }
 
             //clone.GetComponent<ProjectCore>().target = obj;
@@ -65,12 +74,16 @@ public class ButtonBCore : MonoBehaviour
         if (isStructure)
         {
             if (structure == EStructure.shelter)
-            s = "Shelter\n\nTools needed: -\nResources needed: plant material, cordage";
+            s = "Shelter\n\nTools needed: -\nResources needed: 2x plant material, cordage";
         }
         else
         {
             switch (item)
             {
+                case EItem.cordage:
+                s = "Cordage\n\nTools needed: -\nResources needed: grass";
+                break;
+
                 case EItem.handAxe:
                 s = "Hand axe\n\nTools needed: round rock\nResources needed: flint";
                 break;
@@ -78,6 +91,11 @@ public class ButtonBCore : MonoBehaviour
                 case EItem.stoneSpear:
                 s = "Stone spear\n\nTools needed: round rock, hand axe\nResources needed: flint, small log, cordage";
                 break;
+
+                case EItem.barkTorch:
+                s = "Bark torch\n\nTools needed: -\nResources needed: birch bark, stick, cordage";
+                break;
+
             }
         }
 

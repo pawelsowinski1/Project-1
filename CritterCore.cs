@@ -42,6 +42,7 @@ public class CritterCore : BodyCore
 	public GameObject slashPrefab;
 	public GameObject projectilePrefab;
 
+    public GameObject hpBar;
 
     public LayerMask groundLayer;
 
@@ -52,6 +53,7 @@ public class CritterCore : BodyCore
     public float targetXDistance;
     public float commandTargetDistance;
 
+    /// AddHpBar()
     /// MoveLeft()
     /// MoveRight()
     /// Stop()
@@ -70,9 +72,21 @@ public class CritterCore : BodyCore
 
     //--------------------------------------------------
 
+    public void AddHpBar()
+    {
+        GameObject clone;
+        
+        clone = Instantiate(GameCore.Core.hpBarPrefab, transform.position, Quaternion.identity );
+        clone.GetComponent<HpBar>().parent = gameObject;
+        hpBar = clone;
+
+    }
+
+    //--------------------------------------------------
+
 	public void MoveLeft()
 	{
-		GetComponent<Rigidbody2D>().AddForce( new Vector2(-GameCore.MOVE_FORCE*moveSpeed,0));
+		GetComponent<Rigidbody2D>().AddForce(new Vector2(-GameCore.MOVE_FORCE*moveSpeed,0));
 	}
 
     //--------------------------------------------------
@@ -152,7 +166,7 @@ public class CritterCore : BodyCore
                     if (_body.GetComponent<ItemCore>())
                     {
                         if ((_body.GetComponent<ItemCore>().isTool == true)
-                        && (GetComponent<ManCore>().tool == null)) 
+                        && (GetComponent<ManCore>().hand1Slot == null)) 
                         {
                             // equip
                             
@@ -254,7 +268,11 @@ public class CritterCore : BodyCore
     {
         DropItem(_item);
         _critter.GetComponent<CritterCore>().PickUp(_item);
-        _critter.GetComponent<CritterCore>().attitude += 5f;
+
+        if (_item.GetComponent<ItemCore>().item == EItem.cookedMeat)
+        {
+            _critter.GetComponent<CritterCore>().attitude += 100f;
+        }
     }
 
     //--------------------------------------------------
@@ -310,7 +328,7 @@ public class CritterCore : BodyCore
 
     //--------------------------------------------------
 
-	public void DamageColorize()
+	public void DamageColorize() // <--- this should be a coroutine
 	{
 		if (damageColorIntensity != 0f)
 		{
@@ -328,44 +346,6 @@ public class CritterCore : BodyCore
 	}
 
     //--------------------------------------------------
-    /*
-    public void SearchForTarget()
-    {
-        int i;
-
-        i = GameCore.Core.critters.Count;
-        target = null;
-
-        for (i=0; i <= GameCore.Core.critters.Count-1; i++)
-        {
-            if (GameCore.Core.critters[i])
-            {
-                if ((GameCore.Core.critters[i].GetComponent<CritterCore>().team != team)
-                && (GameCore.Core.critters[i].GetComponent<CritterCore>().downed == false)
-                && (GameCore.Core.critters[i].GetComponent<CritterCore>().team != 0) // do not attack neutral critters
-                && (attitude < 0))
-                {
-                    target = GameCore.Core.critters[i];
-                    action = EAction.attack;
-                    
-                    if (targetX == 0f) // fixes strange 'enemy men walking to the scene origin' bug
-                    targetX = transform.position.x;
-                }
-            }
-        }
-
-        if (target == null)
-        {
-            if (team == 1)
-            {
-                //action = EAction.follow;
-                //target = GameCore.Core.player;
-            }
-            else
-            action = EAction.idle;
-        }
-    }
-    */
     public void FindNearestEnemy()
     {
         int i;
@@ -419,12 +399,12 @@ public class CritterCore : BodyCore
 
         if (target == null)
         {
-            if (team == 1)
+            /*if (team == 1)
             {
                 //action = EAction.follow;
                 //target = GameCore.Core.player;
             }
-            else
+            else*/
             action = EAction.idle;
         }
     }
@@ -539,12 +519,14 @@ public class CritterCore : BodyCore
                         {
                             if (team != 0)
                             FindNearestEnemy();
+
+
                         }
                     }
                 }
                 else // if command is none
                 {
-                    if (type == EType.man)
+                    if (GetComponent<ManCore>())
                     {
                         if (gameObject != GameCore.Core.player)
                         {
@@ -807,7 +789,7 @@ public class CritterCore : BodyCore
                 AttackTarget();
             }
 
-            // if doing any action, move towards the target to execute the action
+            // if doing any action, move towards target x
 
             if (action != EAction.none)
             {
@@ -826,12 +808,14 @@ public class CritterCore : BodyCore
                         MoveRight();
                         directionRight = true;
                         GetComponent<SpriteRenderer>().flipX = false;
+
                     }
                     else
                     {
                         MoveLeft();
                         directionRight = false;
                         GetComponent<SpriteRenderer>().flipX = true;
+
                     }
 
                 }
@@ -874,6 +858,9 @@ public class CritterCore : BodyCore
     */
     void OnDestroy()
     {
+        if (gameObject != GameCore.Core.player)
         GameCore.Core.critters.Remove(gameObject); 
     }
+
+
 }

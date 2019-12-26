@@ -7,19 +7,20 @@ public class ManCore : CritterCore
 {
     // =================== MAN  ====================
 
-    // A human. Can equip, use and throw tools. Can process and craft items. Collects points.
+    // A human. Can equip, use and throw items. Can process and craft items. Collects points.
 
     // parent class:  CritterCore
     // child classes: PlayerCore
 
-    public GameObject tool = null;
+    public GameObject hand1Slot, hand2slot, headSlot, bodySlot, feetSlot = null;
+
 
     public float rp, bp, gp, yp; // red, blue, green and yellow points
 
     /// Throw()
     /// Equip(1)
     /// Unequip(1)
-    /// DropTool()
+    /// DropHand1Slot() ----!!
     /// Chop(1)
     /// CutDown(1)
     /// ObtainMeat(1)
@@ -27,6 +28,9 @@ public class ManCore : CritterCore
     /// Convert(1)
     /// ProcessHemp(1)
     /// SetOnFire(1)
+    /// ProcessTree(1)
+    /// CraftBarkTorch(1)
+    /// AddFuel(1)
 
     // =================================================
 
@@ -34,7 +38,7 @@ public class ManCore : CritterCore
 
     public void Throw()
 	{
-        if (tool != null)
+        if (hand1Slot != null)
         {
             /*
 		    clone = Instantiate (projectilePrefab,transform.position,transform.rotation) as GameObject;
@@ -43,16 +47,15 @@ public class ManCore : CritterCore
 		    clone.GetComponent<ProjectileCore>().team = team;
 		    */
 
-            tool.AddComponent<ProjectileCore>();
-            tool.GetComponent<ProjectileCore>().kind = EKind.projectile;
-            tool.GetComponent<ProjectileCore>().parent = gameObject;
-            tool.GetComponent<ProjectileCore>().team = team;
-            tool.GetComponent<ItemCore>().enabled = false;
+            hand1Slot.AddComponent<ProjectileCore>();
+            hand1Slot.GetComponent<ProjectileCore>().parent = gameObject;
+            hand1Slot.GetComponent<ProjectileCore>().team = team;
+            hand1Slot.GetComponent<ItemCore>().enabled = false;
 
 		    Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 		    
-            tool.GetComponent<BodyCore>().isCarried = false;
-            tool.GetComponent<BodyCore>().carrier = null;
+            hand1Slot.GetComponent<BodyCore>().isCarried = false;
+            hand1Slot.GetComponent<BodyCore>().carrier = null;
 
             // if player
             Vector3 v1 = mousePos-transform.position;
@@ -60,10 +63,10 @@ public class ManCore : CritterCore
             v1 *= 30f;
             //
 
-            tool.GetComponent<Rigidbody2D>().AddForce(v1, ForceMode2D.Impulse);
+            hand1Slot.GetComponent<Rigidbody2D>().AddForce(v1, ForceMode2D.Impulse);
             
 
-            tool = null;
+            hand1Slot = null;
 
             if (GameCore.Core.player == gameObject)
             {
@@ -82,12 +85,12 @@ public class ManCore : CritterCore
             {
                 if (_body.GetComponent<ItemCore>().isTool == true)
                 {
-                    if (tool != null)
+                    if (hand1Slot != null)
                     {
-                        Unequip(tool);
+                        Unequip(hand1Slot);
                     }
                     
-                    tool = _body;
+                    hand1Slot = _body;
 
                     isCarrying = true;
                     _body.GetComponent<BodyCore>().isCarried = true;
@@ -119,10 +122,10 @@ public class ManCore : CritterCore
 
     public void Unequip(GameObject item)
     {
-        if (tool == item) // if item is in tool slot
+        if (hand1Slot == item) // if item is in hand1Slot slot
         {
             carriedBodies.Add(item);
-            tool = null;
+            hand1Slot = null;
         }
 
         if (GameCore.Core.player == gameObject)
@@ -131,13 +134,13 @@ public class ManCore : CritterCore
 
     //--------------------------------------------------
 
-    public void DropTool()
+    public void DropHand1Slot()
     {
-        tool.GetComponent<BodyCore>().carrier = null;
-        tool.GetComponent<BodyCore>().isCarried = false;
-        tool.GetComponent<BodyCore>().isFalling = true;
+        hand1Slot.GetComponent<BodyCore>().carrier = null;
+        hand1Slot.GetComponent<BodyCore>().isCarried = false;
+        hand1Slot.GetComponent<BodyCore>().isFalling = true;
 
-        tool = null;
+        hand1Slot = null;
 
         if (GameCore.Core.player == gameObject)
         GameCore.Core.InventoryManager();
@@ -167,7 +170,7 @@ public class ManCore : CritterCore
     {
         if (obj)
         {
-            obj.GetComponent<PlantCore>().rooted = false;
+            obj.GetComponent<PlantCore>().isRooted = false;
             obj.transform.Rotate(0,0,90f);
         }
     }
@@ -202,18 +205,26 @@ public class ManCore : CritterCore
 
     //--------------------------------------------------
 
-    public void Convert(GameObject obj)
+    public void Convert(GameObject _obj)
     {
-        if (obj)
+        if (_obj)
         {
-            obj.GetComponent<CritterCore>().team = team;
+            if (_obj.GetComponent<CritterCore>().attitude >= 100f)
+            {
+                _obj.GetComponent<CritterCore>().team = team;
 
-            PantsCore p = obj.GetComponentInChildren<PantsCore>();
-            p.team = team;
-            p.RefreshColor();
+                PantsCore p = _obj.GetComponentInChildren<PantsCore>();
+                p.team = team;
+                p.RefreshColor();
 
-            action = EAction.none;
+            }
+            else
+            {
+                MessageText("He refused to join the tribe.");
+            }
         }
+
+        Stop();
     }
 
     //--------------------------------------------------
@@ -239,9 +250,16 @@ public class ManCore : CritterCore
 
     public void SetOnFire(GameObject _obj)
     {
+        _obj.GetComponent<Burnable>().SetOnFire();
+
+
+        /*
+
         if (_obj)
         if (_obj.GetComponent<BodyCore>().onFire == false)
         {
+            // create fire
+
             GameObject clone;
 
             _obj.GetComponent<BodyCore>().onFire = true;
@@ -249,21 +267,38 @@ public class ManCore : CritterCore
             clone = Instantiate(GameCore.Core.firePrefab, _obj.transform.position, transform.rotation) as GameObject;
             clone.transform.parent = _obj.transform;
 
-
             if (_obj.GetComponent<ItemCore>())
-            if (_obj.GetComponent<ItemCore>().item == EItem.firewood)
             {
-                clone = GameCore.Core.SpawnStructure(EStructure.campfire);
-                clone.transform.position = _obj.transform.position;
-                clone.GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_firewood;
-                clone.transform.localScale = new Vector3(0.5f,0.5f,0.5f);
 
-                _obj.GetComponent<BodyCore>().onFire = true;
+                // if bark torch
+
+                if (_obj.GetComponent<ItemCore>().item == EItem.barkTorch)
+                {
+                    // translate fire according to torch rotation
+
+                    clone.transform.rotation = clone.transform.parent.rotation;
+                    clone.transform.Translate(Vector3.up*0.75f, Space.Self);
+                }
+
+                // if firewood
             
-                Destroy(_obj);
+                if (_obj.GetComponent<ItemCore>().item == EItem.firewood)
+                {
+                    // spawn campfire and destory firewood
 
+                    clone = GameCore.Core.SpawnStructure(EStructure.campfire);
+                    clone.transform.position = _obj.transform.position;
+                    clone.GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_firewood;
+                    clone.transform.localScale = new Vector3(0.6f,0.6f,0.6f);
+
+                    //_obj.GetComponent<BodyCore>().onFire = true; <---- ???
+            
+                    Destroy(_obj);
+                }
             }
         }
+
+        */
     }
 
     //--------------------------------------------------
@@ -280,7 +315,6 @@ public class ManCore : CritterCore
         {
             Destroy(_objToConsume[i]);
         }
-
     }
 
     //--------------------------------------------------
@@ -289,13 +323,7 @@ public class ManCore : CritterCore
     {
         if (_tree)
         {
-            GameObject clone;
-            clone = GameCore.Core.SpawnItem(EItem.smallLog);
-            clone.transform.position = _tree.transform.position;
-            clone = GameCore.Core.SpawnItem(EItem.firewood);
-            clone.transform.position = _tree.transform.position + new Vector3(-0.2f,0f,0f);
-            clone = GameCore.Core.SpawnItem(EItem.plantMaterial);
-            clone.transform.position = _tree.transform.position + new Vector3(0.2f,0f,0f);
+            _tree.GetComponent<Tree>().DropResources();    
 
             Destroy(_tree);
         }
@@ -309,7 +337,7 @@ public class ManCore : CritterCore
         {
             GameObject clone;
             clone = GameCore.Core.SpawnItem(EItem.bark);
-            clone.transform.position = _tree.transform.position + new Vector3(0f,0f,0f);
+            clone.transform.position = _tree.transform.position;
         }
     }
 
@@ -322,8 +350,8 @@ public class ManCore : CritterCore
             _fireplace.GetComponent<FireplaceCore>().GainFuel(_fuel);
             Destroy(_fuel);
 
-            if (_fuel == tool)
-            tool = null;
+            if (_fuel == hand1Slot)
+            hand1Slot = null;
             else
             carriedBodies.Remove(_fuel);
 
@@ -331,6 +359,36 @@ public class ManCore : CritterCore
             {
                 GameCore.Core.InventoryManager();
             }
+        }
+    }
+
+    //--------------------------------------------------
+
+        public void CraftCordage(GameObject _grass)
+    {
+        if (_grass)
+        {
+            GameObject clone;
+            clone = GameCore.Core.SpawnItem(EItem.cordage);
+            clone.transform.position = _grass.transform.position;
+
+            Destroy(_grass);
+        }
+    }
+
+    //--------------------------------------------------
+
+    public void CraftBarkTorch(List<GameObject> _objToConsume)
+    {
+        GameObject clone;
+        clone = GameCore.Core.SpawnItem(EItem.barkTorch);
+        clone.transform.position = transform.position;
+
+        int i;
+
+        for (i=0; i < _objToConsume.Count; i++)
+        {
+            Destroy(_objToConsume[i]);
         }
     }
 
@@ -350,10 +408,10 @@ public class ManCore : CritterCore
 
             case EAction.cutDown:
             {
-                if (tool)
+                if (hand1Slot)
                 {
-                    if ((tool.GetComponent<ItemCore>().item == EItem.sharpRock)
-                    || (tool.GetComponent<ItemCore>().item == EItem.handAxe))
+                    if ((hand1Slot.GetComponent<ItemCore>().item == EItem.sharpRock)
+                    || (hand1Slot.GetComponent<ItemCore>().item == EItem.handAxe))
                     {
                         Hit();
                     }
@@ -363,27 +421,11 @@ public class ManCore : CritterCore
 
             case EAction.craftHandAxe:
             {
-                if (tool)
+                if (hand1Slot)
                 {
-                    if (tool.GetComponent<ItemCore>().item == EItem.roundRock)
+                    if (hand1Slot.GetComponent<ItemCore>().item == EItem.roundRock)
                     {
                         Hit();
-                    }
-                }
-                break;
-            }
-
-            case EAction.processHemp:
-            {
-                if (tool)
-                {
-                    if (tool.GetComponent<ItemCore>().item == EItem.roundRock)
-                    {
-                        if (target.GetComponent<InteractiveObjectCore>().projectAttached)
-                        {
-                            if (target.GetComponent<InteractiveObjectCore>().projectAttached.GetComponent<ProjectCore>().ready == true)
-                            Hit();
-                        }
                     }
                 }
                 break;
@@ -398,23 +440,10 @@ public class ManCore : CritterCore
 
             case EAction.processTree:
             {
-                if (tool)
+                if (hand1Slot)
                 {
-                    if ((tool.GetComponent<ItemCore>().item == EItem.sharpRock)
-                    || (tool.GetComponent<ItemCore>().item == EItem.handAxe))
-                    {
-                        Hit();
-                    }
-                }
-                break;
-            }
-
-            case EAction.collectBark:
-            {
-                if (tool)
-                {
-                    if ((tool.GetComponent<ItemCore>().item == EItem.sharpRock)
-                    || (tool.GetComponent<ItemCore>().item == EItem.handAxe))
+                    if ((hand1Slot.GetComponent<ItemCore>().item == EItem.sharpRock)
+                    || (hand1Slot.GetComponent<ItemCore>().item == EItem.handAxe))
                     {
                         Hit();
                     }
@@ -431,9 +460,9 @@ public class ManCore : CritterCore
                 {
                     if (target.GetComponent<FireplaceCore>())
                     {
-                        // if item being put into fireplace is flammable    
+                        // if chosen object is burnable    
 
-                        if (GameCore.Core.chosenObject.GetComponent<ItemCore>().isFlammable == true)
+                        if (GameCore.Core.chosenObject.GetComponent<Burnable>())
                         {
                             AddFuel(target, GameCore.Core.chosenObject);
                         }
@@ -499,7 +528,7 @@ public class ManCore : CritterCore
                                 clone.GetComponent<ProjectCore>().action = EAction.heating;
                                 clone.GetComponent<ProjectCore>().target = target; // set fireplace as target
                                 clone.GetComponent<ProjectCore>().secondaryTarget = GameCore.Core.chosenObject; // set meat as secondary target
-                                target.GetComponent<InteractiveObjectCore>().hasProject = true;
+                                target.GetComponent<PhysicalObject>().hasProject = true;
 
                             }
                         }
@@ -516,7 +545,7 @@ public class ManCore : CritterCore
 
     //--------------------------------------------------
     
-	// =========================================== MAIN LOOP ===========================================
+	// =========================================== MAIN ===========================================
 	
 	void Start()
 	{
@@ -529,7 +558,6 @@ public class ManCore : CritterCore
         clone.GetComponent<HudText>().objectToFollow = gameObject;
 
         //
-
 
         rp = 0f;
         bp = 0f;
@@ -544,13 +572,12 @@ public class ManCore : CritterCore
 	
 	void Update()
 	{
-        CalculateLand();
-		PlaceOnGround();
 		DamageColorize();
     }
 
 	void FixedUpdate()
 	{
+		Gravity();
         AI();
     }
 	
@@ -562,7 +589,7 @@ public class ManCore : CritterCore
         {
             if (team != 0)
             {
-                if (tool == null)
+                if (hand1Slot == null)
                 {
                     bool b = false;
 
@@ -582,5 +609,13 @@ public class ManCore : CritterCore
         }
     }
 
-	//==================================================
+    void OnEnable()
+    {
+        AddHpBar();
+    }
+
+    void OnDisable()
+    {
+        Destroy(hpBar);
+    }
 }

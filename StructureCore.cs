@@ -4,17 +4,13 @@ using UnityEngine;
 
 public enum EStructure {none, campfire, shelter};
 
-public class StructureCore : InteractiveObjectCore
+public class StructureCore : PhysicalObject
 {
 	//================== STRUCTURE =====================
 
     // A large, immobile physical body.
 
-    // Enables staying on the ground.
-    // Allows object to be set on fire. ?
-
-
-    // parent class:  InteractiveObjectCore
+    // parent class:  PhysicalObject
 
     // child classes: FireplaceCore
 
@@ -22,13 +18,10 @@ public class StructureCore : InteractiveObjectCore
 
     public EStructure structure;
 
-    public float groundY;
-
     // =================== METHODS ========================
 
     public void StructureInitialize()
     {
-        kind = EKind.structure;
         GetComponent<SpriteRenderer>().sortingOrder = 5;
 
         switch (structure)
@@ -63,9 +56,9 @@ public class StructureCore : InteractiveObjectCore
     void Start()
     {
         StructureInitialize();
-        CalculateLand();
 
-        groundY = GameCore.Core.landPointY[landSection-1] + (transform.position.x-GameCore.Core.landPointX[landSection-1]) * Mathf.Tan(landSteepness);
+        UpdateLandSection();
+        groundY = GetGroundY();
         transform.position = new Vector2 (transform.position.x, groundY);
     }
 

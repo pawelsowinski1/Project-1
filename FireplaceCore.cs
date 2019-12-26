@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class FireplaceCore : StructureCore
 {
-    public GameObject fire;
+    public GameObject fire; // fire object
     public GameObject itemInFire; // item laying directly in fire (e.g. flat rock, clay pot)
-    public GameObject itemHeated; // item laying on top or inside the item on fire (e.g. meat, water)
+    public GameObject itemHeated; // item laying on top or inside the item in fire (e.g. meat, water)
 
     //public enum EFireplace {none, campfire, bonfire, stove, kiln, furnace};
 
@@ -14,8 +14,7 @@ public class FireplaceCore : StructureCore
 
     public void GainFuel(GameObject _fuel)
     {
-        fuel += 1f;
-        
+        fuel += _fuel.GetComponent<Burnable>().fuel;
     }
 
     // =============================================== MAIN ================================================
@@ -25,19 +24,39 @@ public class FireplaceCore : StructureCore
         fuel = 1f;
 
         StructureInitialize();
-        CalculateLand();
 
-        groundY = GameCore.Core.landPointY[landSection-1] + (transform.position.x-GameCore.Core.landPointX[landSection-1]) * Mathf.Tan(landSteepness);
+        UpdateLandSection();
+        groundY = GetGroundY();
         transform.position = new Vector2 (transform.position.x, groundY);
 
-        fire = Instantiate(GameCore.Core.firePrefab, transform.position, Quaternion.identity) as GameObject;
+        fire = Instantiate(GameCore.Core.firePrefab, transform.position, Quaternion.identity);
         fire.transform.parent = transform;
-        fire.GetComponent<FireCore>().myLight = fire.transform.Find("Light").gameObject;
+
+        StartCoroutine("FireplaceUpdate");
     }
 
-    void Update()
+    IEnumerator FireplaceUpdate()
     {
-        fire.GetComponent<FireCore>().myLight.GetComponent<Light>().intensity = fuel/2;
+        for (;;)
+        {
+
+            //fuel -= 0.005f + fire.GetComponent<FireCore>().size*0.001f;
+            fuel -= 0.02f + fire.GetComponent<FireCore>().size*0.004f;
+
+
+            if (fuel < 0)
+            {
+                fuel = 0;
+                
+                // todo
+            }
+
+            fire.GetComponent<FireCore>().size = fuel;
+
+            yield return new WaitForSeconds(1f);
+        }
     }
+
+
 
 }

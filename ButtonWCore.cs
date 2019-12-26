@@ -127,9 +127,7 @@ public class ButtonWCore : MonoBehaviour
 
     public void PointerEnter()
     {
-        //GameCore.Core.cursorLabel.GetComponent<CursorLabelCore>().isHidden = false;
-
-        if (isLand == true)
+        if (isLand == true) // if it's not a node
         {
             int i;
 
@@ -141,13 +139,9 @@ public class ButtonWCore : MonoBehaviour
                 {
                     GameCore.Core.cursorLabel.GetComponent<CursorLabelCore>().text.text += "\nUnit of "+GameCore.Core.teams[GameCore.Core.units[i].team].name+
                     " ("+GameCore.Core.teams[GameCore.Core.units[i].team].members.Count+" members)";
-
                 }
             }
 
-            //GameCore.Core.cursorLabel.GetComponent<CursorLabelCore>().text.text = s1+s2;
-
-            print("PointerEnter");
         }
         else
         {

@@ -14,8 +14,6 @@ public class ProjectileCore : BodyCore // <-- doesn't need to be a full BodyCore
 
 	void Start ()
 	{
-        kind = EKind.projectile;
-
         if (parent)
         team = parent.GetComponent<ManCore>().team;
 
@@ -27,8 +25,7 @@ public class ProjectileCore : BodyCore // <-- doesn't need to be a full BodyCore
 
 	void Update() 
 	{
-		CalculateLand();
-		PlaceOnGround();
+		Gravity();
 
         float f1 = GetComponent<Rigidbody2D>().velocity.x;
 
@@ -85,9 +82,9 @@ public class ProjectileCore : BodyCore // <-- doesn't need to be a full BodyCore
 
                 if (other.gameObject.GetComponent<ManCore>())
                 {
-                    if (other.gameObject.GetComponent<ManCore>().tool != null)
+                    if (other.gameObject.GetComponent<ManCore>().hand1Slot != null)
                     {
-                        other.gameObject.GetComponent<ManCore>().DropTool();
+                        other.gameObject.GetComponent<ManCore>().DropHand1Slot();
                     }
                 }
 

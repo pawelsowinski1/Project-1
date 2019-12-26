@@ -2,10 +2,8 @@
 using System.Collections.Generic; 
 using UnityEngine;
 
-public class GhostObjectCore : InteractiveObjectCore
+public class GhostObjectCore : PhysicalObject
 {
-    public float groundY;
-
     void Start()
     {
         transform.localScale = new Vector3(1.5f,1.5f,1.5f);
@@ -15,8 +13,8 @@ public class GhostObjectCore : InteractiveObjectCore
     {
 		transform.position = GameCore.Core.mousePos + new Vector3(0f,0f,0.5f);
 
-        CalculateLand();
-        groundY = GameCore.Core.landPointY[landSection-1] + (transform.position.x-GameCore.Core.landPointX[landSection-1]) * Mathf.Tan(landSteepness);
+        UpdateLandSection();
+        groundY = GetGroundY();
 
         transform.position = new Vector3(transform.position.x, groundY ,transform.position.z);
 

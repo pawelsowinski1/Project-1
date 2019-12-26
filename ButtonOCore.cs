@@ -13,22 +13,13 @@ public class ButtonOCore : MonoBehaviour
     public GameObject obj;       // object represented by this button
     public GameObject image;     // image displayed
 
+    public bool isMouseOver = false;
+
     GameCore core = GameCore.Core;
 
     int i;
 
-	void Start ()
-    {
-		image.transform.localScale = new Vector3(2f,2f,2f);
-	}
-	
-	void Update ()
-    {
-        if (index == 0)
-        transform.position = Camera.main.WorldToScreenPoint(worldPos);
-        else
-        transform.position = core.buttonsO[0].transform.position + new Vector3(105f,0f,0f)*index;// + GameCore.Core.v4*index*100f;
-	}
+    // ---------------------------------------
 
     public void TaskOnClick()
     {/*
@@ -53,15 +44,18 @@ public class ButtonOCore : MonoBehaviour
         }
 
         core.buttonsA.Clear();
-        core.RMBclickedObj = obj;
 
+        //
+
+        isMouseOver = true;
+
+        core.RMBclickedObj = obj;
         core.CreateButtonAList();
 
         for (i=0; i < core.buttonsA.Count; i++)
         {
             core.buttonsA[i].GetComponent<ButtonACore>().isAnchoredToButtonO = true;
             core.buttonsA[i].GetComponent<ButtonACore>().anchorObject = gameObject;
-
         }
 
         for (i=0; i < core.buttonsO.Count; i++)
@@ -72,4 +66,36 @@ public class ButtonOCore : MonoBehaviour
         }
 
     }
+
+    public void TaskOnExit()
+    {
+        isMouseOver = false;
+        obj.GetComponent<PhysicalObject>().highlightAmount = 0f;
+        obj.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,1f);
+
+    }
+
+    // --------------- main ----------------
+
+	void Start ()
+    {
+		image.transform.localScale = new Vector3(2f,2f,2f);
+	}
+	
+	void Update ()
+    {
+        if (index == 0)
+        transform.position = Camera.main.WorldToScreenPoint(worldPos);
+        else
+        transform.position = core.buttonsO[0].transform.position + new Vector3(105f,0f,0f)*index;// + GameCore.Core.v4*index*100f;
+
+        if (isMouseOver)
+        {
+            obj.GetComponent<PhysicalObject>().Highlight();
+        }
+
+	}
+
+
+
 }

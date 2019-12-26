@@ -14,7 +14,6 @@ public class CarniCore : CritterCore
 	void Start () 
     {
         name = "Carni";
-        type = EType.carni;
         hp = 100f;
     
     	BodyInitialize();
@@ -23,8 +22,7 @@ public class CarniCore : CritterCore
 	
 	void Update ()
     {
-    	CalculateLand();
-		PlaceOnGround();
+		Gravity();
 		DamageColorize();
 	}
 

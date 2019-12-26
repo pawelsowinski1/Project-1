@@ -24,24 +24,39 @@ public class CursorLabelCore : MonoBehaviour
 
     public void Game()
     {
-        if (GameCore.Core.combatMode == false)
-        {
-            transform.position = Input.mousePosition + v1;
+        transform.position = Input.mousePosition + v1;
 
-            if (GameCore.Core.rhit2D.Length == 0)
-            {
-                text.text = "";
-            }
-            else
-            if (GameCore.Core.rhit2D.Length == 1)
-            {
-                text.text = GameCore.Core.rhit2D[0].transform.gameObject.name;
-            }
-            else
-            text.text = "objects: "+GameCore.Core.rhit2D.Length.ToString();
+        if (GameCore.Core.rhit2D.Length == 0)
+        {
+            text.text = "";
         }
         else
-        text.text = "";
+        {
+            for (int i = 0; i<GameCore.Core.rhit2D.Length; i++)
+            {
+                if (GameCore.Core.rhit2D[i].transform.gameObject.GetComponent<ProjectCore>())
+                {
+                    text.text = GameCore.Core.rhit2D[i].transform.gameObject.GetComponent<ProjectCore>().label;
+                    
+                    break;
+                }
+                else
+                if (GameCore.Core.rhit2D[i].transform.gameObject.GetComponent<FireplaceCore>())
+                {
+                    text.text = "Campfire\n\nfuel: "+GameCore.Core.rhit2D[i].transform.gameObject.GetComponent<FireplaceCore>().fuel;
+                }
+
+            }
+        }
+
+        /*
+        if (GameCore.Core.rhit2D.Length == 1)
+        {
+            text.text = GameCore.Core.rhit2D[0].transform.gameObject.name;
+        }
+        else
+        text.text = "objects: "+GameCore.Core.rhit2D.Length.ToString();
+        */
     }
 
     // -------------------------- main ------------------------------
@@ -54,8 +69,9 @@ public class CursorLabelCore : MonoBehaviour
 	}
 	
 	void Update()
-    {
-        transform.SetSiblingIndex(100);
+    {        
+
+        transform.SetSiblingIndex(100); // <----- should it be in update?
 
         if (GameCore.Core.worldMap.activeSelf == true)
         {
@@ -93,40 +109,33 @@ public class CursorLabelCore : MonoBehaviour
                 {
                     // if any interactive object        
 
-                    text.text = GameCore.Core.rhit2D[0].transform.gameObject.name+
+                    text.text = GameCore.Core.rhit2D[0].transform.gameObject.name;
                 
-                    "\nkind = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<InteractiveObjectCore>().kind.ToString()+
-                    "\ntype = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<InteractiveObjectCore>().type.ToString();
-
                     // if plant
 
-                    if (GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<InteractiveObjectCore>().kind == EKind.plant)
+                    if (GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<PlantCore>())
                     {
                         text.text = GameCore.Core.rhit2D[0].transform.gameObject.name+
-                        "\nkind = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<InteractiveObjectCore>().kind.ToString()+
-                        "\ntype = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<InteractiveObjectCore>().type.ToString()+
-                        "\nage = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<PlantCore>().age+
+                        "\nsize = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<PlantCore>().size+
                         "\nsorting order = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<SpriteRenderer>().sortingOrder;
                         
                     }
 
                     // if structure
 
-                    if (GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<InteractiveObjectCore>().kind == EKind.structure)
+                    else
+                    if (GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<StructureCore>())
                     {
                         text.text = GameCore.Core.rhit2D[0].transform.gameObject.name+
-                        "\nkind = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<InteractiveObjectCore>().kind.ToString()+
-                        "\ntype = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<InteractiveObjectCore>().type.ToString()+
                         "\nsorting order = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<SpriteRenderer>().sortingOrder;
                     }
 
                     // if fireplace
 
+                    else
                     if (GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<FireplaceCore>())
                     {
                         text.text = GameCore.Core.rhit2D[0].transform.gameObject.name+
-                        "\nkind = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<FireplaceCore>().kind+
-                        "\ntype = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<FireplaceCore>().type+
                         "\nsorting order = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<SpriteRenderer>().sortingOrder+
                         "\nfuel = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<FireplaceCore>().fuel+
                         "\nitem in fire = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<FireplaceCore>().itemInFire+
@@ -136,11 +145,9 @@ public class CursorLabelCore : MonoBehaviour
                     // if critter
 
                     else
-                    if (GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<InteractiveObjectCore>().kind == EKind.critter)
+                    if (GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<CritterCore>())
                     {
                         text.text = GameCore.Core.rhit2D[0].transform.gameObject.name+
-                        "\nkind = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<InteractiveObjectCore>().kind.ToString()+
-                        "\ntype = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<InteractiveObjectCore>().type.ToString()+
                         "\nsorting order = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<SpriteRenderer>().sortingOrder+
                         "\nteam = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<CritterCore>().team.ToString()+
                         "\naction = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<CritterCore>().action.ToString()+
@@ -158,12 +165,10 @@ public class CursorLabelCore : MonoBehaviour
                     // if project
 
                     else
-                    if (GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<InteractiveObjectCore>().kind == EKind.project)
+                    if (GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<ProjectCore>())
                     {
                         text.text = GameCore.Core.rhit2D[0].transform.gameObject.name+
-                        "\nkind = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<InteractiveObjectCore>().kind.ToString()+
                         "\nsorting order = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<SpriteRenderer>().sortingOrder+
-                        "\ntype = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<InteractiveObjectCore>().type.ToString()+
                         "\ntarget = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<ProjectCore>().target.ToString()+
                         "\naction = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<ProjectCore>().action.ToString()+
                         "\nready = "+GameCore.Core.rhit2D[0].transform.gameObject.GetComponent<ProjectCore>().ready.ToString()+

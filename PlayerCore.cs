@@ -29,6 +29,9 @@ public class PlayerCore : ManCore
 
 	// ============================================= MAIN LOOP ====================================================
 
+
+
+
     ///  ----- START -----
 	
 	void Start()
@@ -38,6 +41,12 @@ public class PlayerCore : ManCore
 		BodyInitialize();
         team = 1;
         pickupTarget = null;
+
+        Component[] c;
+
+        c = GetComponentsInChildren<HpBar>();
+
+        //hpBar = c[0].transform.gameObject;
 
         // add hudText
 
@@ -53,8 +62,8 @@ public class PlayerCore : ManCore
 
 	void FixedUpdate()
 	{
-        PlaceOnGround();
-        AI(); // <---- shouldn't this be in Update ?
+        Gravity();
+        AI();
 
         if (downed == false)
         {
@@ -68,6 +77,7 @@ public class PlayerCore : ManCore
 
                 if (GameCore.Core.combatMode == false)
                 directionRight = false;
+
             }
 		
 		    if(Input.GetKey(KeyCode.D))
@@ -78,6 +88,7 @@ public class PlayerCore : ManCore
 
                 if (GameCore.Core.combatMode == false)
                 directionRight = true;
+
             }
 
             if ((GameCore.Core.combatMode == true)
@@ -110,8 +121,9 @@ public class PlayerCore : ManCore
 		    if(Input.GetKeyDown(KeyCode.W))
             {
                 action = EAction.none;
-                PlaceOnGround();
+                Gravity();
 		        Jump();
+
             }
 
             if(Input.GetKeyDown(KeyCode.Space))
@@ -130,15 +142,10 @@ public class PlayerCore : ManCore
             }
         }
 
-
-        CalculateLand();
-        //PlaceOnGround();
 		DamageColorize();
-		
 
         if (hitCooldown > 0)
         hitCooldown--;
-
 
         if (pickupTarget)
         {
@@ -148,8 +155,6 @@ public class PlayerCore : ManCore
                 pickupTarget = null;
             }
         }
-
-
 	}
 
     /// ----- ON TRIGGER -----
@@ -168,7 +173,7 @@ public class PlayerCore : ManCore
 
         if (other.gameObject.GetComponent<PlantCore>())
         {
-            if (other.gameObject.GetComponent<PlantCore>().rooted == false) 
+            if (other.gameObject.GetComponent<PlantCore>().isRooted == false) 
             b = true;
         }
 
@@ -184,4 +189,16 @@ public class PlayerCore : ManCore
             }
         }
     }
+
+    
+    void OnEnable()
+    {
+        AddHpBar();
+    }
+
+    void OnDisable()
+    {
+        Destroy(hpBar);
+    }
+    
 }

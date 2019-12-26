@@ -2,12 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ProjectCore : InteractiveObjectCore
+public class ProjectCore : PhysicalObject
 {
-    public bool progressByHit;
+    public bool progressByHit; // <--- ?
     public bool ready = true; // all conditions met
+
     public float progress;
     public float maxProgress;
+    public GameObject progressBar;
+
     public GameObject target = null;                                   // object to which project is attached
     public GameObject secondaryTarget;                                 // needed for certain actions (e.g. heat item)
     public EAction action;                                             // action executed when project is completed
@@ -16,36 +19,28 @@ public class ProjectCore : InteractiveObjectCore
 
     public List<EItem> itemsNeeded = new List<EItem>();
 
-    public float colorIntensity = 0f;
-
     public int conditionsMet;
     public int conditionsAll;
 
-    int i;
+    public string label = "";
 
     // Methods
 
     public void ProjectInitialize()
     {
-        kind = EKind.project;
+        GetComponent<Collider2D>().enabled = true;
 
         conditionsMet = 0;
         conditionsAll = 0;
 
         progress = 0f;
-        maxProgress = 3f;
+        maxProgress = 5f;
+
+        progressBar = Instantiate(GameCore.Core.progressBarPrefab, transform.position, Quaternion.identity);
+        progressBar.GetComponent<ProgressBar>().parent = gameObject;
 
         switch (action)
         {
-            case EAction.processHemp:
-            {
-                conditionsMet = 1;
-                conditionsAll = 2;
-                ready = false;
-
-                break;
-            }
-
             case EAction.craftStoneSpear:
             {
                 ready = false;
@@ -61,91 +56,109 @@ public class ProjectCore : InteractiveObjectCore
             case EAction.buildShelter:
             {
                 itemsNeeded.Add(EItem.plantMaterial);
-                itemsNeeded.Add(EItem.plantMaterial);
                 itemsNeeded.Add(EItem.cordage);
+                itemsNeeded.Add(EItem.smallLog);
 
                 conditionsAll = itemsNeeded.Count;
 
+                break;
+            }
+
+            case (EAction.cutDown):
+            {
+                switch (target.GetComponent<PlantCore>().plant)
+                {
+                    case EPlant.spruce:
+                    {
+                        maxProgress = target.GetComponent<PlantCore>().size*0.3f;
+                        break;
+                    }
+
+                    case EPlant.birch:
+                    {
+                        maxProgress = target.GetComponent<PlantCore>().size*0.2f;
+                        break;
+                    }
+                }
+                break;
+            }
+
+            case (EAction.processTree):
+            {
+                switch (target.GetComponent<PlantCore>().plant)
+                {
+                    case EPlant.spruce:
+                    {
+                        maxProgress = target.GetComponent<PlantCore>().size*0.3f*2f;
+                        break;
+                    }
+
+                    case EPlant.birch:
+                    {
+                        maxProgress = target.GetComponent<PlantCore>().size*0.2f*2f;
+                        break;
+                    }
+                }
                 break;
             }
         }
 
     }
 
-    public void Colorize()
-    {
-		if (colorIntensity != 0f)
-		{
-			if (colorIntensity > 0f)
-			{
-				GetComponent<SpriteRenderer>().color = new Color(1f,1f-colorIntensity,1f-colorIntensity,0.5f);
-				colorIntensity -= 0.03f;
-			}
-			else
-			{
-				GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,0.5f);
-				colorIntensity = 0f;
-			}
-		}
-    }
 
     public void CheckConditions()
     {
-		Colorize();
-
         if (target)
         transform.position = target.transform.position;
 
         switch (action)
         {
-            // process hemp update
+            // craft cordage
 
-            case EAction.processHemp:
+            case EAction.craftCordage:
             {
-                conditionsMet = 1;
-                conditionsAll = 2;
-
-                if (collisionObjects.Count > 0)
+                if (target == null)
                 {
+                    conditionsMet = 0;
+                    conditionsAll = 1;
                     ready = false;
 
-                    for (i=0; i<collisionObjects.Count; i++)
+                    if (collisionObjects.Count > 0)
                     {
-                        if (collisionObjects[i])
-                        if (collisionObjects[i].GetComponent<ItemCore>())
+                        for (int i=0; i<collisionObjects.Count; i++)
                         {
-                            if (collisionObjects[i].gameObject.GetComponent<ItemCore>().item == EItem.flatRock)
+                            if (collisionObjects[i].GetComponent<PlantCore>())
                             {
-                                if ((collisionObjects[i].gameObject.GetComponent<ItemCore>().isCarried == false)
-                                && (collisionObjects[i].gameObject.GetComponent<BodyCore>().isCarried == false))
+                                if (collisionObjects[i].gameObject.GetComponent<PlantCore>().plant == EPlant.grass)
                                 {
-                                    ready = true;
-                                    //obj = collisionObjects[i];
-                                    conditionsMet++;
+                                    if (collisionObjects[i].gameObject.GetComponent<PlantCore>().isRooted == false)
+                                    {
+                                        itemsToConsume.Add(collisionObjects[i]);
+                                        conditionsMet++;
+                                        ready = true;
+                                    }
                                 }
                             }
                         }
                     }
-
-                    if (ready == false)
-                    progress = 0f;
                 }
 
                 break;
             }
 
-            // craft hand axe update
+            // craft hand axe
 
             case EAction.craftHandAxe:
             {
                 if (target == null)
                 {
                     conditionsMet = 0;
+                    conditionsAll = 1;
                     ready = false;
 
                     if (collisionObjects.Count > 0)
                     {
-                        for (i=0; i<collisionObjects.Count; i++)
+                        for (int i=0; i<collisionObjects.Count; i++)
                         {
                             if (collisionObjects[i].GetComponent<ItemCore>())
                             {
@@ -163,12 +176,12 @@ public class ProjectCore : InteractiveObjectCore
                 break;
             }
 
-            // craft stone spear update
+            // craft stone spear
 
             case EAction.craftStoneSpear:
             {
-            conditionsMet = 0;
-            conditionsAll = 3;
+                conditionsMet = 0;
+                conditionsAll = 3;
 
                 if (collisionObjects.Count > 0)
                 {
@@ -178,7 +191,7 @@ public class ProjectCore : InteractiveObjectCore
                     bool cordage = false;
                     bool smallLog = false;
 
-                    for (i=0; i<collisionObjects.Count; i++)
+                    for (int i=0; i<collisionObjects.Count; i++)
                     {
                         if (collisionObjects[i])
                         {
@@ -240,22 +253,103 @@ public class ProjectCore : InteractiveObjectCore
                 break;
             }
 
-            // build shelter update
+            // craft stone spear
+
+            case EAction.craftBarkTorch:
+            {
+                conditionsMet = 0;
+                conditionsAll = 3;
+
+                if (collisionObjects.Count > 0)
+                {
+                    ready = false;
+
+                    bool bark = false;
+                    bool cordage = false;
+                    bool stick = false;
+
+                    for (int i=0; i<collisionObjects.Count; i++)
+                    {
+                        if (collisionObjects[i])
+                        {
+                            if (collisionObjects[i].GetComponent<ItemCore>())
+                            {
+                                if (collisionObjects[i].gameObject.GetComponent<ItemCore>().item == EItem.bark)
+                                {
+                                    if (collisionObjects[i].gameObject.GetComponent<BodyCore>().isCarried == false)
+                                    {
+                                        if (bark == false)
+                                        {
+                                            bark = true;
+                                            conditionsMet++;
+                                            itemsToConsume.Add(collisionObjects[i]);
+                                        }
+                                    }
+                                }
+                                else
+                                if (collisionObjects[i].gameObject.GetComponent<ItemCore>().item == EItem.cordage)
+                                {
+                                    if (collisionObjects[i].gameObject.GetComponent<BodyCore>().isCarried == false)
+                                    {
+                                        if (cordage == false)
+                                        {
+                                            cordage = true;
+                                            conditionsMet++;
+                                            itemsToConsume.Add(collisionObjects[i]);
+                                        }
+                                    }
+                                }
+                                else
+                                if (collisionObjects[i].gameObject.GetComponent<ItemCore>().item == EItem.stick)
+                                {
+                                    if (collisionObjects[i].gameObject.GetComponent<BodyCore>().isCarried == false)
+                                    {
+                                        if (stick == false)
+                                        {
+                                            stick = true;
+                                            conditionsMet++;
+                                            itemsToConsume.Add(collisionObjects[i]);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (conditionsMet == conditionsAll)
+                    {
+                        ready = true;
+                    }
+
+                    if (ready == false)
+                    {
+                        progress = 0f;
+                    }
+                }
+
+                break;
+            }
+
+
+
+
+            // build shelter
 
             case EAction.buildShelter:
             {
                 conditionsMet = 0;
+                conditionsAll = 3;
                 ready = false;
+                itemsToConsume.Clear();
 
                 if (collisionObjects.Count > 0)
                 {
-                    for (i=0; i<collisionObjects.Count; i++)
+                    for (int i=0; i<collisionObjects.Count; i++)
                     {
                         if (collisionObjects[i].GetComponent<ItemCore>())
                         {
                             if (collisionObjects[i].GetComponent<BodyCore>().isCarried == false)
                             {
-
                                 foreach (EItem _item in itemsNeeded)
                                 {
                                     if (collisionObjects[i].GetComponent<ItemCore>().item == _item)
@@ -270,34 +364,27 @@ public class ProjectCore : InteractiveObjectCore
                         }
                     }
 
-                   
+                    
                     if (itemsToConsume.Count > 0)
                     foreach (GameObject _object in itemsToConsume)
                     {
                         itemsNeeded.Add(_object.GetComponent<ItemCore>().item);
                     }
-
+                    
                     if (conditionsMet >= conditionsAll)
                     {
                         ready = true;
                         conditionsMet = conditionsAll;
                     }
 
-                    if (ready == false)
-                    {
-                        progress = 0f;
-                        itemsToConsume.Clear();
-                    }
 
-
-                    //itemsToConsume.Clear();
                     
                 }
 
                 break;
             }
 
-            // heating update
+            // heating
             
             case EAction.heating:
             {
@@ -310,7 +397,7 @@ public class ProjectCore : InteractiveObjectCore
 
                     bool heatedItem = false;
 
-                    for (i=0; i<collisionObjects.Count; i++)
+                    for (int i=0; i<collisionObjects.Count; i++)
                     {
                         if (collisionObjects[i])
                         {
@@ -322,6 +409,7 @@ public class ProjectCore : InteractiveObjectCore
                                     {
                                         heatedItem = true;
                                         conditionsMet++;
+                                        break;
                                     }
                                 }
                             }
@@ -332,55 +420,149 @@ public class ProjectCore : InteractiveObjectCore
 
                 if (conditionsMet == conditionsAll)
                 {
-                    progress += Time.deltaTime; // progress is equal to the amount of real life seconds passed
 
-                    if (progress > maxProgress)
-                    {
-                        // turn raw meat to cooked meat
-
-                        secondaryTarget.GetComponent<ItemCore>().item = EItem.cookedMeat;
-                        secondaryTarget.GetComponent<ItemCore>().ItemInitialize();
-
-                        target.GetComponent<InteractiveObjectCore>().hasProject = false;
-                        Destroy(gameObject);
-                    }
+                    StartCoroutine("Heating");
+                    StopCoroutine("FadeOut");
+                    GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,1f);
                 }
 
-                // if meat was picked up during heating, reset the progress
+                // if meat was picked up during heating, start fading out
 
                 else
                 {
                     target.GetComponent<FireplaceCore>().itemHeated = null;
                     progress = 0f;
 
+                    //Destroy(gameObject); 
 
-                    Destroy(gameObject); 
+                    StopCoroutine("Heating");
+                    StartCoroutine("FadeOut");
                 }
 
                 break;
             }
-            
-
         }
 	}
 
+    public void SetLabel()
+    {
+        switch (action)
+        {
+            case EAction.cutDown:
+            {
+                label = "Cut down\n\ntools needed: hand axe\nprogress: "+progress+" / "+maxProgress;
+
+                break;
+            }
+
+            case EAction.craftCordage:
+            {
+                label = "Craft cordage\n\nitems needed: 1x grass ("+conditionsMet+"/"+conditionsAll+")\ntools needed: -\nprogress: "+progress+" / "+maxProgress;
+
+                break;
+            }
+
+            case EAction.processTree:
+            {
+                label = "Process tree\n\ntools needed: hand axe\nprogress: "+progress+" / "+maxProgress;
+
+                break;
+            }
+
+            case EAction.craftHandAxe:
+            {
+                label = "Craft hand axe\n\nitems needed: 1x flint ("+conditionsMet+"/"+conditionsAll+")\ntools needed: round rock\nprogress: "+progress+" / "+maxProgress;
+
+                break;
+            }
+
+            case EAction.craftStoneSpear:
+            {
+                label = "Craft stone spear\n\nitems needed: 1x flint, 1x small log, 1x cordage ("+conditionsMet+"/"+conditionsAll+")\ntools needed: round rock, hand axe\nprogress: "+progress+" / "+maxProgress;
+
+                break;
+            }
+
+            case EAction.buildShelter:
+            {
+                label = "Build shelter\n\nitems needed: 2x plant material, 1x cordage ("+conditionsMet+"/"+conditionsAll+")\ntools needed: -\nprogress: "+progress+" / "+maxProgress;
+
+                break;
+            }
+
+            case EAction.heating:
+            {
+                label = "Heating\n\nprogress: "+progress+" / "+maxProgress;
+
+                break;
+            }
+
+            case EAction.craftBarkTorch:
+            {
+                label = "Craft bark torch\n\nitems needed: 1x birch bark, 1x stick, 1x cordage ("+conditionsMet+"/"+conditionsAll+")\ntools needed: -\nprogress: "+progress+" / "+maxProgress;
+
+                break;
+            }
+
+        }
+    }
+
+    public IEnumerator FadeOut()
+    {
+        for (float a = 0f; a<=1f; a+=0.01f)  
+        {
+            GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,1f-a);
+
+            yield return new WaitForSeconds(0.1f);
+        }
+
+        Destroy(gameObject);
+    }
+
+    public IEnumerator Heating()
+    {
+        for (;;)  
+        {
+            progress += 1;
+
+            if (progress > maxProgress)
+            {
+                // turn raw meat to cooked meat
+
+                secondaryTarget.GetComponent<ItemCore>().item = EItem.cookedMeat;
+                secondaryTarget.GetComponent<ItemCore>().ItemInitialize();
+
+                target.GetComponent<PhysicalObject>().hasProject = false;
+                Destroy(gameObject);
+            }
+
+
+            yield return new WaitForSeconds(1f);
+        }
+
+    }
+
+
     // =================================================== Main =======================================================
 
-	void Start ()
+	void Start()
     {
         ProjectInitialize();
-
-        //GetComponent<SpriteRenderer>().sortingOrder = 20;
 	}
+
+    void Update()
+    {
+        SetLabel();
+    }
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.GetComponent<InteractiveObjectCore>())
-        if (other.GetComponent<InteractiveObjectCore>().kind != EKind.slash)
-        if (other.GetComponent<InteractiveObjectCore>().kind != EKind.projectile)
-        collisionObjects.Add(other.gameObject);
-
-        CheckConditions();
+        if ((!other.GetComponent<SlashCore>())
+        && (!other.GetComponent<ProjectileCore>()))
+        {
+            collisionObjects.Add(other.gameObject);
+            CheckConditions();
+        }
     }
 
     void OnTriggerExit2D(Collider2D other) 
@@ -389,5 +571,9 @@ public class ProjectCore : InteractiveObjectCore
         CheckConditions();
     }
 
+    void OnDestroy()
+    {
+        Destroy(progressBar);
+    }
 
 }

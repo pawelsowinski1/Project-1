@@ -1,9 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class BodyCore : InteractiveObjectCore 
+public class BodyCore : PhysicalObject 
 {
-	//================== BODY =====================
+    //================== BODY =====================
 
     // A small, movable physical body.
 
@@ -12,7 +12,7 @@ public class BodyCore : InteractiveObjectCore
 
     // =============================================
 
-    // parent class:  InteractiveObjectCore
+    // parent class:  PhysicalObject
 
     // child classes: CritterCore
     //                ItemCore
@@ -20,7 +20,11 @@ public class BodyCore : InteractiveObjectCore
     public bool   isFalling = true;
     public bool   isCarried = false;
 
-    public GameObject carrier = null;  
+    public GameObject carrier = null;
+
+
+    public float landSectionLeftPointX, landSectionRightPointX; // X positions of left and right point of the land section line
+
     
     /// BodyInitialize()
     /// CalculateLand()
@@ -34,17 +38,25 @@ public class BodyCore : InteractiveObjectCore
         isFalling = true;
 		gameObject.GetComponent<Rigidbody2D>().gravityScale = GameCore.GRAVITY;
 
+        //UpdateLandSection(); <-- uncommenting this will cause a bug
 
+        landSectionLeftPointX = 0f;
+        landSectionRightPointX = 0f;
 	}
 
 	//----------------------------------------------
 
-	public void PlaceOnGround() // name of the method is misleading, should be f.e. "Gravity"
+	public void Gravity()
 	{
-        // this shouldn't be calculated every frame
-        // cut and paste as separate CalculateGroundY() method
-		float groundY = GameCore.Core.landPointY[landSection-1] + (transform.position.x-GameCore.Core.landPointX[landSection-1]) * Mathf.Tan(landSteepness);
-		//
+        if ((transform.position.x > landSectionRightPointX)
+        || (transform.position.x < landSectionLeftPointX))
+        {
+            UpdateLandSection(); // <---- !
+            landSectionLeftPointX = GameCore.Core.landPointX[landSection-1];
+            landSectionRightPointX = GameCore.Core.landPointX[landSection];
+        }
+
+        groundY = GetGroundY(); 
 
 		if (isFalling == false)
 		{
@@ -61,7 +73,7 @@ public class BodyCore : InteractiveObjectCore
 
                 // if this body is a projectile, then change itself to item
 
-                if (kind == EKind.projectile)
+                if (GetComponent<ProjectileCore>())
                 {
                     Destroy(GetComponent<ProjectileCore>());
                     GetComponent<ItemCore>().enabled = true;
@@ -79,7 +91,7 @@ public class BodyCore : InteractiveObjectCore
 
         // linear drag in x axis for moving critters
 
-        if (GetComponent<InteractiveObjectCore>().kind == EKind.critter)
+        if (GetComponent<CritterCore>())
         GetComponent<Rigidbody2D>().AddForce(new Vector2(-4f * GetComponent<Rigidbody2D>().velocity.x,0));
 
 	}
@@ -97,8 +109,7 @@ public class BodyCore : InteractiveObjectCore
 
 	void Update() 
 	{
-		CalculateLand();
-		PlaceOnGround();
+		Gravity();
 	}
 }
 

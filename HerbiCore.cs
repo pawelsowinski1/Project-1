@@ -20,11 +20,11 @@ public class HerbiCore : CritterCore
         //GetComponent<SpriteRenderer>().sortingOrder = 30;
 
         // add hudText
-
+        /*
         GameObject clone;
         clone = Instantiate(GameCore.Core.hudTextPrefab, GameCore.Core.myCanvas.transform);
         clone.GetComponent<HudText>().objectToFollow = gameObject;
-
+        */
         //
 
 
@@ -68,14 +68,11 @@ public class HerbiCore : CritterCore
 
         timerMove = 1;
 
-
-
 	}
 	
 	void Update ()
     {
-    	CalculateLand();
-		PlaceOnGround();
+		Gravity();
 		DamageColorize();
 
         // enable being carried
@@ -92,6 +89,16 @@ public class HerbiCore : CritterCore
     void FixedUpdate()
     {
         AI();
+    }
+
+    void OnEnable()
+    {
+        AddHpBar();
+    }
+
+    void OnDisable()
+    {
+        Destroy(hpBar);
     }
 
 }

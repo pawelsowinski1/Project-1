@@ -18,26 +18,28 @@ public class SlashCore : MonoBehaviour
 
 	void Start () 
 	{
-        //kind = EKind.slash;
-
-        GetComponent<SpriteRenderer>().sortingOrder = 30;
-
         team = parent.GetComponent<CritterCore>().team;
         directionRight = parent.GetComponent<CritterCore>().directionRight;
 
         // set position vector and life time
 
-        if ((parent.GetComponent<InteractiveObjectCore>().type == EType.man)
-        && (parent.GetComponent<ManCore>().tool == null))
+        if (parent.GetComponent<ManCore>())
         {
-		    v.Set(0,0.85f,0); 
-            Destroy(gameObject,0.10f);
+            if (parent.GetComponent<ManCore>().hand1Slot == null)
+            {
+		        v.Set(0,0.85f,0); 
+                Destroy(gameObject,0.10f);
+            }
+            else
+            {
+                v.Set(0, 1.5f, 0);
+                Destroy(gameObject, 0.18f);
+            }
         }
-        else
-        {
-            v.Set(0,1.5f,0);
-            Destroy(gameObject,0.18f);
-        }
+
+        // activate collider component
+
+        GetComponent<Collider2D>().enabled = true;
 
         //
 
@@ -46,43 +48,45 @@ public class SlashCore : MonoBehaviour
 		transform.position = target.position + v;
 		//transform.Rotate(0,0,90f);
 
-        if ((parent.GetComponent<InteractiveObjectCore>().type == EType.man)
-        && (parent.GetComponent<ManCore>().tool == null))
+        if (parent.GetComponent<ManCore>())
         {
-            // rotate the slash according to mouse or target position
+            if (parent.GetComponent<ManCore>().hand1Slot == null)
+            {
+                // rotate the slash according to mouse or target position
 
-            if ((parent == GameCore.Core.player) // aim at mouse position
-            && (GameCore.Core.combatMode == true))
-            {
-                // Get Angle in Radians
-                float AngleRad = Mathf.Atan2(GameCore.Core.mousePos.y - transform.position.y, GameCore.Core.mousePos.x - transform.position.x);
-                // Get Angle in Degrees
-                float AngleDeg = (180 / Mathf.PI) * AngleRad;
-                // Rotate Object
-                this.transform.rotation = Quaternion.Euler(0, 0, AngleDeg);
-            }
-            else                              // aim at target
-            {
-                // Get Angle in Radians
-                float AngleRad = Mathf.Atan2(parent.GetComponent<ManCore>().target.transform.position.y - transform.position.y,
-                                            parent.GetComponent<ManCore>().target.transform.position.x - transform.position.x);
-                // Get Angle in Degrees
-                float AngleDeg = (180 / Mathf.PI) * AngleRad;
-                // Rotate Object
-                this.transform.rotation = Quaternion.Euler(0, 0, AngleDeg);
+                if ((parent == GameCore.Core.player) // aim at mouse position
+                && (GameCore.Core.combatMode == true))
+                {
+                    // Get Angle in Radians
+                    float AngleRad = Mathf.Atan2(GameCore.Core.mousePos.y - transform.position.y, GameCore.Core.mousePos.x - transform.position.x);
+                    // Get Angle in Degrees
+                    float AngleDeg = (180 / Mathf.PI) * AngleRad;
+                    // Rotate Object
+                    this.transform.rotation = Quaternion.Euler(0, 0, AngleDeg);
+                }
+                else                              // aim at target
+                {
+                    // Get Angle in Radians
+                    float AngleRad = Mathf.Atan2(parent.GetComponent<ManCore>().target.transform.position.y - transform.position.y,
+                                                parent.GetComponent<ManCore>().target.transform.position.x - transform.position.x);
+                    // Get Angle in Degrees
+                    float AngleDeg = (180 / Mathf.PI) * AngleRad;
+                    // Rotate Object
+                    this.transform.rotation = Quaternion.Euler(0, 0, AngleDeg);
+                }
             }
         }
 
         // set the sprite 
 
-        if (parent.GetComponent<CritterCore>().type == EType.man)
+        if (parent.GetComponent<ManCore>())
         {
-            // if parent has a tool, copy the tool's sprite
+            // if parent has a hand1Slot, copy the hand1Slot's sprite
 
-            if (parent.GetComponent<ManCore>().tool != null)
+            if (parent.GetComponent<ManCore>().hand1Slot != null)
             {
-                GetComponent<SpriteRenderer>().sprite = parent.GetComponent<ManCore>().tool.GetComponent<SpriteRenderer>().sprite;
-                transform.localScale = parent.GetComponent<ManCore>().tool.transform.localScale/2;
+                GetComponent<SpriteRenderer>().sprite = parent.GetComponent<ManCore>().hand1Slot.GetComponent<SpriteRenderer>().sprite;
+                transform.localScale = parent.GetComponent<ManCore>().hand1Slot.transform.localScale/2;
             }            
         }
         //
@@ -98,8 +102,8 @@ public class SlashCore : MonoBehaviour
 	void FixedUpdate()
 	{
         
-        if ((parent.GetComponent<InteractiveObjectCore>().type == EType.man)
-        && (parent.GetComponent<ManCore>().tool == null))
+        if (parent.GetComponent<ManCore>())
+        if (parent.GetComponent<ManCore>().hand1Slot == null)
         {
             transform.Translate(Vector3.right*0.2f);
         }
@@ -152,9 +156,9 @@ public class SlashCore : MonoBehaviour
 
                 if (other.gameObject.GetComponent<ManCore>())
                 {
-                    if (other.gameObject.GetComponent<ManCore>().tool != null)
+                    if (other.gameObject.GetComponent<ManCore>().hand1Slot != null)
                     {
-                        other.gameObject.GetComponent<ManCore>().DropTool();
+                        other.gameObject.GetComponent<ManCore>().DropHand1Slot();
                     }
                 }
             }
@@ -162,6 +166,13 @@ public class SlashCore : MonoBehaviour
             if (other.gameObject.GetComponent<CritterCore>().hp <= -other.gameObject.GetComponent<CritterCore>().hpMax)
             {
                 other.gameObject.GetComponent<CritterCore>().alive = false;
+                GameCore.Core.critters.Remove(other.gameObject);
+
+                if (other.gameObject.GetComponent<CritterCore>().hpBar)
+                {
+                    Destroy(other.gameObject.GetComponent<CritterCore>().hpBar);
+                    Destroy(other.gameObject.GetComponent<CritterCore>().hpBar.GetComponent<HpBar>().frame);
+                }
             }
             
             alive = false;
@@ -178,104 +189,99 @@ public class SlashCore : MonoBehaviour
 
             // check conditions
 
-            if (other.gameObject.GetComponent<ProjectCore>().action == EAction.cutDown)
+            switch (other.gameObject.GetComponent<ProjectCore>().action)
             {
-                if (parent.GetComponent<ManCore>().tool)
+                case EAction.cutDown:
                 {
-                    if ((parent.GetComponent<ManCore>().tool.GetComponent<ItemCore>().item == EItem.sharpRock)
-                    || (parent.GetComponent<ManCore>().tool.GetComponent<ItemCore>().item == EItem.handAxe))
+                    if (parent.GetComponent<ManCore>().hand1Slot)
                     {
-                        b = true;
+                        if ((parent.GetComponent<ManCore>().hand1Slot.GetComponent<ItemCore>().item == EItem.sharpRock)
+                        || (parent.GetComponent<ManCore>().hand1Slot.GetComponent<ItemCore>().item == EItem.handAxe))
+                        {
+                            b = true;
+                        }
                     }
+
+                    break;
                 }
-            }
-            else
-            if (other.gameObject.GetComponent<ProjectCore>().action == EAction.obtainMeat)
-            {
-                if (parent.GetComponent<ManCore>().tool)
+
+                case EAction.obtainMeat:
                 {
-                    if ((parent.GetComponent<ManCore>().tool.GetComponent<ItemCore>().item == EItem.sharpRock)
-                    || (parent.GetComponent<ManCore>().tool.GetComponent<ItemCore>().item == EItem.handAxe))
+                    if (parent.GetComponent<ManCore>().hand1Slot)
                     {
-                        b = true;
+                        if ((parent.GetComponent<ManCore>().hand1Slot.GetComponent<ItemCore>().item == EItem.sharpRock)
+                        || (parent.GetComponent<ManCore>().hand1Slot.GetComponent<ItemCore>().item == EItem.handAxe))
+                        {
+                            b = true;
+                        }
                     }
+
+                    break;
                 }
-            }
-            else
-            if (other.gameObject.GetComponent<ProjectCore>().action == EAction.craftHandAxe)
-            {
-                if (parent.GetComponent<ManCore>().tool)
+
+                case EAction.craftHandAxe:
                 {
-                    if (parent.GetComponent<ManCore>().tool.GetComponent<ItemCore>().item == EItem.roundRock)
+                    if (parent.GetComponent<ManCore>().hand1Slot)
                     {
-                        b = true;
+                        if (parent.GetComponent<ManCore>().hand1Slot.GetComponent<ItemCore>().item == EItem.roundRock)
+                        {
+                            b = true;
+                        }
                     }
+
+                    break;
                 }
-            }
-            else
-            if (other.gameObject.GetComponent<ProjectCore>().action == EAction.craftStoneSpear)
-            {
-                if (parent.GetComponent<ManCore>().tool)
+
+                case EAction.craftStoneSpear:
                 {
-                    if ((parent.GetComponent<ManCore>().tool.GetComponent<ItemCore>().item == EItem.roundRock)
-                    || (parent.GetComponent<ManCore>().tool.GetComponent<ItemCore>().item == EItem.handAxe)
-                    || (parent.GetComponent<ManCore>().tool.GetComponent<ItemCore>().item == EItem.sharpRock))
+                    if (parent.GetComponent<ManCore>().hand1Slot)
                     {
-                        b = true;
+                        if ((parent.GetComponent<ManCore>().hand1Slot.GetComponent<ItemCore>().item == EItem.roundRock)
+                        || (parent.GetComponent<ManCore>().hand1Slot.GetComponent<ItemCore>().item == EItem.handAxe)
+                        || (parent.GetComponent<ManCore>().hand1Slot.GetComponent<ItemCore>().item == EItem.sharpRock))
+                        {
+                            b = true;
+                        }
                     }
+
+                    break;
                 }
-            }
-            else
-            if (other.gameObject.GetComponent<ProjectCore>().action == EAction.processHemp)
-            {
-                if (parent.GetComponent<ManCore>().tool)
+
+                case EAction.processTree:
                 {
-                    if (parent.GetComponent<ManCore>().tool.GetComponent<ItemCore>().item == EItem.roundRock)
+                    if (parent.GetComponent<ManCore>().hand1Slot)
                     {
-                        b = true;
+                        if ((parent.GetComponent<ManCore>().hand1Slot.GetComponent<ItemCore>().item == EItem.sharpRock)
+                        || (parent.GetComponent<ManCore>().hand1Slot.GetComponent<ItemCore>().item == EItem.handAxe))
+                        {
+                            b = true;
+                        }
                     }
+
+                    break;
                 }
-            }
-            else
-            if (other.gameObject.GetComponent<ProjectCore>().action == EAction.processTree)
-            {
-                if (parent.GetComponent<ManCore>().tool)
+
+                case EAction.buildShelter:
                 {
-                    if ((parent.GetComponent<ManCore>().tool.GetComponent<ItemCore>().item == EItem.sharpRock)
-                    || (parent.GetComponent<ManCore>().tool.GetComponent<ItemCore>().item == EItem.handAxe))
-                    {
-                        b = true;
-                    }
+                    b = true;
+
+                    break;
                 }
-            }
-            else
-            if (other.gameObject.GetComponent<ProjectCore>().action == EAction.obtainMeat)
-            {
-                if (parent.GetComponent<ManCore>().tool)
+
+                case EAction.craftCordage:
                 {
-                    if ((parent.GetComponent<ManCore>().tool.GetComponent<ItemCore>().item == EItem.sharpRock)
-                    || (parent.GetComponent<ManCore>().tool.GetComponent<ItemCore>().item == EItem.handAxe))
-                    {
-                        b = true;
-                    }
+                    b = true;
+
+                    break;
                 }
-            }
-            else
-            if (other.gameObject.GetComponent<ProjectCore>().action == EAction.collectBark)
-            {
-                if (parent.GetComponent<ManCore>().tool)
+
+                case EAction.craftBarkTorch:
                 {
-                    if ((parent.GetComponent<ManCore>().tool.GetComponent<ItemCore>().item == EItem.sharpRock)
-                    || (parent.GetComponent<ManCore>().tool.GetComponent<ItemCore>().item == EItem.handAxe))
-                    {
-                        b = true;
-                    }
+                    b = true;
+
+                    break;
                 }
-            }
-            else
-            if (other.gameObject.GetComponent<ProjectCore>().action == EAction.buildShelter)
-            {
-                b = true;
+
             }
 
             // execute a hit
@@ -284,11 +290,87 @@ public class SlashCore : MonoBehaviour
             {
                 if (other.GetComponent<ProjectCore>().ready == true)
                 {
-                    other.gameObject.GetComponent<ProjectCore>().colorIntensity = 1f;
                     other.gameObject.GetComponent<ProjectCore>().progress += 1f;
+                    other.gameObject.GetComponent<PhysicalObject>().StartCoroutine("HitColorize");
 
                     if (other.gameObject.GetComponent<ProjectCore>().progress >= other.gameObject.GetComponent<ProjectCore>().maxProgress)
-                    {   
+                    {
+                        Destroy(other.gameObject.GetComponent<ProjectCore>().progressBar);
+                        Destroy(other.gameObject.GetComponent<ProjectCore>().progressBar.GetComponent<ProgressBar>().frame);
+                    
+                        switch (other.gameObject.GetComponent<ProjectCore>().action)
+                        {
+                            case EAction.cutDown:
+                            {
+                                parent.GetComponent<ManCore>().CutDown(other.gameObject.GetComponent<ProjectCore>().target);
+                                break;
+                            }
+
+                            case EAction.obtainMeat:
+                            {
+                                parent.GetComponent<ManCore>().ObtainMeat(other.gameObject.GetComponent<ProjectCore>().target);
+                                break;
+                            }
+
+                            case EAction.craftHandAxe:
+                            {
+                                if (other.gameObject.GetComponent<ProjectCore>().target)
+                                parent.GetComponent<ManCore>().CraftHandAxe(other.gameObject.GetComponent<ProjectCore>().target);
+                                else
+                                parent.GetComponent<ManCore>().CraftHandAxe(other.gameObject.GetComponent<ProjectCore>().itemsToConsume[0]);
+
+                                break;
+                            }
+
+                            case EAction.craftStoneSpear:
+                            {
+                                parent.GetComponent<ManCore>().CraftStoneSpear(other.gameObject.GetComponent<ProjectCore>().itemsToConsume);
+                                break;
+                            }
+
+                            case EAction.processTree:
+                            {
+                                parent.GetComponent<ManCore>().ProcessTree(other.gameObject.GetComponent<ProjectCore>().target);
+                                break;
+                            }
+
+                            case EAction.buildShelter:
+                            {
+                                // build shelter    
+
+                                GameObject clone = GameCore.Core.SpawnStructure(EStructure.shelter);
+                                clone.transform.position = other.transform.position;
+
+                                int i1 = other.gameObject.GetComponent<ProjectCore>().itemsToConsume.Count;
+
+                                for (int i=0; i < i1; i++)
+                                {
+                                    //other.gameObject.GetComponent<ProjectCore>().itemsToConsume.Remove(other.gameObject);
+                                    Destroy(other.gameObject.GetComponent<ProjectCore>().itemsToConsume[0]);
+                                }
+
+                                //
+
+                                break;
+                            }
+
+                            case EAction.craftCordage:
+                            {
+                                
+                                parent.GetComponent<ManCore>().CraftCordage(other.gameObject.GetComponent<ProjectCore>().itemsToConsume[0]);
+                                break;
+                            }
+
+                            case EAction.craftBarkTorch:
+                            {
+                                
+                                parent.GetComponent<ManCore>().CraftBarkTorch(other.gameObject.GetComponent<ProjectCore>().itemsToConsume);
+                                break;
+                            }
+
+                        }
+
+                        /*
                         if (other.gameObject.GetComponent<ProjectCore>().action == EAction.cutDown)
                         parent.GetComponent<ManCore>().CutDown(other.gameObject.GetComponent<ProjectCore>().target);
                         else
@@ -330,12 +412,12 @@ public class SlashCore : MonoBehaviour
                             //
 
                         }
-
+                        */
 
                         parent.GetComponent<CritterCore>().Stop();
 
                         if (other.gameObject.GetComponent<ProjectCore>().target)
-                        other.gameObject.GetComponent<ProjectCore>().target.GetComponent<InteractiveObjectCore>().hasProject = false;
+                        other.gameObject.GetComponent<ProjectCore>().target.GetComponent<PhysicalObject>().hasProject = false;
 
                         Destroy(other.gameObject);
                     }

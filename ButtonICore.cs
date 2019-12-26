@@ -22,7 +22,7 @@ public class ButtonICore : MonoBehaviour
         {
             // LMB: equip / unequip
 
-            if (GameCore.Core.player.GetComponent<ManCore>().tool == obj)
+            if (GameCore.Core.player.GetComponent<ManCore>().hand1Slot == obj)
             {
                 GameCore.Core.player.GetComponent<ManCore>().Unequip(obj);
                 GameCore.Core.mouseOverGUI = false;
@@ -57,7 +57,7 @@ public class ButtonICore : MonoBehaviour
     {
         // RMB: drop
 
-        if (GameCore.Core.player.GetComponent<ManCore>().tool == obj)
+        if (GameCore.Core.player.GetComponent<ManCore>().hand1Slot == obj)
         {
             GameCore.Core.player.GetComponent<ManCore>().Unequip(obj);
             GameCore.Core.player.GetComponent<CritterCore>().DropItem(obj);

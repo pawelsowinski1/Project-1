@@ -3,15 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using Collider2DOptimization;
 
-public enum EPlant {none, birch, hemp, spruce, berryBush};
+public enum EPlant {none, birch, hemp, spruce, berryBush, grass};
 
 public class PlantCore : BodyCore
 {
     public EPlant plant;
 
-    public float stock;
-    public float age;
-    public bool rooted = true;
+    public float size; // 10f - 100f
+    public bool isRooted = true;
 
     Collider2D colli;
     PolygonColliderOptimizer opti;
@@ -41,9 +40,7 @@ public class PlantCore : BodyCore
 
     public void PlantInitialize()
     {
-        age = Random.Range(10f,100f);
-
-        //GetComponent<SpriteRenderer>().sortingOrder = 20;
+        size = Random.Range(10f,100f);
 
         switch (plant)
         {
@@ -51,18 +48,16 @@ public class PlantCore : BodyCore
             {
                 name = "Spruce";
                 GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_spruce;
-                transform.localScale = new Vector3(age*0.015f,age*0.015f,age*0.015f);
-                type = EType.tree;
-                
+                transform.localScale = new Vector3(size*0.015f,size*0.015f,size*0.015f);
 
                 break;
             }
+
             case EPlant.birch: 
             {
                 name = "Birch";
                 GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_birch;
-                transform.localScale = new Vector3(age*0.015f,age*0.015f,age*0.015f);
-                type = EType.tree;
+                transform.localScale = new Vector3(size*0.015f,size*0.015f,size*0.015f);
 
                 break;
             }
@@ -73,19 +68,30 @@ public class PlantCore : BodyCore
                 GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_hemp;
                 transform.localScale = new Vector3(0.8f,0.8f,0.8f);
 
-
                 break;
             }
+
             case EPlant.berryBush:
             {
                 name = "Bush";
                 GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_berry_bush;
-                transform.localScale = new Vector3(1f,1f,1f);
+                transform.localScale = new Vector3(1f+size*0.005f,1f+size*0.005f,1f+size*0.005f);
                 break;
             }
+
+            case EPlant.grass:
+            {
+                name = "Grass";
+                GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_grass;
+                transform.localScale = new Vector3(0.025f+size*0.02f,0.025f+size*0.02f,0.025f+size*0.02f);
+
+                break;
+            }
+
         }
 
-        if (type == EType.tree)
+        if ((plant == EPlant.spruce)
+        || (plant == EPlant.birch))
         Destroy(GetComponent<BoxCollider2D>());
         else
         {
@@ -100,24 +106,21 @@ public class PlantCore : BodyCore
 
     public void Uproot()
     {
-        rooted = false;
+        isRooted = false;
         transform.Rotate(0,0,45f);
     }
 
     // =============================================== MAIN LOOP ===================================================
 
-	void Start ()
+	void Start()
     {
-        kind = EKind.plant;
-
 		BodyInitialize();
         PlantInitialize();
     }
 	
-	void Update ()
+	void Update()
     {
-		CalculateLand();
-		PlaceOnGround();
+		Gravity();
 
         // enable being carried
 
