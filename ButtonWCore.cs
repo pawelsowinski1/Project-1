@@ -138,7 +138,7 @@ public class ButtonWCore : MonoBehaviour
                 if (GameCore.Core.units[i].land == landIndex)
                 {
                     GameCore.Core.cursorLabel.GetComponent<CursorLabelCore>().text.text += "\nUnit of "+GameCore.Core.teams[GameCore.Core.units[i].team].name+
-                    " ("+GameCore.Core.teams[GameCore.Core.units[i].team].members.Count+" members)";
+                    " ("+GameCore.Core.units[i].members.Count+" members)";
                 }
             }
 

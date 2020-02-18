@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class ProjectCore : PhysicalObject
 {
-    public bool progressByHit; // <--- ?
     public bool ready = true; // all conditions met
 
     public float progress;
@@ -24,11 +23,55 @@ public class ProjectCore : PhysicalObject
 
     public string label = "";
 
-    // Methods
+    public bool isCoroutineRunning = false;
+
+    // =================================================== Main =======================================================
+
+	void Start()
+    {
+        ProjectInitialize();
+	}
+
+    void Update()
+    {
+        SetLabel();
+
+        if (target)
+        transform.position = target.transform.position;
+
+        CheckConditions(); // <--- !!!
+    }
+
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if ((!other.GetComponent<SlashCore>())
+        && (!other.GetComponent<ProjectileCore>())
+        && (!collisionObjects.Contains(other.gameObject)))
+        {
+            collisionObjects.Add(other.gameObject);
+            CheckConditions();
+        }
+    }
+
+    void OnTriggerExit2D(Collider2D other) 
+    {
+        collisionObjects.Remove(other.gameObject);
+        CheckConditions();
+    }
+
+    void OnDestroy()
+    {
+        Destroy(progressBar);
+        GameCore.Core.projects.Remove(gameObject);
+    }
+
+    // ==============================================================================================
 
     public void ProjectInitialize()
     {
         GetComponent<Collider2D>().enabled = true;
+
+        GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,0.2f); // transparency
 
         conditionsMet = 0;
         conditionsAll = 0;
@@ -39,6 +82,7 @@ public class ProjectCore : PhysicalObject
         progressBar = Instantiate(GameCore.Core.progressBarPrefab, transform.position, Quaternion.identity);
         progressBar.GetComponent<ProgressBar>().parent = gameObject;
 
+
         switch (action)
         {
             case EAction.craftStoneSpear:
@@ -47,9 +91,19 @@ public class ProjectCore : PhysicalObject
                 break;
             }
 
+            case EAction.craftCordage:
+            {
+                maxProgress = 20f;
+
+                break;
+            }
+
             case EAction.heating:
             {
-                maxProgress = 60f;
+                maxProgress = 20f;
+
+                GetComponent<SpriteRenderer>().enabled = false;
+
                 break;
             }
             
@@ -102,25 +156,24 @@ public class ProjectCore : PhysicalObject
                 break;
             }
         }
-
     }
 
+    // ================================================================================================
 
     public void CheckConditions()
     {
-        if (target)
-        transform.position = target.transform.position;
+        //collisionObjects.Clear();
 
         switch (action)
         {
-            // craft cordage
+            // craft cordage (no-hit crafting project)
 
             case EAction.craftCordage:
             {
-                if (target == null)
+                //if (target == null) <-- no-hit crafting projects bevahe the same for both 'with a target' and 'without a target' projects
                 {
                     conditionsMet = 0;
-                    conditionsAll = 1;
+                    conditionsAll = 2; // no-hit crafting projects need to count crafter as 1 more condition
                     ready = false;
 
                     if (collisionObjects.Count > 0)
@@ -129,18 +182,66 @@ public class ProjectCore : PhysicalObject
                         {
                             if (collisionObjects[i].GetComponent<PlantCore>())
                             {
-                                if (collisionObjects[i].gameObject.GetComponent<PlantCore>().plant == EPlant.grass)
+                                if (collisionObjects[i].GetComponent<PlantCore>().plant == EPlant.grass)
                                 {
-                                    if (collisionObjects[i].gameObject.GetComponent<PlantCore>().isRooted == false)
+                                    if (collisionObjects[i].GetComponent<PlantCore>().isRooted == false)
                                     {
+                                        if (!itemsToConsume.Contains(collisionObjects[i]))
                                         itemsToConsume.Add(collisionObjects[i]);
+
                                         conditionsMet++;
-                                        ready = true;
+
+                                        // no-hit crafting projects "stick" to the detected resource item, if they need a single resource item
+
+                                        if (target == null)
+                                        {
+                                            target = collisionObjects[i];
+                                            collisionObjects[i].GetComponent<PhysicalObject>().hasProject = true;
+                                        }
+
                                     }
+                                }
+                            }
+                            else
+                            if (collisionObjects[i].GetComponent<ManCore>())
+                            {
+                                if (collisionObjects[i].GetComponent<ManCore>().action == EAction.craftCordage)
+                                {
+                                    conditionsMet++;
                                 }
                             }
                         }
                     }
+
+                    if (conditionsMet == conditionsAll)
+                    {
+                        ready = true;
+
+                        if (isCoroutineRunning == false)
+                        {
+                            StartCoroutine("Crafting");
+                            isCoroutineRunning = true;
+                        }
+                    }
+
+                    // if grass was picked up during crafting, destroy project
+                    // but when only crafter leaves, keep the progress
+                    
+                    else
+                    {
+                        if (progress > 0)
+                        {
+                            if (!collisionObjects.Contains(itemsToConsume[0]))
+                            {
+                                progress = 0f;
+                            }
+                        }
+
+                        StopCoroutine("Crafting");
+                        isCoroutineRunning = false;
+
+                    }
+                    
                 }
 
                 break;
@@ -253,7 +354,7 @@ public class ProjectCore : PhysicalObject
                 break;
             }
 
-            // craft stone spear
+            // craft bark torch
 
             case EAction.craftBarkTorch:
             {
@@ -329,9 +430,6 @@ public class ProjectCore : PhysicalObject
 
                 break;
             }
-
-
-
 
             // build shelter
 
@@ -409,6 +507,7 @@ public class ProjectCore : PhysicalObject
                                     {
                                         heatedItem = true;
                                         conditionsMet++;
+
                                         break;
                                     }
                                 }
@@ -420,23 +519,25 @@ public class ProjectCore : PhysicalObject
 
                 if (conditionsMet == conditionsAll)
                 {
-
-                    StartCoroutine("Heating");
-                    StopCoroutine("FadeOut");
-                    GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,1f);
+                    if (isCoroutineRunning == false)
+                    {
+                        StartCoroutine("Heating");
+                        isCoroutineRunning = true;
+                    }
                 }
 
-                // if meat was picked up during heating, start fading out
+                // if meat was picked up during heating, destroy project
 
                 else
                 {
                     target.GetComponent<FireplaceCore>().itemHeated = null;
                     progress = 0f;
 
-                    //Destroy(gameObject); 
-
                     StopCoroutine("Heating");
-                    StartCoroutine("FadeOut");
+                    isCoroutineRunning = false;
+
+                    Destroy(gameObject); 
+
                 }
 
                 break;
@@ -507,18 +608,6 @@ public class ProjectCore : PhysicalObject
         }
     }
 
-    public IEnumerator FadeOut()
-    {
-        for (float a = 0f; a<=1f; a+=0.01f)  
-        {
-            GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,1f-a);
-
-            yield return new WaitForSeconds(0.1f);
-        }
-
-        Destroy(gameObject);
-    }
-
     public IEnumerator Heating()
     {
         for (;;)  
@@ -536,44 +625,44 @@ public class ProjectCore : PhysicalObject
                 Destroy(gameObject);
             }
 
+            yield return new WaitForSeconds(1f);
+        }
+    }
+
+    public IEnumerator Crafting()
+    {
+        for (;;)  
+        {
+            progress += 1;
+
+            if (progress > maxProgress)
+            {
+                switch (action)
+                {
+                    case EAction.craftCordage:
+                    {
+                        if (itemsToConsume[0])
+                        {
+                            // turn grass to cordage
+
+                            GameObject clone;
+                            clone = GameCore.Core.SpawnItem(EItem.cordage);
+                            clone.transform.position = itemsToConsume[0].transform.position;
+
+                            Destroy(itemsToConsume[0]);
+
+                            //
+
+                            Destroy(gameObject);
+                        }
+                    
+                        break;
+                    }
+                }
+            }
 
             yield return new WaitForSeconds(1f);
         }
-
-    }
-
-
-    // =================================================== Main =======================================================
-
-	void Start()
-    {
-        ProjectInitialize();
-	}
-
-    void Update()
-    {
-        SetLabel();
-    }
-
-    void OnTriggerEnter2D(Collider2D other)
-    {
-        if ((!other.GetComponent<SlashCore>())
-        && (!other.GetComponent<ProjectileCore>()))
-        {
-            collisionObjects.Add(other.gameObject);
-            CheckConditions();
-        }
-    }
-
-    void OnTriggerExit2D(Collider2D other) 
-    {
-        collisionObjects.Remove(other.gameObject);
-        CheckConditions();
-    }
-
-    void OnDestroy()
-    {
-        Destroy(progressBar);
     }
 
 }

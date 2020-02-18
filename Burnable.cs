@@ -13,8 +13,9 @@ public class Burnable : MonoBehaviour
     {
         for (;;)
         {
-            fuel -= 0.02f + fire.GetComponent<FireCore>().size*0.004f;
-
+            fuel -= 0.02f + fire.GetComponent<FireCore>().size*0.004f; // <-- when changing this, change FireplaceCore.cs too
+            
+            // when out of fuel
 
             if (fuel < 0)
             {
@@ -23,17 +24,23 @@ public class Burnable : MonoBehaviour
                     Destroy(fire);
                     StopCoroutine("Burn");
 
+                    // if bark torch, turn to stick
+
                     if (GetComponent<ItemCore>().item == EItem.barkTorch)
                     {
                         GetComponent<ItemCore>().item = EItem.stick;
                         GetComponent<ItemCore>().ItemInitialize();
+
+                        GameCore.Core.InventoryManager();
                     }
+
+                    // if anything else
+
                     else
                     {
+                        Destroy(fire);
                         Destroy(gameObject);
-
                     }
-
                 }
             }
 

@@ -1,13 +1,14 @@
 ﻿using UnityEngine;
 using System.Collections;
-using System.Collections.Generic;  // <--- enables lists
+using System.Collections.Generic;  // enables Lists
+using UnityEngine.Rendering; // enables Sorting Groups 
 
 
 public class ManCore : CritterCore
 {
-    // =================== MAN  ====================
+    // =================== MAN ====================
 
-    // A human. Can equip, use and throw items. Can process and craft items. Collects points.
+    // A human. Can do a lot of stuff using tools and skills. Collects points.
 
     // parent class:  CritterCore
     // child classes: PlayerCore
@@ -20,7 +21,7 @@ public class ManCore : CritterCore
     /// Throw()
     /// Equip(1)
     /// Unequip(1)
-    /// DropHand1Slot() ----!!
+    /// DropHand1Slot()
     /// Chop(1)
     /// CutDown(1)
     /// ObtainMeat(1)
@@ -31,8 +32,87 @@ public class ManCore : CritterCore
     /// ProcessTree(1)
     /// CraftBarkTorch(1)
     /// AddFuel(1)
+    /// ExecuteAction(1) [override]
+    /// PutItemInFireplace(1)
+    /// HeatItem(1)
 
-    // =================================================
+
+    // =========================================== MAIN ===========================================
+	
+	void Start()
+	{
+		BodyInitialize();
+
+        // add hudText
+
+        GameObject clone;
+        clone = Instantiate(GameCore.Core.hudTextPrefab, GameCore.Core.myCanvas.transform);
+        clone.GetComponent<HudText>().objectToFollow = gameObject;
+
+        //
+
+        rp = 0f;
+        bp = 0f;
+        gp = 0f;
+        yp = 0f;
+
+        timerMove = 1;
+        timerHit = Random.Range(30, 70);
+	}
+	
+
+	void Update()
+	{
+		DamageColorize();
+    }
+
+	void FixedUpdate()
+	{
+		Gravity();
+        AI();
+    }
+	
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (downed == false)
+        {
+            if (team != 0)
+            {
+                if (hand1Slot == null)
+                {
+                    bool b = false;
+
+                    if (other.gameObject.GetComponent<ItemCore>())
+                    if (other.gameObject.GetComponent<ItemCore>().isTool == true)
+                    b = true;
+
+                    if (b == true)
+                    {
+                        if (other.gameObject.GetComponent<BodyCore>().isCarried == false)
+                        {
+                            PickUp(other.gameObject);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    void OnEnable()
+    {
+        AddHpBar();
+    }
+
+    void OnDisable()
+    {
+        Destroy(hpBar);
+    }
+
+
+
+    //--------------------------------------------------
+
+    //                    METHODS
 
     //--------------------------------------------------
 
@@ -85,6 +165,8 @@ public class ManCore : CritterCore
             {
                 if (_body.GetComponent<ItemCore>().isTool == true)
                 {
+                    // equip
+
                     if (hand1Slot != null)
                     {
                         Unequip(hand1Slot);
@@ -96,9 +178,16 @@ public class ManCore : CritterCore
                     _body.GetComponent<BodyCore>().isCarried = true;
                     _body.GetComponent<BodyCore>().carrier = gameObject;
 
+                    _body.GetComponent<SortingGroup>().sortingLayerName = "Critters";
+                    _body.GetComponent<SortingGroup>().sortingOrder = 20;
+
                     int i;
 
-                    if (GameCore.Core.player == gameObject) // if player
+                    //
+
+                    // if player
+
+                    if (GameCore.Core.player == gameObject)
                     {
                         for (i=0; i<carriedBodies.Count; i++)
                         {
@@ -110,9 +199,14 @@ public class ManCore : CritterCore
                             }
 
                         }
-            
+
                         GameCore.Core.InventoryManager();
+
                     }
+
+                    //
+
+                    action = EAction.none;
                 }
             }
         }
@@ -120,16 +214,18 @@ public class ManCore : CritterCore
 
     //--------------------------------------------------
 
-    public void Unequip(GameObject item)
+    public void Unequip(GameObject _item)
     {
-        if (hand1Slot == item) // if item is in hand1Slot slot
+        if (hand1Slot == _item) // if item is in hand1Slot slot
         {
-            carriedBodies.Add(item);
+            carriedBodies.Add(_item);
             hand1Slot = null;
         }
 
         if (GameCore.Core.player == gameObject)
         GameCore.Core.InventoryManager();
+
+        _item.GetComponent<SortingGroup>().sortingOrder = 30;
     } 
 
     //--------------------------------------------------
@@ -172,6 +268,10 @@ public class ManCore : CritterCore
         {
             obj.GetComponent<PlantCore>().isRooted = false;
             obj.transform.Rotate(0,0,90f);
+
+            obj.GetComponent<SortingGroup>().sortingLayerName = "Items";
+
+            //
         }
     }
 
@@ -212,6 +312,18 @@ public class ManCore : CritterCore
             if (_obj.GetComponent<CritterCore>().attitude >= 100f)
             {
                 _obj.GetComponent<CritterCore>().team = team;
+
+                MessageText("He has joined the tribe.");
+
+                // attach converted critter to player unit
+
+                print("before: "+GameCore.Core.teams[1].units[0].members.Count);
+
+                GameCore.Core.teams[1].units[0].members.Add(_obj);
+
+                print("after: "+GameCore.Core.teams[1].units[0].members.Count);
+
+                //
 
                 PantsCore p = _obj.GetComponentInChildren<PantsCore>();
                 p.team = team;
@@ -423,11 +535,17 @@ public class ManCore : CritterCore
             {
                 if (hand1Slot)
                 {
-                    if (hand1Slot.GetComponent<ItemCore>().item == EItem.roundRock)
+                    if (hand1Slot.GetComponent<ItemCore>().item == EItem.hammerstone)
                     {
                         Hit();
                     }
                 }
+                break;
+            }
+
+            case EAction.craftCordage:
+            {
+                //Hit();
                 break;
             }
 
@@ -496,7 +614,9 @@ public class ManCore : CritterCore
             }
 
             case EAction.heatItem:
+
             // put item into the heated container in the fireplace
+
             {
                 if (gameObject == GameCore.Core.player)
                 if (GameCore.Core.chosenObject)
@@ -515,8 +635,12 @@ public class ManCore : CritterCore
                                 DropItem(GameCore.Core.chosenObject);
 
                                 GameCore.Core.chosenObject.transform.position =
-                                new Vector3(target.transform.position.x, target.transform.position.y,
-                                            GameCore.Core.chosenObject.transform.position.z);
+                                        new Vector3(target.transform.position.x,
+                                                    target.transform.position.y,
+                                GameCore.Core.chosenObject.transform.position.z); 
+
+                                GameCore.Core.chosenObject.GetComponent<SortingGroup>().sortingOrder = 10; // <--- for having
+                                                                                            // meat sprite over the flat rock
 
                                 target.GetComponent<FireplaceCore>().itemHeated = GameCore.Core.chosenObject;
 
@@ -528,8 +652,11 @@ public class ManCore : CritterCore
                                 clone.GetComponent<ProjectCore>().action = EAction.heating;
                                 clone.GetComponent<ProjectCore>().target = target; // set fireplace as target
                                 clone.GetComponent<ProjectCore>().secondaryTarget = GameCore.Core.chosenObject; // set meat as secondary target
-                                target.GetComponent<PhysicalObject>().hasProject = true;
 
+                                clone.GetComponent<ProjectCore>().collisionObjects.Add(GameCore.Core.chosenObject); //  <----- !!!
+                                
+                                target.GetComponent<PhysicalObject>().hasProject = true;
+                                target.GetComponent<PhysicalObject>().projectAttached = clone;
                             }
                         }
                     }
@@ -543,79 +670,11 @@ public class ManCore : CritterCore
         }
     }
 
-    //--------------------------------------------------
-    
-	// =========================================== MAIN ===========================================
-	
-	void Start()
-	{
-		BodyInitialize();
 
-        // add hudText
 
-        GameObject clone;
-        clone = Instantiate(GameCore.Core.hudTextPrefab, GameCore.Core.myCanvas.transform);
-        clone.GetComponent<HudText>().objectToFollow = gameObject;
 
-        //
 
-        rp = 0f;
-        bp = 0f;
-        gp = 0f;
-        yp = 0f;
 
-        timerMove = 1;
-        timerHit = Random.Range(30, 70);
-	}
-	
-	//--------------------------------------------------
-	
-	void Update()
-	{
-		DamageColorize();
-    }
-
-	void FixedUpdate()
-	{
-		Gravity();
-        AI();
-    }
-	
-	//--------------------------------------------------
-
-    void OnTriggerEnter2D(Collider2D other)
-    {
-        if (downed == false)
-        {
-            if (team != 0)
-            {
-                if (hand1Slot == null)
-                {
-                    bool b = false;
-
-                    if (other.gameObject.GetComponent<ItemCore>())
-                    if (other.gameObject.GetComponent<ItemCore>().isTool == true)
-                    b = true;
-
-                    if (b == true)
-                    {
-                        if (other.gameObject.GetComponent<BodyCore>().isCarried == false)
-                        {
-                            PickUp(other.gameObject);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    void OnEnable()
-    {
-        AddHpBar();
-    }
-
-    void OnDisable()
-    {
-        Destroy(hpBar);
-    }
 }
+
+

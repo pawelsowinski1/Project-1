@@ -39,19 +39,32 @@ public class FireplaceCore : StructureCore
     {
         for (;;)
         {
+            fuel -= 0.02f + fire.GetComponent<FireCore>().size*0.004f; // <-- when changing this, change Burnable.cs too
 
-            //fuel -= 0.005f + fire.GetComponent<FireCore>().size*0.001f;
-            fuel -= 0.02f + fire.GetComponent<FireCore>().size*0.004f;
+            fire.GetComponent<FireCore>().size = fuel;
 
+            // when out of fuel
 
             if (fuel < 0)
             {
-                fuel = 0;
-                
-                // todo
+                if (itemInFire) 
+                {
+                    itemInFire.GetComponent<BodyCore>().isCarried = false; // enable item in fire to be picked up
+                }
+
+                if (itemHeated)
+                {
+                    if (projectAttached)
+                    {
+                        Destroy(projectAttached); // destroy heating project
+                    }
+                }
+
+                Destroy(gameObject);
+                GameCore.Core.structures.Remove(gameObject);
+
             }
 
-            fire.GetComponent<FireCore>().size = fuel;
 
             yield return new WaitForSeconds(1f);
         }

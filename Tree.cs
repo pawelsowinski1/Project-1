@@ -14,6 +14,8 @@ public class Tree : PlantCore
 
         switch (plant)
         {
+            // dropped resources position spread is proportional to tree size
+
             case EPlant.spruce:
             {
                 for (int i=0; i<r; i++)
@@ -26,7 +28,8 @@ public class Tree : PlantCore
                     o.transform.position = transform.position + new Vector3(Random.Range(-f,f),0f,0f);
                     o = GameCore.Core.SpawnItem(EItem.plantMaterial);
                     o.transform.position = transform.position + new Vector3(Random.Range(-f,f),0f,0f);
-
+                    o = GameCore.Core.SpawnItem(EItem.stick);
+                    o.transform.position = transform.position + new Vector3(Random.Range(-f,f),0f,0f);
                 }
 
                 break;
@@ -44,6 +47,8 @@ public class Tree : PlantCore
                     o = GameCore.Core.SpawnItem(EItem.plantMaterial);
                     o.transform.position = transform.position + new Vector3(Random.Range(-f,f),0f,0f);
                     o = GameCore.Core.SpawnItem(EItem.bark);
+                    o.transform.position = transform.position + new Vector3(Random.Range(-f,f),0f,0f);
+                    o = GameCore.Core.SpawnItem(EItem.stick);
                     o.transform.position = transform.position + new Vector3(Random.Range(-f,f),0f,0f);
 
                 }

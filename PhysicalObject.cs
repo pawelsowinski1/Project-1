@@ -75,7 +75,9 @@ public class PhysicalObject : MonoBehaviour
 
         for (float f = 1f; f >= 0; f -= 0.1f) 
         {
-		    GetComponent<SpriteRenderer>().color = new Color(1f,1f-f,1f-f,1f);
+            float f1 = GetComponent<SpriteRenderer>().color.a;
+
+		    GetComponent<SpriteRenderer>().color = new Color(1f,1f-f,1f-f,f1);
             yield return new WaitForSeconds(0.1f);
         }
 
@@ -95,7 +97,9 @@ public class PhysicalObject : MonoBehaviour
 
     public void Highlight()
     {
-        GetComponent<SpriteRenderer>().color = new Color(1f-highlightAmount, 1f-highlightAmount, 1f-highlightAmount,1f);
+        float f =  GetComponent<SpriteRenderer>().color.a;
+
+        GetComponent<SpriteRenderer>().color = new Color(1f-highlightAmount, 1f-highlightAmount, 1f-highlightAmount,f);
 
         highlightAmount = 0.2f * Mathf.Sin(Time.time*15f);
 

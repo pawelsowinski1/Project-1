@@ -4,10 +4,11 @@ using System.Collections;
 using System.Collections.Generic;  // <--- enables lists
 using UnityEngine.EventSystems;
 
-public enum EAction {none, idle, moveRight, moveLeft, move, follow, attack, pickUp, dropAll, eat, chop, cutDown, craftHandAxe, obtainMeat,
-                     convert, craftStoneSpear, runAway, setOnFire, processTree, putItemInFireplace,
+public enum EAction {none, idle, moveRight, moveLeft, move, follow, attack, pickUp, /*dropAll ,*/ eat, chop, cutDown,
+                     craftHandAxe, obtainMeat, convert, craftStoneSpear, runAway, setOnFire, processTree, putItemInFireplace,
                      deleteProject, openBuildPanel, buildShelter, setItemInFire, setItemHeated, heatItem, heating, giveItem,
-                     setGatheringPoint, deleteGatheringPoint, craftCordage, craftBarkTorch};
+                     setGatheringPoint, deleteGatheringPoint, craftCordage, craftBarkTorch, continueProject, equip, unequip,
+                     drop};
 
 public enum EWorldEvent {none, carniEnter, unitRandomMove, spawnCarniPack};
 
@@ -16,38 +17,78 @@ public class GameCore : MonoBehaviour
     string consoleOutput = 
     
     "\n Prototype"+ 
-    "\n Version: 0.0.8"+ 
-    "\n last release date: 21-06-2019"+
+    "\n Version: 0.0.9 WIP"+
     "\n"+
     "\n Tasks for today:"+
-    "\n - RELEASE"+
+    "\n - bug: space bar item picking"+
+    "\n - disable zoom and camera movement in Esc Menu"+
+    "\n"+
+    "\n To do for Tech Demo 1:"+
+    "\n - cutting grass with bare hands"+
+    "\n - bug: when having buttonO of a project and this project is then finished, the buttonO remains and generates an error"+
+    "\n - big text in the middle od the screen f.e. 'choose item from inventory', 'objective completed'"+
+    "\n - remove travel, remove all critters, remove world map and build panel, remove combat mode, decrease zoom range, remove most input"+
 
-    "\n - rework hp bars"+
-    "\n - change hp/progress bar frame sprite"+
-    "\n - change method ToggleHpBars to SetHpBarsActive(true/false)"+
-    "\n"+
-    "\n - bug: hp bar display bugged after moving to another land"+
-    "\n - bug: player disappearing from critters array after moving to another land"+
-    "\n - bug: project damage colorizing bugged"+
-    "\n - bug: stacking hudText objects"+
-    "\n"+
-    "\n To do:"+
-    "\n - make player LMB movement precise"+
-    "\n - fix critters wandering out of the land"+
-    "\n - cursor label text over buttons type I and O"+
-    "\n - critters running away to adjacent lands or maybe safezones for running critters in the hidden edges of the land"+
-    "\n - fix clicking (and moving player) through buttons"+
+    "\n To do later:"+
+    "\n - bug: herbi lagging when unpausing game"+
+    "\n - bug: stacking hudText objects, world map gets bugged probably by invisible hudText objects"+
+    "\n - bug: wrong sky position in lands other than the first"+
+    "\n - bug: sometimes cursor label doesn't disappear after adding bark torch to fire"+
+    "\n - mouseOverGUI should be reworked into raycasting method"+
+    "\n - hiding buttons type I when world map or build panel is on"+
+    "\n - critters running away to adjacent lands"+
     "\n - different tool damage and speed"+
     "\n - thrust spears instead of swinging"+
     "\n - critters slowing down when moving uphill"+
     "\n - critters slowing down when wounded"+
     "\n - two hand slots "+
-    "\n - critter flyout texts (displayed f.e. when gaining points or state changes)"+
     "\n - hp and progress bars should be on the canvas (not sure)"+
     "\n - ai throwing"+
     "\n - world map scrolling rework"+
-    "\n - campfires and bark burning out into ash"+
     "\n - more coroutines: all timers, checking world events"+
+    "\n - critter flyout texts (displayed f.e. when gaining points or state changes)"+
+
+    "\n"+
+    "\n Done:" +
+    "\n - UI: darkened buttons if requirements not met"+
+    "\n - improved LMB movement"+
+    "\n - progress bars visible only if progress > 0f"+
+    "\n - loading projects between lands"+
+    "\n - fixed: loading converted tribesmen between lands"+
+    "\n - UI: cursor label text over buttons type I"+
+    "\n - fixed: project hit colorizing"+
+    "\n - fixed: putting items in the fire"+
+    "\n - LMB actions: pick up / equip - when combat mode is off"+
+    "\n - campfires and items burning out"+
+    "\n - extended sky"+
+    "\n - hide project sprite for heating"+
+    "\n - fixed: critters are now unable to move beyond edges of the land"+
+    "\n - new action: continue project"+
+    "\n - interacting with carried items: drop, equip, unequip; HUD is now optional"+
+    "\n - prevent critters from moving beyond edges of the land"+
+    "\n - ability to burn grass and bushes in campfire"+
+    "\n - darken rest of buttons type A: process tree, obtain meat, craft hand axe"+
+    "\n - setting firewood on fire with a bark torch"+
+    "\n - fixed: carried plants UI interaction"+
+    "\n - rotated carried tool items"+
+    "\n - fixed: carried objects sorting groups"+
+    "\n - fixed: fit all 2D colliders to sprites"+
+    "\n - improved man sprite"+
+    "\n - UI visual overhaul"+
+    "\n - menu shown when ESC pressed"+
+    "\n - quitting and restarting game"+
+    "\n - pausing / unpausing the game"+
+    "\n - round rock changed renamed to hammerstone"+
+    "\n - sticks obtained from processed trees"+
+    "\n - help screen"+
+    "\n - crafting without hitting -> project self progressing, but only when action is to craft"+
+    "\n - ";
+
+    /*
+     
+    "\n Version: 0.0.8"+ 
+    "\n release date: 26-12-2019"+
+
 
     "\n"+
     "\n Done:" +
@@ -71,32 +112,6 @@ public class GameCore : MonoBehaviour
     "\n - cutting and processing trees related to tree type and age"+
     "\n - reworked mouse object highlighting"+
     "\n - pulsating highlight when mouse over button type O and A; non-pulsating highlight when mouse over object"+
-
-
-
-    "\n - ";
-
-    /*
-    "\n Version: 0.0.7"+ 
-    "\n release date: 21-06-2019"+
-
-    "\n Done:" +
-    "\n - building shelters"+
-    "\n - spawning other tribes" +
-    "\n - world map: display all land's units"+
-    "\n - different herbi stats: hp, speed, sight range"+
-    "\n - hud texts"+
-    "\n - fluid zoom"+
-    "\n - fists"+
-    "\n - ai finding nearest enemy"+
-    "\n - team attitude"+
-    "\n - fixed camera if combat mode off"+
-    "\n - fixed: men don't always follow player between lands"+
-    "\n - fixed: slashes colliding at scene origin"+
-    "\n - sky changing color"+
-    "\n - fixed: draw sky lowers FPS with time"+
-    "\n - fixed: incorrect movement speeds if timeScale is different than 1 : PlaceOnGround() was in Update instead of FixedUpdate"+
-    "\n - ";
 
     // ==============================================
 
@@ -150,7 +165,7 @@ public class GameCore : MonoBehaviour
     public Sprite spr_grass;
 
     public Sprite spr_rock;
-    public Sprite spr_roundRock;
+    public Sprite spr_hammerstone;
     public Sprite spr_sharpRock;
     public Sprite spr_largeRock;
     public Sprite spr_flatRock;
@@ -205,6 +220,8 @@ public class GameCore : MonoBehaviour
     public GameObject buildPanel;
     public GameObject ghostObject; // used for placing structures
     public GameObject sky;
+    public GameObject escMenu;
+    public GameObject helpPanel;
 
     public Vector3 mousePos;
     public GameObject RMBclickedObj;
@@ -214,6 +231,7 @@ public class GameCore : MonoBehaviour
     public bool mouseOverGUI = false;
     public bool chooseFromInventoryMode = false; // "choose from inventory" mode (e.g. adding fuel to campfire)
     public bool hideHUD = false;
+    public bool gamePaused = false;
 
     public bool travelMode = false; // traveling the world map
     public bool travelRight = false;
@@ -241,22 +259,24 @@ public class GameCore : MonoBehaviour
     public List<GameObject> items      = new List<GameObject>();
     public List<GameObject> plants     = new List<GameObject>();
     public List<GameObject> structures = new List<GameObject>();
+    public List<GameObject> projects   = new List<GameObject>();
 
     public List<GameObject> buttonsA = new List<GameObject>();
     public List<GameObject> buttonsI = new List<GameObject>();
     public List<GameObject> buttonsO = new List<GameObject>();
+    public List<GameObject> buttonsE = new List<GameObject>();
 
     public RaycastHit2D[] rhit2D;
 
     // note: setting variables as below, doesn't work 
 
-    public Vector3 v1 = new Vector3(110f,0,0);   // player spawn position
-    public Vector3 v2 = new Vector3(0,0.4f,0);   // pants relative position
-    public Vector3 v3 = new Vector3(150f,-10f,0);// RMB button (type A) relative position from mouse
-    public Vector3 v4 = new Vector3(0f,-0.5f,0); // RMB buttons (type A) position increment
-    public Vector3 v5 = new Vector3(80f,80f,0f); // inventory item button (type I) screen position
-    public Vector3 v6 = new Vector3(120f,0f,0f); // inventory items button (type I) position increment
-    public Vector3 v7 = new Vector3(120f,0f,0f); // RMB button (type O) relative position from mouse
+    public Vector3 v1 = new Vector3(110f,0,0);    // player spawn position
+    public Vector3 v2 = new Vector3(0,0.4f,0);    // pants relative position
+    public Vector3 v3 = new Vector3(150f,-10f,0); // RMB button (type A) relative position from mouse
+    public Vector3 v4 = new Vector3(0f,-0.5f,0);  // RMB buttons (type A) position increment
+    public Vector3 v5 = new Vector3(80f,80f,0f);  // inventory item button (type I) screen position
+    public Vector3 v6 = new Vector3(120f,0f,0f);  // inventory items button (type I) position increment
+    public Vector3 v7 = new Vector3(120f,0f,0f);  // RMB button (type O) relative position from mouse
 
     //
 
@@ -269,6 +289,35 @@ public class GameCore : MonoBehaviour
 
     int i;
 
+
+    //  -------------------------------------------  METHODS ---------------------------------------------
+
+    /// SetupFirstLand()
+    /// InitializeIngamePrefabs()
+    
+    /// LoadLand()
+    /// ExploreNodeL(2)
+    /// ExploreNodeR(2)
+    /// CreateWorldEvent(1)
+    /// ExecuteWorldEvent(1)
+
+    /// SpawnPlayer()
+    /// SpawnMan(1)
+    /// SpawnHerbi()
+    /// SpawnItem(1)
+    /// SpawnPlant(2)
+
+    /// LeftMouseButton()
+    /// RightMouseButton()
+    /// HighlightObjectUnderMouse()
+    /// CreateButtonAList()
+    /// RMBManager()
+    /// AddButtonA(3)
+    /// InventoryManager()
+    /// AddButtonI(1)
+    /// AddButtonO(1)
+    /// PauseGame()
+    /// UnpauseGame()
 
     // ------------ CLASSES ------------------
 
@@ -287,6 +336,7 @@ public class GameCore : MonoBehaviour
         public List<GameObject> structures = new List<GameObject>();
         public List<GameObject> items      = new List<GameObject>();
         public List<GameObject> plants     = new List<GameObject>();
+        public List<GameObject> projects   = new List<GameObject>();
 
         int i;
 
@@ -399,7 +449,7 @@ public class GameCore : MonoBehaviour
 
             r = Random.Range(2,5);
             for (i=0; i<r; i++)
-            SpawnItem(EItem.roundRock, new Vector3(Random.Range(0f,landPointX[landSections-2]),-100f,0f));
+            SpawnItem(EItem.hammerstone, new Vector3(Random.Range(0f,landPointX[landSections-2]),-100f,0f));
 
             r = Random.Range(2,5);
             //r += 5;
@@ -628,25 +678,27 @@ public class GameCore : MonoBehaviour
 
         public GameObject SpawnMan(Vector3 _position, int _team)
         {
-            Core.clone = Instantiate (Core.manPrefab, _position, Core.transform.rotation) as GameObject;
+            GameObject clone;
+
+            clone = Instantiate (Core.manPrefab, _position, Quaternion.identity) as GameObject;
 
             if (index == Core.currentLand)
             {
-                Core.critters.Add(Core.clone);
+                Core.critters.Add(clone);
             }
             else
             {
-                critters.Add(Core.clone);
-                Core.clone.SetActive(false);
+                critters.Add(clone);
+                clone.SetActive(false);
             }
             
-            Core.clone.transform.position = new Vector3(Core.clone.transform.position.x, Core.clone.transform.position.y, 0f);
+            clone.transform.position = new Vector3(clone.transform.position.x, clone.transform.position.y, 0f);
             
-            Core.teams[_team].members.Add(Core.clone);
-            Core.clone.GetComponent<ManCore>().team = _team;
-            Core.clone.GetComponent<ManCore>().action = EAction.idle;
+            Core.teams[_team].members.Add(clone);
+            clone.GetComponent<ManCore>().team = _team;
+            clone.GetComponent<ManCore>().action = EAction.idle;
 
-            return Core.clone;
+            return clone;
         }
 
         // spawn new tribe group
@@ -768,33 +820,6 @@ public class GameCore : MonoBehaviour
 
     }
 
-    //  -------------------------------------------  METHODS ---------------------------------------------
-
-    /// SetupFirstLand()
-    /// InitializeIngamePrefabs()
-    
-    /// LoadLand()
-    /// ExploreNodeL(2)
-    /// ExploreNodeR(2)
-    /// CreateWorldEvent(1)
-    /// ExecuteWorldEvent(1)
-
-    /// SpawnPlayer()
-    /// SpawnMan(1)
-    /// SpawnHerbi()
-    /// SpawnItem(1)
-    /// SpawnPlant(2)
-
-    /// LeftMouseButton()
-    /// RightMouseButton()
-    /// HighlightObjectUnderMouse()
-    /// CreateButtonAList()
-    /// RMBManager()
-    /// AddButtonA(3)
-    /// InventoryManager()
-    /// AddButtonI(1)
-    /// AddButtonO(1)
-
     //----------------------------------------------------------------------------------------------------------------
 
     public void SetupFirstLand()
@@ -902,6 +927,8 @@ public class GameCore : MonoBehaviour
         // save critters
         
         lands[currentLand].critters.Clear();
+
+        critters.Remove(player); // <---- !
         
         for (i=0; i<critters.Count; i++)
         {
@@ -922,18 +949,27 @@ public class GameCore : MonoBehaviour
         }
 
         structures.Clear();
+
+        
+        // save projects
+
+        lands[currentLand].projects.Clear();
+        
+        for (i=0; i<projects.Count; i++)
+        {
+            lands[currentLand].projects.Add(projects[i]);
+            projects[i].SetActive(false);
+        }
+
+        projects.Clear();
         
         // --------------------------
         
         // load a new land
-
+        
         currentLand = _index;
 
-        player.SetActive(true);
-
-
-        critters.Add(player); // <----
-
+        critters.Add(player); // <---- !
 
         landSections = lands[_index].landSections;
 
@@ -969,22 +1005,36 @@ public class GameCore : MonoBehaviour
             lands[currentLand].structures[i].SetActive(true);
         }
 
-        // move all men guarding player to the new land
-
-        for (i=0; i<teams[1].members.Count; i++)
+        for (i=0; i<lands[currentLand].projects.Count; i++)
         {
-            if ((teams[1].members[i].GetComponent<CritterCore>().command == ECommand.guard)
-            && (teams[1].members[i].GetComponent<CritterCore>().commandTarget == player)
-            && (teams[1].members[i].GetComponent<CritterCore>().downed == false))
-            {
-                lands[teams[1].members[i].GetComponent<BodyCore>().land].critters.Remove(teams[1].members[i]);
-                critters.Add(teams[1].members[i]);
+            projects.Add(lands[currentLand].projects[i]);
+            lands[currentLand].projects[i].SetActive(true);
+        }
 
-                teams[1].members[i].GetComponent<BodyCore>().land = _index;
-                teams[1].members[i].transform.position = player.transform.position;
-                teams[1].members[i].SetActive(true);
+        // move members of player unit to the new land
+
+        if (units.Count > 0)
+        {
+            for (i=0; i<teams[1].units[0].members.Count; i++)
+            {
+                if ((teams[1].units[0].members[i].GetComponent<CritterCore>().command == ECommand.guard)
+                && (teams[1].units[0].members[i].GetComponent<CritterCore>().commandTarget == player)
+                && (teams[1].units[0].members[i].GetComponent<CritterCore>().downed == false))
+                {
+                    lands[teams[1].units[0].members[i].GetComponent<BodyCore>().land].critters.Remove(teams[1].units[0].members[i]);
+                    critters.Add(teams[1].units[0].members[i]);
+
+                    teams[1].units[0].members[i].GetComponent<BodyCore>().land = _index;
+                    teams[1].units[0].members[i].transform.position = player.transform.position;
+                    teams[1].units[0].members[i].SetActive(true);
+
+                }
             }
         }
+
+        // set hp bars according to combat mode
+
+        SetHpBarsActive(combatMode);
 
         // redraw ground and backgrounds
 
@@ -1494,53 +1544,82 @@ public class GameCore : MonoBehaviour
     {
         // ----- LEFT MOUSE BUTTON ------
 
-        if(Input.GetMouseButtonDown(0))
+        if (gamePaused == false)
         {
-            if ((chooseFromInventoryMode == true)
-            && (mouseOverGUI == false))
+
+            if(Input.GetMouseButtonDown(0))
             {
-                chooseFromInventoryMode = false;
-                InventoryManager(); // for clearing color from buttons type I
-            }
+                // if "choose from inventory" mode is enabled and no buttonI was clicked, then disable "choose from inventory" mode
 
-            if ((combatMode == false)
-            && (mouseOverGUI == false))
-            {
-                // move player
-                
-                Vector3 v1;
-                v1 =  Camera.main.ScreenToWorldPoint(Input.mousePosition);
-
-                player.GetComponent<CritterCore>().targetX = v1.x;
-                player.GetComponent<CritterCore>().action = EAction.move;
-                player.GetComponent<CritterCore>().target = null;
-                player.GetComponent<CritterCore>().preciseMovement = false;
-            }
-        }
-
-        if(Input.GetMouseButtonUp(0))
-        {
-            if (combatMode == false)
-            {
-                // clear buttons (type A)    
-
-                for (i=0; i<=buttonsA.Count-1; i++)
+                if ((chooseFromInventoryMode == true)
+                && (mouseOverGUI == false))
                 {
-                    Destroy(buttonsA[i]);
+                    chooseFromInventoryMode = false;
+                    InventoryManager(); // to clear colors from buttons type I
                 }
 
-                buttonsA.Clear();
-                RMBclickedObj = null;
+                //
 
-                // clear existing buttons of type O
+                // if combat mode is off
 
-                for (i=0; i<buttonsO.Count; i++)
+                if ((combatMode == false)
+                && (mouseOverGUI == false))
                 {
-                    Destroy(buttonsO[i]);
+                    bool b = false;
+
+                    // check if there is item under mouse to pick up / equip
+
+                    if (rhit2D.Length > 0)
+                    {
+                        for (int i = 0; i<rhit2D.Length; i++)
+                        {
+                            if ((rhit2D[i].transform.gameObject.GetComponent<ItemCore>())
+                            && (rhit2D[i].transform.gameObject.GetComponent<ItemCore>().isCarried == false))
+                            {
+                                // set player to pick up the first item found under mouse
+
+                                player.GetComponent<CritterCore>().target  = rhit2D[i].transform.gameObject;
+                                player.GetComponent<CritterCore>().targetX = rhit2D[i].transform.position.x;
+
+                                player.GetComponent<CritterCore>().action = EAction.pickUp;
+
+                                b = true;
+
+                                break;
+                            }
+                        }
+                    }
+
+                    // if there is no item under mouse, then move player
+
+                    if (b == false)
+                    {
+                        Vector3 v1;
+                        v1 =  Camera.main.ScreenToWorldPoint(Input.mousePosition);
+
+                        player.GetComponent<CritterCore>().targetX = v1.x;
+                        player.GetComponent<CritterCore>().action = EAction.move;
+                        player.GetComponent<CritterCore>().target = null;
+
+                        // move precisely, if targetX is very close
+
+                        if (Mathf.Abs(player.transform.position.x - player.GetComponent<CritterCore>().targetX) < 2f)
+                        player.GetComponent<CritterCore>().preciseMovement = true;
+                        else
+                        player.GetComponent<CritterCore>().preciseMovement = false;
+
+                    }
                 }
 
-                buttonsO.Clear();
+                //
             }
+
+            if(Input.GetMouseButtonUp(0))
+            {
+                if (mouseOverGUI == false)
+                ClearButtons();
+            }
+
         }
     }
 
@@ -1550,32 +1629,12 @@ public class GameCore : MonoBehaviour
     {
         // ----- RIGHT MOUSE BUTTON ------
 
-        if(Input.GetMouseButtonDown(1))
+        if ((Input.GetMouseButtonDown(1))
+        && (gamePaused == false))
         {
             if (combatMode == false)
             {
-                // clear buttons (type A)  
-
-                for (i=0; i<buttonsA.Count; i++)
-                {
-                    Destroy(buttonsA[i]);
-                }
-
-                buttonsA.Clear();
-                RMBclickedObj = null;
-
-                //
-
-                // clear buttons (type O)  
-
-                for (i=0; i<buttonsO.Count; i++)
-                {
-                    Destroy(buttonsO[i]);
-                }
-
-                buttonsO.Clear();
-
-                //
+                ClearButtons();
 
                 // check for new objects under mouse
 
@@ -1588,36 +1647,42 @@ public class GameCore : MonoBehaviour
 
     void HighlightObjectUnderMouse()
     {
-        // ---- HIGHLIGHTING OBJECTS UNDER MOUSE ----
-
-        // 1. make previous objects white
-
-        if (rhit2D.Length > 0) 
+        if (gamePaused == false)
         {
-            for (i=0; i < rhit2D.Length; i++)
-            {
-                if (rhit2D[i])
-                {
-                    rhit2D[i].transform.gameObject.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,1f);
+            // ---- HIGHLIGHTING OBJECTS UNDER MOUSE ----
 
-                }
-            }
-        }
+            // 1. make previous objects white and keep alpha value
 
-        // 2. find new objects under mouse
-
-        rhit2D = Physics2D.RaycastAll(new Vector2(Camera.main.ScreenToWorldPoint(Input.mousePosition).x,Camera.main.ScreenToWorldPoint(Input.mousePosition).y), new Vector2(0f,0f));
-        
-        // 3. make new objects colored
-
-        if (combatMode == false)
-        {
-            if (rhit2D.Length > 0)
+            if (rhit2D.Length > 0) 
             {
                 for (i=0; i < rhit2D.Length; i++)
                 {
-                    rhit2D[i].transform.gameObject.GetComponent<SpriteRenderer>().color = new Color(0.75f,0.75f,0.75f,1f);
+                    if (rhit2D[i])
+                    {
+                        float f = rhit2D[i].transform.gameObject.GetComponent<SpriteRenderer>().color.a;
 
+                        rhit2D[i].transform.gameObject.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,f);
+                    }
+                }
+            }
+
+            // 2. find new objects under mouse
+
+            rhit2D = Physics2D.RaycastAll(new Vector2(Camera.main.ScreenToWorldPoint(Input.mousePosition).x,Camera.main.ScreenToWorldPoint(Input.mousePosition).y), new Vector2(0f,0f));
+        
+            // 3. make new objects colored and keep alpha value
+
+            if (combatMode == false)
+            {
+                if (rhit2D.Length > 0)
+                {
+                    for (i=0; i < rhit2D.Length; i++)
+                    {
+                        float f = rhit2D[i].transform.gameObject.GetComponent<SpriteRenderer>().color.a;
+
+                        rhit2D[i].transform.gameObject.GetComponent<SpriteRenderer>().color = new Color(0.75f,0.75f,0.75f,f);
+
+                    }
                 }
             }
         }
@@ -1632,7 +1697,7 @@ public class GameCore : MonoBehaviour
         if (!mouseOverGUI)
         {
 
-            // if empty space was RMB clicked
+            // if empty space was RMB-clicked
 
             if (RMBclickedObj == null)
             {
@@ -1658,7 +1723,8 @@ public class GameCore : MonoBehaviour
                 */
             }
 
-            // if an object was RMB clicked
+            // if an object was RMB-clicked
+
             else
             {
                 // item
@@ -1669,37 +1735,72 @@ public class GameCore : MonoBehaviour
                     {
                         // if any item
 
-                        AddButtonA(ind,"pick up",EAction.pickUp);
+                        AddButtonA(ind,"pick up",EAction.pickUp,false);
                         ind++;
 
                         // if specific item
 
                         if (RMBclickedObj.GetComponent<ItemCore>().item == EItem.flint)
                         {
-                            AddButtonA(ind,"craft hand axe",EAction.craftHandAxe);
+                            bool b = true;
+
+                            if (player.GetComponent<ManCore>().hand1Slot)
+                            {
+                                if (player.GetComponent<ManCore>().hand1Slot.GetComponent<ItemCore>().item == EItem.hammerstone)
+                                {
+                                    b = false;
+                                }
+                            }
+                            AddButtonA(ind,"craft",EAction.craftHandAxe,b);
                             ind++;
                         }
                         else
                         if ((RMBclickedObj.GetComponent<ItemCore>().item == EItem.bark)
                         || (RMBclickedObj.GetComponent<ItemCore>().item == EItem.barkTorch))
                         {
-                            AddButtonA(ind,"set on fire",EAction.setOnFire);
-                            ind++;
+                            {
+                                AddButtonA(ind,"set on fire",EAction.setOnFire,false);
+                                ind++;
+                            }
                         }
                         else
                         if (RMBclickedObj.GetComponent<ItemCore>().item == EItem.firewood)
                         {
                             if (player.GetComponent<ManCore>().hand1Slot)
                             {
-                                if (player.GetComponent<ManCore>().hand1Slot.GetComponent<ItemCore>().item == EItem.bark)
-                                if (player.GetComponent<ManCore>().hand1Slot.GetComponent<Burnable>().fire)
+                                if (player.GetComponent<ManCore>().hand1Slot.GetComponent<Burnable>())
                                 {
-                                    AddButtonA(ind,"set on fire",EAction.setOnFire);
-                                    ind++;
+                                    if (player.GetComponent<ManCore>().hand1Slot.GetComponent<Burnable>().fire)
+                                    {
+                                        AddButtonA(ind,"set on fire",EAction.setOnFire,false);
+                                        ind++;
+                                    }
                                 }
                             }
                         }
                     }
+
+                    // if item is carried by player
+
+                    else if (RMBclickedObj.GetComponent<ItemCore>().carrier == player)
+                    {
+                        if (RMBclickedObj == player.GetComponent<ManCore>().hand1Slot)
+                        {
+                                    AddButtonA(ind,"unequip",EAction.unequip,false);
+                                    ind++;
+                        }
+                        else if (RMBclickedObj.GetComponent<ItemCore>().isTool)
+                        {
+                                    AddButtonA(ind,"equip",EAction.equip,false);
+                                    ind++;
+                        }
+
+                        AddButtonA(ind,"drop",EAction.drop,false);
+                        ind++;
+                    }
+
+
+
                 }
 
                 // fireplace
@@ -1707,14 +1808,14 @@ public class GameCore : MonoBehaviour
                 else
                 if (RMBclickedObj.GetComponent<FireplaceCore>())
                 {
-                    AddButtonA(ind,"put item in the fire",EAction.putItemInFireplace);
+                    AddButtonA(ind,"put in fire",EAction.putItemInFireplace,false);
                     ind++;
 
                     if (RMBclickedObj.GetComponent<FireplaceCore>().itemInFire != null)
                     {
                         if (RMBclickedObj.GetComponent<FireplaceCore>().itemInFire.GetComponent<ItemCore>().item == EItem.flatRock)
                         {
-                            AddButtonA(ind,"heat item",EAction.heatItem);
+                            AddButtonA(ind,"cook meat",EAction.heatItem,false);
                             ind++;
                         }
                     }
@@ -1738,30 +1839,68 @@ public class GameCore : MonoBehaviour
             
                     if (RMBclickedObj.GetComponent<PlantCore>().isRooted == true)
                     {
-                        AddButtonA(ind,"cut down",EAction.cutDown);
-                        ind++;
+                        bool b = true;
 
-                    }
-                    else // if not rooted
-                    {
-                        AddButtonA(ind,"pick up",EAction.pickUp);
-                        ind++;
-
-                        if ((RMBclickedObj.GetComponent<PlantCore>().plant == EPlant.spruce)
-                        || (RMBclickedObj.GetComponent<PlantCore>().plant == EPlant.birch))
+                        if (player.GetComponent<ManCore>().hand1Slot)
+                        if (player.GetComponent<ManCore>().hand1Slot.GetComponent<ItemCore>())
                         {
-                            AddButtonA(ind,"process tree",EAction.processTree);
+                            if ((player.GetComponent<ManCore>().hand1Slot.GetComponent<ItemCore>().item == EItem.sharpRock)
+                            || (player.GetComponent<ManCore>().hand1Slot.GetComponent<ItemCore>().item == EItem.handAxe))
+                            {
+                                b = false;
+                            }
+                        }
+
+                        GameObject o = AddButtonA(ind,"cut down",EAction.cutDown, b);
+                        ind++;
+                    }
+
+                    // if not rooted
+
+                    else 
+                    {
+                        if (RMBclickedObj.GetComponent<BodyCore>().isCarried)
+                        {
+                            if (RMBclickedObj.GetComponent<BodyCore>().carrier == player)
+                            {
+                                AddButtonA(ind,"drop",EAction.drop,false);
+                                ind++;
+                            }
+                        }
+                        else
+                        {
+                            AddButtonA(ind,"pick up",EAction.pickUp,false);
                             ind++;
+
+                            if ((RMBclickedObj.GetComponent<PlantCore>().plant == EPlant.spruce)
+                            || (RMBclickedObj.GetComponent<PlantCore>().plant == EPlant.birch))
+                            {
+                                bool b = true;
+
+                                if (player.GetComponent<ManCore>().hand1Slot)
+                                if (player.GetComponent<ManCore>().hand1Slot.GetComponent<ItemCore>())
+                                {
+                                    if ((player.GetComponent<ManCore>().hand1Slot.GetComponent<ItemCore>().item == EItem.sharpRock)
+                                    || (player.GetComponent<ManCore>().hand1Slot.GetComponent<ItemCore>().item == EItem.handAxe))
+                                    {
+                                        b = false;
+                                    }
+                                }
+
+                                AddButtonA(ind,"process",EAction.processTree,b);
+                                ind++;
+                            }
                         }
                     }
 
                     // if specific plant
 
-                    if (RMBclickedObj.GetComponent<PlantCore>().plant == EPlant.grass)
+                    if ((RMBclickedObj.GetComponent<PlantCore>().plant == EPlant.grass)
+                    && !(RMBclickedObj.GetComponent<BodyCore>().isCarried))
                     {
                         if (RMBclickedObj.GetComponent<PlantCore>().isRooted == false)
                         {
-                            AddButtonA(ind,"craft cordage",EAction.craftCordage);
+                            AddButtonA(ind,"craft cordage",EAction.craftCordage,false);
                             ind++;
                         }
                     }
@@ -1776,7 +1915,19 @@ public class GameCore : MonoBehaviour
                     {
                         if ((RMBclickedObj.GetComponent<CritterCore>().alive == false))
                         {
-                            AddButtonA(ind,"obtain meat",EAction.obtainMeat);
+                            bool b = true;
+
+                            if (player.GetComponent<ManCore>().hand1Slot)
+                            if (player.GetComponent<ManCore>().hand1Slot.GetComponent<ItemCore>())
+                            {
+                                if ((player.GetComponent<ManCore>().hand1Slot.GetComponent<ItemCore>().item == EItem.sharpRock)
+                                || (player.GetComponent<ManCore>().hand1Slot.GetComponent<ItemCore>().item == EItem.handAxe))
+                                {
+                                    b = false;
+                                }
+                            }
+
+                            AddButtonA(ind,"obtain meat",EAction.obtainMeat,b);
                             ind++;
                         }
                     }
@@ -1786,25 +1937,28 @@ public class GameCore : MonoBehaviour
                         if ((RMBclickedObj.GetComponent<CritterCore>().alive == true)
                         && (RMBclickedObj != player))
                         {
-                            AddButtonA(ind,"give item",EAction.giveItem);
+                            AddButtonA(ind,"give item",EAction.giveItem,false);
                             ind++;
 
                             // wildman
 
                             if (RMBclickedObj.GetComponent<CritterCore>().team == 0)
                             {
-                                AddButtonA(ind,"ask to join",EAction.convert);
+                                AddButtonA(ind,"ask to join",EAction.convert,false);
                                 ind++;
                             }
-
-
                         }
                     }
                 }
+
+                // project
+
                 else
                 if (RMBclickedObj.GetComponent<ProjectCore>())
                 {
-                    AddButtonA(ind,"delete",EAction.deleteProject);
+                    AddButtonA(ind,"continue",EAction.continueProject,false);
+                    ind++;
+                    AddButtonA(ind,"delete",EAction.deleteProject,false);
                     ind++;
                 }
             }
@@ -1843,7 +1997,7 @@ public class GameCore : MonoBehaviour
 
     //-----------------------------------------------------
 
-    void AddButtonA(int _index, string _label, EAction _action)
+    GameObject AddButtonA(int _index, string _label, EAction _action, bool _darkened)
     {
 
         clone = Instantiate(buttonAPrefab, transform.position, transform.rotation) as GameObject;
@@ -1857,11 +2011,22 @@ public class GameCore : MonoBehaviour
 
         clone.GetComponentInChildren<Text>().text = _label;
         clone.GetComponent<ButtonACore>().action = _action;
+
+        if (_darkened)
+        {
+            clone.GetComponent<Image>().color = new Color(0.15f, 0.15f, 0.15f, 1f);
+            clone.GetComponent<ButtonACore>().text.GetComponent<Text>().color = Color.black;
+
+            if (clone.GetComponent<ButtonACore>())
+            clone.GetComponent<ButtonACore>().darkened = true;
+        }
+
+        return clone;
     }
 
     //-----------------------------------------------------
 
-    public void InventoryManager()
+    public void InventoryManager() // <-- ManageInventory() would be better
     {
         chooseFromInventoryMode = false;
 
@@ -2076,9 +2241,6 @@ public class GameCore : MonoBehaviour
                 critters[i].GetComponent<CritterCore>().hpBar.GetComponent<HpBar>().frame.SetActive(critters[i].GetComponent<CritterCore>().hpBar.activeSelf);
             }
         }
-
-        player.GetComponent<CritterCore>().hpBar.SetActive(!player.GetComponent<PlayerCore>().hpBar.activeSelf); 
-        
     }
 
     public void SetHpBarsActive(bool _b)
@@ -2129,9 +2291,52 @@ public class GameCore : MonoBehaviour
 
     //-----------------------------------------------------
 
+    public void ClearButtons()
+    {
 
+        // clear buttons (type A)    
+
+        for (i=0; i<=buttonsA.Count-1; i++)
+        {
+            Destroy(buttonsA[i]);
+        }
+
+        buttonsA.Clear();
+        RMBclickedObj = null;
+        
+
+
+        // clear buttons (type O)
+
+        for (i=0; i<buttonsO.Count; i++)
+        {
+            Destroy(buttonsO[i]);
+        }
+
+        buttonsO.Clear();
+
+
+
+    }
 
     //-----------------------------------------------------
+
+    public void PauseGame()
+    {
+        Time.timeScale = 0.00000000001f;
+        Time.fixedDeltaTime = 0.02f * Time.timeScale;
+
+        gamePaused = true;
+
+    }
+
+    public void UnpauseGame()
+    {
+        Time.timeScale = 1f;
+        Time.fixedDeltaTime = 0.02f * Time.timeScale;
+
+        gamePaused = false;
+    }
 
     // ============================================================ MAIN ======================================================================
 
@@ -2162,13 +2367,14 @@ public class GameCore : MonoBehaviour
         teams[2].name = "Dakini Tribe";
         teams[2].color = Color.red;
 
-
         InitializeIngamePrefabs();
 
         SetupFirstLand();
 
         SpawnPlayer();
         LoadLand(0);
+
+        // create unit and add player to it
 
         Unit _unit;
 
@@ -2180,6 +2386,8 @@ public class GameCore : MonoBehaviour
         _unit.team = 1;
         _unit.land = currentLand;
         _unit.members.Add(player);
+
+        //
 
         //CreateWorldEvent(EWorldEvent.unitRandomMove, 0.5f+0.5f/24f);
 
@@ -2309,6 +2517,22 @@ public class GameCore : MonoBehaviour
         {
             worldMap.SetActive(!worldMap.activeSelf);
         }
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+		{
+            escMenu.SetActive(!escMenu.activeSelf);
+
+            if (helpPanel.activeSelf)
+            {
+                helpPanel.SetActive(false);
+            }
+
+            if (escMenu.activeSelf)
+            PauseGame();
+            else
+            UnpauseGame();
+        }
+
 
         // world map scrolling
 
@@ -2470,14 +2694,16 @@ public class GameCore : MonoBehaviour
 
         // draw targetX lines
 
-        if (hideHUD == false)
-        {
+        //if (hideHUD == false)
+        //{
             for (var i=1; i<critters.Count; i++)
             {
                 Debug.DrawLine(critters[i].transform.position, new Vector3(critters[i].GetComponent<CritterCore>().targetX, GetGroundY(critters[i].GetComponent<CritterCore>().targetX) ,0f) );
             }
 
-        }
+            Debug.DrawLine(player.transform.position, new Vector3(player.GetComponent<CritterCore>().targetX, GetGroundY(player.GetComponent<CritterCore>().targetX) ,0f) );
+
+        //}
 
         // gathering point sprite
 

@@ -223,7 +223,7 @@ public class SlashCore : MonoBehaviour
                 {
                     if (parent.GetComponent<ManCore>().hand1Slot)
                     {
-                        if (parent.GetComponent<ManCore>().hand1Slot.GetComponent<ItemCore>().item == EItem.roundRock)
+                        if (parent.GetComponent<ManCore>().hand1Slot.GetComponent<ItemCore>().item == EItem.hammerstone)
                         {
                             b = true;
                         }
@@ -236,7 +236,7 @@ public class SlashCore : MonoBehaviour
                 {
                     if (parent.GetComponent<ManCore>().hand1Slot)
                     {
-                        if ((parent.GetComponent<ManCore>().hand1Slot.GetComponent<ItemCore>().item == EItem.roundRock)
+                        if ((parent.GetComponent<ManCore>().hand1Slot.GetComponent<ItemCore>().item == EItem.hammerstone)
                         || (parent.GetComponent<ManCore>().hand1Slot.GetComponent<ItemCore>().item == EItem.handAxe)
                         || (parent.GetComponent<ManCore>().hand1Slot.GetComponent<ItemCore>().item == EItem.sharpRock))
                         {
@@ -268,13 +268,6 @@ public class SlashCore : MonoBehaviour
                     break;
                 }
 
-                case EAction.craftCordage:
-                {
-                    b = true;
-
-                    break;
-                }
-
                 case EAction.craftBarkTorch:
                 {
                     b = true;
@@ -291,6 +284,7 @@ public class SlashCore : MonoBehaviour
                 if (other.GetComponent<ProjectCore>().ready == true)
                 {
                     other.gameObject.GetComponent<ProjectCore>().progress += 1f;
+                    other.gameObject.GetComponent<PhysicalObject>().StopCoroutine("HitColorize");
                     other.gameObject.GetComponent<PhysicalObject>().StartCoroutine("HitColorize");
 
                     if (other.gameObject.GetComponent<ProjectCore>().progress >= other.gameObject.GetComponent<ProjectCore>().maxProgress)
@@ -353,14 +347,14 @@ public class SlashCore : MonoBehaviour
 
                                 break;
                             }
-
+                            /*
                             case EAction.craftCordage:
                             {
                                 
                                 parent.GetComponent<ManCore>().CraftCordage(other.gameObject.GetComponent<ProjectCore>().itemsToConsume[0]);
                                 break;
                             }
-
+                            */
                             case EAction.craftBarkTorch:
                             {
                                 

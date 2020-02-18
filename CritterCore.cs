@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
-using System.Collections.Generic; // <--- Lists
-
+using System.Collections.Generic; // enables Lists
+using UnityEngine.Rendering; // enables Sorting Groups 
 
 public enum ECommand {none, guard}
 
@@ -86,6 +86,7 @@ public class CritterCore : BodyCore
 
 	public void MoveLeft()
 	{
+        if (transform.position.x > 0f)
 		GetComponent<Rigidbody2D>().AddForce(new Vector2(-GameCore.MOVE_FORCE*moveSpeed,0));
 	}
 
@@ -93,6 +94,7 @@ public class CritterCore : BodyCore
 	
 	public void MoveRight()
 	{
+        if (transform.position.x < GameCore.Core.landPointX[GameCore.Core.landSections-1])
 		GetComponent<Rigidbody2D>().AddForce(new Vector2(GameCore.MOVE_FORCE*moveSpeed,0));
 	}
 
@@ -102,6 +104,8 @@ public class CritterCore : BodyCore
 	{
 		action = EAction.none;
         preciseMovement = false;
+
+        targetX = transform.position.x; // <---- !
 	}
 
     //--------------------------------------------------
@@ -154,17 +158,20 @@ public class CritterCore : BodyCore
     public void PickUp(GameObject _body)
 
     // note: currently, only men are able to pick up correctly
-    // todo: make this method virtual, then override it in ManCore
+    // solution: make this method virtual, then override it in ManCore
 
     {
         if (_body)
         {
             if (_body.GetComponent<BodyCore>().isCarried == false)
             {
-                //if (Mathf.Abs(transform.position.x - body.transform.position.x) < 1f)
-                //{
+                if (Mathf.Abs(transform.position.x - _body.transform.position.x) < 1f)
+                {
+                    bool b = false;
+
                     if (_body.GetComponent<ItemCore>())
                     {
+
                         if ((_body.GetComponent<ItemCore>().isTool == true)
                         && (GetComponent<ManCore>().hand1Slot == null)) 
                         {
@@ -174,22 +181,19 @@ public class CritterCore : BodyCore
                             {
                                 GetComponent<ManCore>().Equip(_body);
                             }
+
                         }
                         else
                         {
-                            // pick up
-                            carriedBodies.Add(_body);
-
-                            isCarrying = true;
-                            _body.GetComponent<BodyCore>().isCarried = true;
-                            _body.GetComponent<BodyCore>().carrier = gameObject;
-
-                            action = EAction.none;
-
-                            //
+                            b = true;
                         }
                     }
                     else
+                    {
+                        b = true;
+                    }
+
+                    if (b == true)
                     {
                         // pick up
 
@@ -201,12 +205,15 @@ public class CritterCore : BodyCore
 
                         action = EAction.none;
 
+                        _body.GetComponent<SortingGroup>().sortingLayerName = "Critters";
+                        _body.GetComponent<SortingGroup>().sortingOrder = 30;
+
                         //
                     }
 
                     if (GameCore.Core.player == gameObject)
                     GameCore.Core.InventoryManager();
-                //}
+                }
             }
         }
     }
@@ -215,8 +222,11 @@ public class CritterCore : BodyCore
 
     public void DropItem(GameObject _object)
 
-    // doesn't work on item in hand slot ?
     {
+        if (GetComponent<ManCore>())
+        if (_object == GetComponent<ManCore>().hand1Slot)
+        GetComponent<ManCore>().Unequip(_object);
+
         int i = carriedBodies.IndexOf(_object);
         
         carriedBodies[i].GetComponent<BodyCore>().carrier = null;
@@ -232,6 +242,10 @@ public class CritterCore : BodyCore
         GameCore.Core.InventoryManager();
        
         action = EAction.none;
+
+        _object.GetComponent<SortingGroup>().sortingLayerName = "Items";
+        _object.GetComponent<SortingGroup>().sortingOrder = 0;
+
     }
 
     //--------------------------------------------------
@@ -304,12 +318,6 @@ public class CritterCore : BodyCore
 
             case EAction.eat:
             {
-                break;
-            }
-
-            case EAction.dropAll:
-            {
-                DropAll();
                 break;
             }
 
@@ -699,10 +707,22 @@ public class CritterCore : BodyCore
                         if (timerMove <= 0)
                         {
                             targetX = transform.position.x + Random.Range(-10f,10f);
+                            
+                            if (targetX < 0f)
+                            {
+                                targetX += 10f;
+                            }
+                            else if (targetX > GameCore.Core.landPointX[GameCore.Core.landSections-1])
+                            {
+                                targetX -= 10f;
+                            }
+                            
+                            targetX = transform.position.x + Random.Range(-10f,10f);
+
                             timerMove = 100 + Random.Range(0,200);
                         }
 
-                        // if it's wildman, if positive attitude, if it's dark, then check for campfires and go there
+                        // if it's wildman, if positive attitude, if it's dark, then search for campfires
                         if (GameCore.Core.sunlight.GetComponent<Light>().intensity < 0.5f)
                         if (team == 0)
                         if (GetComponent<ManCore>())
@@ -761,15 +781,16 @@ public class CritterCore : BodyCore
 
                             timerMove = 150;
                         }
-
-                        
                     }
 
                     // if action is none of the above, then walk directly to the target to execute action
 
                     else 
                     if (target)
-                    targetX = target.transform.position.x;
+                    {
+                        targetX = target.transform.position.x;
+                        preciseMovement = true;
+                    }
                 }
 
                 // if action is none, then set it to idle
@@ -796,9 +817,9 @@ public class CritterCore : BodyCore
                 float f1;
 
                 if (preciseMovement == true)
-                f1 = 0.1f;
+                f1 = 0.2f;
                 else
-                f1 = 1f;
+                f1 = 1.5f;
 
 
                 if (targetXDistance > f1)

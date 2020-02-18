@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+
 
 // using UnityEngine.EventSystems;
 // using UnityEngine.Events;
@@ -12,9 +14,13 @@ using UnityEngine;
 public class ButtonICore : MonoBehaviour
 {
     public GameObject obj; // object represented by a button
-    //public Sprite sprite;
-
+    
     public int index;
+    
+    public void Start()
+    {
+        GetComponent<Image>().color = new Color(1f, 1f, 1f, 0.6f); // <--- when changing this, change ButtonO.cs and ButtonA.cs too
+    }
 
     public void TaskOnLMBClick()
     {
@@ -41,14 +47,17 @@ public class ButtonICore : MonoBehaviour
             GameCore.Core.player.GetComponent<CritterCore>().Stop();
         }
         
-        // choose from inventory mode
+        // if 'choose from inventory mode' is on
 
         else
         {
             GameCore.Core.chosenObject = obj;
 
             GameCore.Core.chooseFromInventoryMode = false;
-            GameCore.Core.InventoryManager(); // to clear the colors of buttons type I
+            GameCore.Core.InventoryManager(); // to update all buttons type I
+
+            GameCore.Core.mouseOverGUI = false;
+
         }
         
     }
@@ -71,13 +80,38 @@ public class ButtonICore : MonoBehaviour
 
     public void TaskOnEnter()
     {
-        if (GameCore.Core.worldMap.activeSelf == false)
+        //if (GameCore.Core.worldMap.activeSelf == false)
         GameCore.Core.mouseOverGUI = true;
+
+        string s = "";
+
+        if (GameCore.Core.player.GetComponent<ManCore>().hand1Slot == obj)
+        s += obj.name + "\n\nthis item is currently equipped\n\nLMB to unequip\nRMB to drop";
+        else
+        {
+            if (obj.GetComponent<ItemCore>())
+            {
+                if (obj.GetComponent<ItemCore>().isTool)
+                {
+                    s += obj.name + "\n\nLMB to equip\nRMB to drop";
+                }
+                else
+                {
+                    s += obj.name + "\n\nRMB to drop";
+                }
+            }
+            else
+            s += obj.name + "\n\nRMB to drop";
+        }
+
+        GameCore.Core.cursorLabel.GetComponent<CursorLabelCore>().text.text = s;
     }
 
     public void TaskOnExit()
     {
         if (GameCore.Core.worldMap.activeSelf == false)
         GameCore.Core.mouseOverGUI = false;
+
+        GameCore.Core.cursorLabel.GetComponent<CursorLabelCore>().text.text = "";
     }
 }

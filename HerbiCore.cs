@@ -55,6 +55,16 @@ public class HerbiCore : CritterCore
                 break;
             }
         }
+
+        // resize box collider 2D to fit the sprite; 
+        Vector2 v1 = gameObject.GetComponent<SpriteRenderer>().sprite.bounds.size;
+        Vector2 v2 = gameObject.GetComponent<SpriteRenderer>().sprite.bounds.center;
+
+        gameObject.GetComponent<BoxCollider2D>().size = v1;
+        gameObject.GetComponent<BoxCollider2D>().offset = v2;
+        //
+
+
     }
 
 

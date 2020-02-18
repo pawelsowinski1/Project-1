@@ -68,6 +68,9 @@ public class PlantCore : BodyCore
                 GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_hemp;
                 transform.localScale = new Vector3(0.8f,0.8f,0.8f);
 
+                gameObject.AddComponent<Burnable>();
+                GetComponent<Burnable>().fuel = 0.25f * size/10f;
+
                 break;
             }
 
@@ -76,6 +79,10 @@ public class PlantCore : BodyCore
                 name = "Bush";
                 GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_berry_bush;
                 transform.localScale = new Vector3(1f+size*0.005f,1f+size*0.005f,1f+size*0.005f);
+
+                gameObject.AddComponent<Burnable>();
+                GetComponent<Burnable>().fuel = 0.5f * size/10f;
+
                 break;
             }
 
@@ -84,6 +91,9 @@ public class PlantCore : BodyCore
                 name = "Grass";
                 GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_grass;
                 transform.localScale = new Vector3(0.025f+size*0.02f,0.025f+size*0.02f,0.025f+size*0.02f);
+
+                gameObject.AddComponent<Burnable>();
+                GetComponent<Burnable>().fuel = 0.25f * size/10f;
 
                 break;
             }

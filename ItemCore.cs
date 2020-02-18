@@ -1,14 +1,15 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.Rendering; // for using Sorting Groups in script 
 
-public enum EItem {none, rock, roundRock, sharpRock, largeRock, flatRock, flint, handAxe, bark, firewood, plantMaterial,
+public enum EItem {none, rock, hammerstone, sharpRock, largeRock, flatRock, flint, handAxe, bark, firewood, plantMaterial,
                     meat, berries, smallLog, bigLog, wood, stoneSpear, cordage, cookedMeat, barkTorch, stick};
 
 public class ItemCore : BodyCore
 {
     // ================ ITEM CORE ======================
 
-    // An item, which can be picked up. Can be equipped if it's a tool. Can burn in fire if it's flammable.
+    // An item, which can be picked up. Can be equipped if it's a tool.
 
     // parent class:  BodyCore
     // child classes: -
@@ -26,29 +27,27 @@ public class ItemCore : BodyCore
 
     public void ItemInitialize()
     {
-        //GetComponent<SpriteRenderer>().sortingOrder = 10;
-
         switch (item)
         {
             case EItem.rock:
             {
-                name = "Rock";
+                name = "rock";
                 GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_rock;
                 transform.localScale = new Vector3(0.3f,0.3f,0.3f);
                 isTool = true;
                 break;
             }
-            case EItem.roundRock:
+            case EItem.hammerstone:
             {
-                name = "Round rock";
-                GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_roundRock;
+                name = "hammerstone";
+                GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_hammerstone;
                 transform.localScale = new Vector3(0.55f,0.55f,0.55f);
                 isTool = true;
                 break;
             }
             case EItem.sharpRock:
             {
-                name = "Sharp rock";
+                name = "sharp rock";
                 GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_sharpRock;
                 transform.localScale = new Vector3(0.2f,0.2f,0.2f);
                 isTool = true;
@@ -56,14 +55,14 @@ public class ItemCore : BodyCore
             }
             case EItem.flatRock:
             {
-                name = "Flat rock";
+                name = "flat rock";
                 GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_flatRock;
                 transform.localScale = new Vector3(0.5f,0.5f,0.5f);
                 break;
             }
             case EItem.wood:
             {
-                name = "Wood";
+                name = "wood";
                 GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_wood;
                 transform.localScale = new Vector3(0.5f,0.5f,0.5f);
 
@@ -74,9 +73,10 @@ public class ItemCore : BodyCore
             }
             case EItem.meat:
             {
-                name = "Meat";
+                name = "meat";
                 GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_meat;
                 transform.localScale = new Vector3(1.5f,1.5f,1.5f);
+                
 
                 break;
             }      
@@ -89,14 +89,14 @@ public class ItemCore : BodyCore
             }
             case EItem.flint:
             {
-                name = "Flint";
+                name = "flint";
                 GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_flint;
                 transform.localScale = new Vector3(0.4f,0.4f,0.4f);
                 break;
             }
             case EItem.handAxe:
             {
-                name = "Hand axe";
+                name = "hand axe";
                 GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_handAxe;
                 transform.localScale = new Vector3(0.4f,0.4f,0.4f);
                 isTool = true;
@@ -104,7 +104,7 @@ public class ItemCore : BodyCore
             }  
             case EItem.stoneSpear:
             {
-                name = "Stone spear";
+                name = "stone spear";
                 GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_stoneSpear;
                 transform.localScale = new Vector3(0.8f,0.8f,0.8f);
                 isTool = true;
@@ -112,7 +112,7 @@ public class ItemCore : BodyCore
             }  
             case EItem.cordage:
             {
-                name = "Cordage";
+                name = "cordage";
                 GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_cordage;
                 transform.localScale = new Vector3(0.5f,0.5f,0.5f);
 
@@ -123,7 +123,7 @@ public class ItemCore : BodyCore
             }  
             case EItem.smallLog:
             {
-                name = "Small log";
+                name = "small log";
                 GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_smallLog;
                 transform.localScale = new Vector3(0.6f,0.6f,0.6f);
                 isTool = true;
@@ -135,7 +135,7 @@ public class ItemCore : BodyCore
             }
             case EItem.plantMaterial:
             {
-                name = "Plant material";
+                name = "plant material";
                 GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_plantMaterial;
                 transform.localScale = new Vector3(0.6f,0.6f,0.6f);
 
@@ -146,7 +146,7 @@ public class ItemCore : BodyCore
             }  
             case EItem.firewood:
             {
-                name = "Firewood";
+                name = "firewood";
                 GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_firewood;
                 transform.localScale = new Vector3(0.6f,0.6f,0.6f);
 
@@ -157,7 +157,7 @@ public class ItemCore : BodyCore
             }  
             case EItem.bark:
             {
-                name = "Bark";
+                name = "bark";
                 GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_bark;
                 transform.localScale = new Vector3(0.3f,0.3f,0.3f);
                 isTool = true;
@@ -169,7 +169,7 @@ public class ItemCore : BodyCore
             }  
             case EItem.cookedMeat:
             {
-                name = "Cooked meat";
+                name = "cooked meat";
                 GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_cookedMeat;
                 transform.localScale = new Vector3(1.5f,1.5f,1.5f);
 
@@ -178,7 +178,7 @@ public class ItemCore : BodyCore
 
             case EItem.barkTorch:
             {
-                name = "Bark torch";
+                name = "bark torch";
                 GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_barkTorch;
                 transform.localScale = new Vector3(0.5f,0.5f,0.5f);
                 isTool = true;
@@ -191,7 +191,7 @@ public class ItemCore : BodyCore
 
             case EItem.stick:
             {
-                name = "Stick";
+                name = "stick";
                 GetComponent<SpriteRenderer>().sprite = GameCore.Core.spr_stick;
                 transform.localScale = new Vector3(0.75f,0.75f,0.75f);
                 isTool = true;
@@ -205,13 +205,21 @@ public class ItemCore : BodyCore
         }
 
         // resize box collider 2D to fit the sprite; 
-        Vector2 S = gameObject.GetComponent<SpriteRenderer>().sprite.bounds.size;
-        gameObject.GetComponent<BoxCollider2D>().size = S;
+        Vector2 v1 = gameObject.GetComponent<SpriteRenderer>().sprite.bounds.size;
+        Vector2 v2 = gameObject.GetComponent<SpriteRenderer>().sprite.bounds.center;
+
+        gameObject.GetComponent<BoxCollider2D>().size = v1;
+        gameObject.GetComponent<BoxCollider2D>().offset = v2;
         //
 
         // if it's not a tool, then set box collider 2D offset 
-        if (isTool == false)
-        gameObject.GetComponent<BoxCollider2D>().offset = new Vector2 (0, (S.y / 2));
+        //if (isTool == false)
+        //gameObject.GetComponent<BoxCollider2D>().offset = new Vector2 (0, (v1.y / 2));
+        //
+
+        // if it's a tool, rotate -90 degrees
+        if (isTool)
+        transform.Rotate(0,0,-90f);
         //
     }
 

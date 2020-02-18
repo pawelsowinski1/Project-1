@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;  // <--- enables lists
+
 
 public class PlayerCore : ManCore 
 {
@@ -8,7 +10,9 @@ public class PlayerCore : ManCore
     // parent class:  ManCore
     // child classes: -
 
-    public GameObject pickupTarget;
+    public List<GameObject> pickupTargets;
+    
+
     //public GameObject chosenObject; // object chosen by clicking highlighted button type I
 
     /// SetDirection()
@@ -40,7 +44,7 @@ public class PlayerCore : ManCore
 
 		BodyInitialize();
         team = 1;
-        pickupTarget = null;
+        pickupTargets.Clear();
 
         Component[] c;
 
@@ -65,7 +69,8 @@ public class PlayerCore : ManCore
         Gravity();
         AI();
 
-        if (downed == false)
+        if ((downed == false)
+        && (GameCore.Core.gamePaused == false))
         {
             //action = EAction.none;
 
@@ -113,7 +118,8 @@ public class PlayerCore : ManCore
 
 	void Update()
 	{
-        if (downed == false)
+        if ((downed == false)
+        && (GameCore.Core.gamePaused == false))
         {
             if (GameCore.Core.combatMode == true)
             SetDirection();
@@ -130,15 +136,17 @@ public class PlayerCore : ManCore
             {
                 action = EAction.none;
 
-                if (pickupTarget)
+                if (pickupTargets.Count > 0)
                 {
-		            PickUp(pickupTarget);
-                    pickupTarget.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,1f);
+		            PickUp(pickupTargets[0]);
+                    //pickupTargets[0].GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,1f);
 
-                    pickupTarget = null;
+                    pickupTargets.RemoveAt(0);
+
+                    GameCore.Core.ClearButtons();
                 }
-                else
-                DropAll();
+                //else
+                //DropAll();
             }
         }
 
@@ -147,20 +155,26 @@ public class PlayerCore : ManCore
         if (hitCooldown > 0)
         hitCooldown--;
 
-        if (pickupTarget)
+        /*
+        if (pickupTargets.Count > 0)
         {
-            if (Mathf.Abs(pickupTarget.transform.position.x - transform.position.x) > 1.5f)
+            for (var i = 0; i<pickupTargets.Count; i++)
             {
-                pickupTarget.GetComponent<SpriteRenderer>().color = Color.white;
-                pickupTarget = null;
+                if (Mathf.Abs(pickupTargets[i].transform.position.x - transform.position.x) > 1.5f)
+                {
+                    pickupTargets[i].GetComponent<SpriteRenderer>().color = Color.white;
+                    pickupTargets.RemoveAt(i);
+                }
             }
         }
-	}
+        */
 
+	}
+    
     /// ----- ON TRIGGER -----
     
     // detecting an object to pick up
-
+    
     void OnTriggerEnter2D(Collider2D other)
     {   
         bool b = false;
@@ -181,15 +195,23 @@ public class PlayerCore : ManCore
         {
             if (other.gameObject.GetComponent<BodyCore>().isCarried == false)
             {
-                if (pickupTarget)
-                pickupTarget.GetComponent<SpriteRenderer>().color = Color.white;
+                //if (pickupTarget)
+                //pickupTarget.GetComponent<SpriteRenderer>().color = Color.white;
 
-                pickupTarget = other.gameObject;
-                pickupTarget.GetComponent<SpriteRenderer>().color = Color.gray;
+                pickupTargets.Add(other.gameObject);
+                //pickupTarget.GetComponent<SpriteRenderer>().color = Color.gray;
             }
         }
     }
 
+    void OnTriggerExit2D(Collider2D other)
+    {
+        if (pickupTargets.Contains(other.gameObject))
+        {
+            pickupTargets.Remove(gameObject);
+        }
+    }
+    
     
     void OnEnable()
     {

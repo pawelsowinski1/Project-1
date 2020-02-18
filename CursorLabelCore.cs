@@ -26,37 +26,69 @@ public class CursorLabelCore : MonoBehaviour
     {
         transform.position = Input.mousePosition + v1;
 
-        if (GameCore.Core.rhit2D.Length == 0)
+        if (GameCore.Core.mouseOverGUI == false)
         {
-            text.text = "";
-        }
-        else
-        {
-            for (int i = 0; i<GameCore.Core.rhit2D.Length; i++)
+            if (GameCore.Core.rhit2D.Length == 0)
             {
-                if (GameCore.Core.rhit2D[i].transform.gameObject.GetComponent<ProjectCore>())
-                {
-                    text.text = GameCore.Core.rhit2D[i].transform.gameObject.GetComponent<ProjectCore>().label;
-                    
-                    break;
-                }
-                else
-                if (GameCore.Core.rhit2D[i].transform.gameObject.GetComponent<FireplaceCore>())
-                {
-                    text.text = "Campfire\n\nfuel: "+GameCore.Core.rhit2D[i].transform.gameObject.GetComponent<FireplaceCore>().fuel;
-                }
-
+                text.text = "";
             }
-        }
+            else
+            {
+                bool b = false;
 
-        /*
-        if (GameCore.Core.rhit2D.Length == 1)
-        {
-            text.text = GameCore.Core.rhit2D[0].transform.gameObject.name;
+                for (int i = 0; i<GameCore.Core.rhit2D.Length; i++)
+                {
+                    if (GameCore.Core.rhit2D[i].transform.gameObject.GetComponent<ItemCore>())
+                    {
+                        if (GameCore.Core.combatMode == false)
+                        {
+                            if (GameCore.Core.rhit2D[i].transform.gameObject.GetComponent<ItemCore>().isCarried == false)
+                            {
+                                if (GameCore.Core.rhit2D[i].transform.gameObject.GetComponent<ItemCore>().isTool == true)
+                                {
+                                    if (GameCore.Core.player.GetComponent<ManCore>().hand1Slot == null)
+                                    text.text = "Equip";
+                                    break;
+                                }
+
+                                text.text = "Pick up";
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    if (GameCore.Core.rhit2D[i].transform.gameObject.GetComponent<ProjectCore>())
+                    {
+                        text.text = GameCore.Core.rhit2D[i].transform.gameObject.GetComponent<ProjectCore>().label;
+                    
+                        b = true;
+                        break;
+                    }
+                    else
+                    if (GameCore.Core.rhit2D[i].transform.gameObject.GetComponent<FireplaceCore>())
+                    {
+                        text.text = "Campfire\n\nfuel: "+GameCore.Core.rhit2D[i].transform.gameObject.GetComponent<FireplaceCore>().fuel;
+                    
+                        b = true;
+                        break;    
+                    }
+
+                    if (b == false)
+                    text.text = "";
+
+                }
+            }
+
+            /*
+            if (GameCore.Core.rhit2D.Length == 1)
+            {
+                text.text = GameCore.Core.rhit2D[0].transform.gameObject.name;
+            }
+            else
+            text.text = "objects: "+GameCore.Core.rhit2D.Length.ToString();
+            */
+
         }
-        else
-        text.text = "objects: "+GameCore.Core.rhit2D.Length.ToString();
-        */
     }
 
     // -------------------------- main ------------------------------
@@ -64,14 +96,11 @@ public class CursorLabelCore : MonoBehaviour
 	void Start()
     {
 		isHidden = false;
-
-        
 	}
 	
 	void Update()
     {        
-
-        transform.SetSiblingIndex(100); // <----- should it be in update?
+        transform.SetSiblingIndex(100); // <----- it shouldn' be in Update
 
         if (GameCore.Core.worldMap.activeSelf == true)
         {
@@ -93,7 +122,7 @@ public class CursorLabelCore : MonoBehaviour
         }
         
         // if HUD is on, show more info
-        
+        /*
         if (GameCore.Core.hideHUD == false)
         {
             if (GameCore.Core.rhit2D.Length == 0)
@@ -191,6 +220,6 @@ public class CursorLabelCore : MonoBehaviour
             // -------
 
         }
-        
+        */
 	}
 }

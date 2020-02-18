@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+
 
 // Button type O: object selection button
 //
@@ -15,9 +17,32 @@ public class ButtonOCore : MonoBehaviour
 
     public bool isMouseOver = false;
 
-    GameCore core = GameCore.Core;
 
     int i;
+
+	void Start ()
+    {
+		image.transform.localScale = new Vector3(2f,2f,2f);
+
+        GetComponent<Image>().color = new Color(1f, 1f, 1f, 0.6f); // <--- when changing this, change ButtonI.cs and ButtonA.cs too
+
+        image.GetComponent<Image>().color = new Color(1f, 1f, 1f, 0.6f); // <--- when changing this, change ButtonI.cs and ButtonA.cs too  
+
+	}
+	
+	void Update ()
+    {
+        if (index == 0)
+        transform.position = Camera.main.WorldToScreenPoint(worldPos);
+        else
+        transform.position = GameCore.Core.buttonsO[0].transform.position + new Vector3(105f,0f,0f)*index;// + GameCore.Core.v4*index*100f;
+
+        if (isMouseOver)
+        {
+            obj.GetComponent<PhysicalObject>().Highlight();
+        }
+
+	}
 
     // ---------------------------------------
 
@@ -36,6 +61,8 @@ public class ButtonOCore : MonoBehaviour
 
     public void TaskOnEnter()
     {
+        GameCore core = GameCore.Core;
+
         // clear buttons (type A)  
         
         for (i=0; i < core.buttonsA.Count; i++)
@@ -62,8 +89,11 @@ public class ButtonOCore : MonoBehaviour
         {
             if (core.buttonsO[i].GetComponent<ButtonOCore>().obj == core.RMBclickedObj)
             {
+                // highlight ? not sure
             }
         }
+
+        GameCore.Core.mouseOverGUI = true;
 
     }
 
@@ -71,30 +101,16 @@ public class ButtonOCore : MonoBehaviour
     {
         isMouseOver = false;
         obj.GetComponent<PhysicalObject>().highlightAmount = 0f;
-        obj.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,1f);
+
+        float f = obj.GetComponent<SpriteRenderer>().color.a;
+
+        obj.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,f);
+
+        GameCore.Core.mouseOverGUI = false;
+
 
     }
-
-    // --------------- main ----------------
-
-	void Start ()
-    {
-		image.transform.localScale = new Vector3(2f,2f,2f);
-	}
-	
-	void Update ()
-    {
-        if (index == 0)
-        transform.position = Camera.main.WorldToScreenPoint(worldPos);
-        else
-        transform.position = core.buttonsO[0].transform.position + new Vector3(105f,0f,0f)*index;// + GameCore.Core.v4*index*100f;
-
-        if (isMouseOver)
-        {
-            obj.GetComponent<PhysicalObject>().Highlight();
-        }
-
-	}
+    
 
 
 

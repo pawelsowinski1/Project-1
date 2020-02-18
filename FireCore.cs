@@ -51,4 +51,9 @@ public class FireCore : MonoBehaviour
         StartCoroutine("FireUpdate");
     }
 
+    void Destroy()
+    {
+        
+    }
+
 }

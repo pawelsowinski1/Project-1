@@ -21,7 +21,9 @@ public class Sky : MonoBehaviour
 
         // Create the mesh once, at start
         mesh = new Mesh();
+
         meshFilter.mesh = mesh;
+
 
         // find lowest point of the ground
 
@@ -46,27 +48,36 @@ public class Sky : MonoBehaviour
 
         // Vertices
 
-        Vector3[] verts = new Vector3[4];
+        Vector3[] verts = new Vector3[6];
 
         verts[0] = new Vector3(0f, 0f, 0f);
-        verts[1] = new Vector3(0f, 200f, 0f);
-        verts[2] = new Vector3(x1, 200f, 0f);
+        verts[1] = new Vector3(0f, 150f, 0f);
+        verts[2] = new Vector3(x1, 150f, 0f);
         verts[3] = new Vector3(x1, 0f, 0f);
+
+        verts[4] = new Vector3(0f, 400f, 0f);
+        verts[5] = new Vector3(x1, 400f, 0f);
 
         // Triangles
 
-        int[] tris = new int[6]
+        int[] tris = new int[12]
         { 0, 1, 2,
-          0, 2, 3 };
+          0, 2, 3,
+
+          1, 4, 5,
+          1, 5, 2 };
         
         // UVs
 
-        Vector2[] uvs = new Vector2[4];
+        Vector2[] uvs = new Vector2[6];
 
         uvs[0] = new Vector2(0,0);
         uvs[1] = new Vector2(0,1);
         uvs[2] = new Vector2(1,1);
         uvs[3] = new Vector2(1,0);
+
+        uvs[4] = new Vector2(1,0);
+        uvs[5] = new Vector2(1,1);
 
         mesh.vertices = verts;
         mesh.triangles = tris;
@@ -152,7 +163,7 @@ public class Sky : MonoBehaviour
 
         //
 
-        Color[] colors = new Color[4];
+        Color[] colors = new Color[6];
 
         // apply color gradient
         for (int i = 0; i < mesh.vertices.Length; i++)
